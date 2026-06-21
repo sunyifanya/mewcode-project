@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="新建工程" />
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,6 +44,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "master",
+    "git.auto.fetch.suggestion.counter": "1",
     "kotlin-language-version-configured": "true",
     "nodejs_package_manager_path": "npm",
     "onboarding.tips.debug.path": "D:/code/mewcode/mewcode/src/main/java/org/example/Main.java",
@@ -73,7 +74,7 @@
       <workItem from="1781889620673" duration="3272000" />
       <workItem from="1781892933131" duration="1405000" />
       <workItem from="1781926183273" duration="33388000" />
-      <workItem from="1782007456819" duration="10965000" />
+      <workItem from="1782007456819" duration="11425000" />
     </task>
     <task id="LOCAL-00001" summary="新建工程">
       <option name="closed" value="true" />
@@ -83,7 +84,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782031099838</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动">
+      <option name="closed" value="true" />
+      <created>1782031339243</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1782031339243</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -102,6 +111,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="新建工程" />
-    <option name="LAST_COMMIT_MESSAGE" value="新建工程" />
+    <MESSAGE value="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
   </component>
 </project>

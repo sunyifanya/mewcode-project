@@ -2,13 +2,13 @@
 
 每次我会提出一个初步的想法，需要你通过向我提问，帮助我澄清需求、挖掘边缘场景。澄清清楚后共创三份文档，按编号递增分别放入：
 
-- `spec/NN-feature-name-spec.md`
-- `tasks/NN-feature-name-tasks.md`
-- `checklist/NN-feature-name-checklist.md`
+- `reference/spec/NN-feature-name-spec.md`
+- `reference/tasks/NN-feature-name-tasks.md`
+- `reference/checklist/NN-feature-name-checklist.md`
 
-三个目录均在项目根目录下：`spec/`、`tasks/`、`checklist/`。文件名带后缀（`-spec`/`-tasks`/`-checklist`），避免跨目录搜索时出现同名文件无法区分。
+三个目录均在 `reference/` 下：`reference/spec/`、`reference/tasks/`、`reference/checklist/`。文件名带后缀（`-spec`/`-tasks`/`-checklist`），避免跨目录搜索时出现同名文件无法区分。
 
-例如 `spec/03-agent-loop-spec.md`、`tasks/03-agent-loop-tasks.md`、`checklist/03-agent-loop-checklist.md`。编号规则：查看各文件夹内已有的最大编号 +1。
+例如 `reference/spec/03-agent-loop-spec.md`、`reference/tasks/03-agent-loop-tasks.md`、`reference/checklist/03-agent-loop-checklist.md`。编号规则：查看各文件夹内已有的最大编号 +1。
 
 # 三份文档的角色与边界
 
