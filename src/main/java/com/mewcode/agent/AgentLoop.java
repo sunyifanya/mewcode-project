@@ -21,6 +21,7 @@ import com.mewcode.toolresult.ApplyResult;
 import com.mewcode.toolresult.ContentReplacementState;
 import com.mewcode.toolresult.ReplacementRecordsIO;
 import com.mewcode.toolresult.ToolResultBudget;
+import com.mewcode.conversation.Message;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -244,8 +245,7 @@ public class AgentLoop implements Runnable {
                 }
 
                 // Use cleaned messages from Layer 1 for the API call
-                List<com.mewcode.conversation.Message> apiMessages =
-                        applied.apiConv().getMessages(iter, planMode);
+                List<Message> apiMessages = applied.apiConv().getMessages(iter, planMode);
                 provider.streamChat(apiMessages, collector, activeTools);
 
                 boolean completed = collector.awaitCompletion(streamTimeoutMs);

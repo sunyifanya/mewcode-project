@@ -4,7 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置">
+      <change afterPath="$PROJECT_DIR$/.mewcode/sessions/20260621-170718-3641.jsonl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MEWCODE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/checklist/10-slash-command-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/spec/10-slash-command-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/tasks/10-slash-command-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/command/Command.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/command/CommandContext.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/command/CommandRegistry.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/command/CommandType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionMode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionMode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,6 +56,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
@@ -75,6 +92,7 @@
       <workItem from="1781892933131" duration="1405000" />
       <workItem from="1781926183273" duration="33388000" />
       <workItem from="1782007456819" duration="11425000" />
+      <workItem from="1782031582638" duration="7838000" />
     </task>
     <task id="LOCAL-00001" summary="新建工程">
       <option name="closed" value="true" />
@@ -92,7 +110,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782031339243</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置">
+      <option name="closed" value="true" />
+      <created>1782031621323</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1782031621323</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -112,6 +138,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="新建工程" />
     <MESSAGE value="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
-    <option name="LAST_COMMIT_MESSAGE" value="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
+    <MESSAGE value="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置" />
+    <option name="LAST_COMMIT_MESSAGE" value="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置" />
   </component>
 </project>

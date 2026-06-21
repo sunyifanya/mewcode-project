@@ -54,33 +54,15 @@ public enum PermissionMode {
 
     /**
      * Parse a mode string, falling back to DEFAULT for unrecognised input.
-     *
-     * <p>Backward compatibility:
-     * <ul>
-     *   <li>{@code "strict"} → DEFAULT (with stderr warning)</li>
-     *   <li>{@code "permissive"} → BYPASS (with stderr warning)</li>
-     * </ul>
      */
     public static PermissionMode fromString(String s) {
         if (s == null || s.isBlank()) return DEFAULT;
         return switch (s.trim().toLowerCase()) {
-            case "default"                              -> DEFAULT;
-            case "accept-edits", "accept_edits"         -> ACCEPT_EDITS;
-            case "plan"                                 -> PLAN;
-            case "bypass", "yolo"                       -> BYPASS;
-            // backward compat
-            case "strict" -> {
-                System.err.println("警告: permission.mode 'strict' 已废弃，回退为 'default'");
-                yield DEFAULT;
-            }
-            case "permissive" -> {
-                System.err.println("警告: permission.mode 'permissive' 已废弃，回退为 'bypass'");
-                yield BYPASS;
-            }
-            default -> {
-                System.err.println("警告: 未知的 permission.mode '" + s + "'，回退为 'default'");
-                yield DEFAULT;
-            }
+            case "default"              -> DEFAULT;
+            case "accept-edits", "accept_edits" -> ACCEPT_EDITS;
+            case "plan"                 -> PLAN;
+            case "bypass", "yolo"       -> BYPASS;
+            default                     -> DEFAULT;
         };
     }
 }

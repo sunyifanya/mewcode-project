@@ -2,6 +2,7 @@ package com.mewcode;
 
 import com.mewcode.agent.AgentEvent;
 import com.mewcode.agent.AgentLoop;
+import com.mewcode.command.CommandRegistry;
 import com.mewcode.config.AppConfig;
 import com.mewcode.config.ConfigLoader;
 import com.mewcode.conversation.ConversationManager;
@@ -71,6 +72,9 @@ public class MewCode {
             // 2b. Connect MCP servers and register their tools
             McpManager mcpManager = initMcp(config, toolRegistry);
 
+            // 2c. Initialize slash command registry
+            CommandRegistry cmdRegistry = new CommandRegistry();
+
             // 3. Create provider
             LLMProvider provider = ProviderFactory.create(config, toolRegistry);
 
@@ -78,9 +82,13 @@ public class MewCode {
             TerminalUI ui = new TerminalUI();
             ui.setWorkingDirectory(workingDirectory);
             ui.setMemoryManager(memoryManager);
+            ui.setModel(config.getModel());
             // Wire resume callback: update sessionId so subsequent saves
             // append to the resumed session's JSONL file, not a new one.
-            ui.setResumeCallback(resumedId -> sessionIdHolder[0] = resumedId);
+            ui.setResumeCallback(resumedId -> {
+                sessionIdHolder[0] = resumedId;
+                ui.setCurrentSessionId(resumedId);
+            });
 
             // 5. Build permission checker
             PermissionMode mode = PermissionMode.fromString(config.getPermission().getMode());
@@ -88,6 +96,10 @@ public class MewCode {
 
             // Wire permission checker to TerminalUI for mode cycling
             ui.setPermissionChecker(permissionChecker);
+
+            // Wire command registry (after permission checker so mode handler is wired)
+            ui.setCommandRegistry(cmdRegistry);
+            ui.setCurrentSessionId(sessionIdHolder[0]);
 
             // Print startup info
             ui.getWriter().println("已加载 provider: " + provider.getProviderName());
@@ -127,7 +139,7 @@ public class MewCode {
             AgentLoop[] currentAgent = { null };
 
             // 10. Start event consumer thread
-            Thread eventConsumer = startEventConsumer(eventQueue, display, ui.getWriter(), permissionChecker);
+            Thread eventConsumer = startEventConsumer(eventQueue, display, ui, permissionChecker);
 
             // 11. Start interactive input loop
             ui.start(input -> {
@@ -196,8 +208,9 @@ public class MewCode {
      * them via StreamingDisplay.
      */
     private static Thread startEventConsumer(BlockingQueue<AgentEvent> queue, StreamingDisplay display,
-                                              PrintWriter writer, PermissionChecker permissionChecker) {
+                                              TerminalUI ui, PermissionChecker permissionChecker) {
         Thread consumer = new Thread(() -> {
+            PrintWriter writer = ui.getWriter();
             while (true) {
                 try {
                     AgentEvent event = queue.take();
@@ -222,6 +235,8 @@ public class MewCode {
                                 writer.print("[cache: " + read + " tokens read, " + create + " created]");
                                 writer.flush();
                             }
+                            // Update token counts for /status display
+                            ui.setTokenCounts(event.getInputTokens(), event.getOutputTokens());
                         }
                         case PROGRESS -> {
                             // Progress messages are for internal tracking; skip UI noise

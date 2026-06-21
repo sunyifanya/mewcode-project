@@ -9,7 +9,14 @@
       "Bash(curl -fsSL https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o /tmp/maven.zip)",
       "Bash(unzip -o /tmp/maven.zip -d /tmp/)",
       "mcp__codegraph__codegraph_explore",
-      "mcp__codegraph__codegraph_search"
+      "mcp__codegraph__codegraph_search",
+      "Bash(where java *)",
+      "Bash(java --version)",
+      "Bash(/c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn compile *)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Common Files/Oracle/Java/javapath\" \"/c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn\" --version)",
+      "Bash(\"/c/Program Files/Common Files/Oracle/Java/javapath/java.exe\" -XshowSettings:properties -version)",
+      "Bash(JAVA_HOME=\"/d/sorftware/jdk-21.0.11\" /c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn compile *)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
