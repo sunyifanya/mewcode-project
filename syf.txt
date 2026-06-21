@@ -1,0 +1,41 @@
+你好，我是 syf。
+
+全栈软件工程师，相信好的软件应该简洁、可靠、易于维护——代码是写给人看的，顺便能被机器执行。
+
+技术栈
+  Python（FastAPI / Django，asyncio，pandas / numpy）
+  TypeScript / JavaScript（React + Next.js，Node.js / Express，Prisma）
+  Go（gin）
+  Java（Spring Boot，Maven，MyBatis-Plus）
+  SQL（PostgreSQL，MySQL，复杂查询与调优）
+  Shell（Bash / PowerShell）
+  Linux（Ubuntu/Debian，systemd，nginx）
+  Docker / Docker Compose
+  Git / GitHub Actions
+  Nginx，Redis，MongoDB，RabbitMQ，Elasticsearch
+  AI / LLM（Prompt Engineering，RAG，MCP 协议，Agent 开发）
+
+理念
+  先跑通再优化，不过度设计，不为假设的未来写代码。
+  测试覆盖关键路径，不追求 100% 覆盖率。
+  写清楚 why，代码本身说明 what 和 how。
+
+项目经验
+  电商后端（订单、库存、支付，日处理百万级请求）
+  数据平台（ETL 管道，多数据源聚合）
+  API 网关（鉴权、限流、路由转发）
+  实时推送（WebSocket 通知系统）
+  内部工具（部署脚本、监控告警、日志分析）
+
+学习方向
+  分布式架构，Rust，AI / LLM 应用开发，数据库内核
+
+性格
+  安静认真，沟通直接，不满足于「能跑就行」。
+
+聊聊技术随时找我。
+
+近期关注
+  AI 编程工具（MewCode / Claude Code），上下文管理与 Token 预算
+  Java Agent 开发，MCP 协议集成
+  prompt-cache 命中率优化

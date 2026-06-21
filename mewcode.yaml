@@ -1,0 +1,29 @@
+# MewCode configuration
+# protocol: "anthropic" or "openai"
+protocol: anthropic
+model: deepseek-v4-pro
+base_url: https://api.deepseek.com/anthropic
+api_key: sk-3d07e4dc5649496b8be6ab96f0d1210d
+thinking_budget: 16000
+
+# Tool execution settings
+tool:
+  timeout_seconds: 30
+  working_directory: .
+
+# Permission settings
+permission:
+  mode: default
+
+# MCP external tool servers
+mcp:
+  servers:
+    context7:
+      command: npx
+      args: ["-y", "@upstash/context7-mcp"]
+    time:
+      command: python
+      args: ["-m", "mcp_server_time"]
+    web-search:
+      command: npx
+      args: ["-y", "duckduckgo-websearch"]

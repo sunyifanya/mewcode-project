@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.codegraph/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.codegraph/daemon.pid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources/0069a672-4b2d-4dd4-ad17-123e109384bc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources/0069a672-4b2d-4dd4-ad17-123e109384bc/storage_v2/_src_/schema/main.uQUzAA.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources/0069a672-4b2d-4dd4-ad17-123e109384bc/storage_v2/_src_/schema/main.uQUzAA.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mewcode/sessions/20260621-013234-1ae5.jsonl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CLAUDE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/MatchBugTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/01-pure-chat-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/02-tool-system-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/03-agent-loop-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/04-system-prompt-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/05-permission-system-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/06-mcp-client-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/07-mcp-lazy-load-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/08-context-compaction-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/checklist/09-context-restore-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dependency-reduced-pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mewcode.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/sse-streaming.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/01-pure-chat-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/02-tool-system-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/03-agent-loop-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/04-system-prompt-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/05-permission-system-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/06-mcp-client-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/07-mcp-lazy-load-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/08-context-compaction-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/spec/09-context-restore-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentEventType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/StopReason.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/StreamingCollector.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/ToolExecutionStrategy.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/compact/AutoCompactTrackingState.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/compact/ContextCompactor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/compact/RecoveryState.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/AppConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/ConfigLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/McpServerConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/ToolConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/ConversationManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/KeywordExtractor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/Message.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/ReminderContext.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/SystemPromptBuilder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/SystemPromptModule.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/ThinkingBlock.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/ToolResultBlock.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/ToolUseBlock.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/instructions/IncludeResolver.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/instructions/InstructionsLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/mcp/McpManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/mcp/McpToolWrapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/memory/MemoryEntry.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/memory/MemoryExtractor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/memory/MemoryIndex.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/memory/MemoryManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PathSandbox.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionChecker.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionMode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/RuleEngine.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/RuleEntry.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/AnthropicProvider.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/CacheMetrics.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/ChunkType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/LLMProvider.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/OpenAIProvider.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/ProviderFactory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/StreamCallback.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionCleanup.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionRecovery.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/Tool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/ToolCall.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/ToolCategory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/ToolRegistry.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/ToolResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/EditFileTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/ExecuteCommandTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/GlobTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/GrepTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/ReadFileTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/ToolSearchTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/WriteFileTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ApplyResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ContentReplacementRecord.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ContentReplacementState.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ReplacementRecordsIO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ToolResultBudget.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/StreamingDisplay.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/syf.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/01-pure-chat-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/02-tool-system-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/03-agent-loop-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/04-system-prompt-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/05-permission-system-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/06-mcp-client-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/07-mcp-lazy-load-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/08-context-compaction-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tasks/09-context-restore-tasks.md" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="customMavenHome" value="D:\sorftware\apache-maven-3.9.15-bin" />
+        <option name="localRepository" value="D:\sorftware\apache-maven-3.9.15-bin\repository" />
+        <option name="mavenHomeTypeForPersistence" value="CUSTOM" />
+        <option name="userSettingsFile" value="D:\sorftware\apache-maven-3.9.15-bin\conf\settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3Eli1hrfjVGT56AqdlJbYKEoqeV" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.MewCode.executor": "Debug",
+    "Maven.mewcode [clean].executor": "Run",
+    "Maven.mewcode [package].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "D:/code/mewcode/mewcode/src/main/java/org/example/Main.java",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "vcs.Git",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="" />
+      <created>1777665067617</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1777665067617</updated>
+      <workItem from="1780764022916" duration="160000" />
+      <workItem from="1780819305766" duration="18871000" />
+      <workItem from="1781342108439" duration="193000" />
+      <workItem from="1781342315403" duration="727000" />
+      <workItem from="1781415356289" duration="21902000" />
+      <workItem from="1781536229194" duration="3496000" />
+      <workItem from="1781622632674" duration="8760000" />
+      <workItem from="1781796333475" duration="5112000" />
+      <workItem from="1781834605355" duration="22459000" />
+      <workItem from="1781889620673" duration="3272000" />
+      <workItem from="1781892933131" duration="1405000" />
+      <workItem from="1781926183273" duration="33388000" />
+      <workItem from="1782007456819" duration="10619000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

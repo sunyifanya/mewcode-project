@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn compile *)",
+      "Bash(./mvnw compile *)",
+      "mcp__codegraph__codegraph_node",
+      "mcp__codegraph__codegraph_files",
+      "Bash(java -version)",
+      "Bash(curl -fsSL https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o /tmp/maven.zip)",
+      "Bash(unzip -o /tmp/maven.zip -d /tmp/)",
+      "mcp__codegraph__codegraph_explore",
+      "mcp__codegraph__codegraph_search"
+    ]
+  }
+}
