@@ -57,6 +57,20 @@
             <version>3.29.0</version>
         </dependency>
 
+        <!-- JLine JNA terminal provider — enables native terminal on Windows -->
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline-terminal-jna</artifactId>
+            <version>3.29.0</version>
+        </dependency>
+
+        <!-- Jansi terminal provider — better Windows compatibility -->
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline-terminal-jansi</artifactId>
+            <version>3.29.0</version>
+        </dependency>
+
         <!-- Logging (quiet by default, but available for debugging) -->
         <dependency>
             <groupId>org.slf4j</groupId>

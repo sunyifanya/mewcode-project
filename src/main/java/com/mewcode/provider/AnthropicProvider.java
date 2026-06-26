@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mewcode.config.AppConfig;
 import com.mewcode.conversation.Message;
+import com.mewcode.conversation.ToolResultBlock;
 import com.mewcode.tool.Tool;
 import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.ToolRegistry;
@@ -174,7 +175,7 @@ public class AnthropicProvider implements LLMProvider {
      */
     private void serializeContent(Message msg, ObjectNode msgNode) {
         List<ToolCall> toolCalls = msg.getToolCalls();
-        ToolResult toolResult = msg.getToolResult();
+        List<ToolResultBlock> toolResults = msg.getToolResults();
 
         if (toolCalls != null && !toolCalls.isEmpty()) {
             // Assistant message with tool_use blocks
@@ -199,14 +200,19 @@ public class AnthropicProvider implements LLMProvider {
             }
 
             msgNode.set("content", contentArray);
-        } else if (toolResult != null) {
-            // User message with tool_result block
+        } else if (toolResults != null && !toolResults.isEmpty()) {
+            // User message with tool_result block(s)
             var contentArray = jsonMapper.createArrayNode();
-            var resultBlock = jsonMapper.createObjectNode();
-            resultBlock.put("type", "tool_result");
-            resultBlock.put("tool_use_id", msg.getToolUseId());
-            resultBlock.put("content", toolResult.getContent());
-            contentArray.add(resultBlock);
+            for (ToolResultBlock tr : toolResults) {
+                var resultBlock = jsonMapper.createObjectNode();
+                resultBlock.put("type", "tool_result");
+                resultBlock.put("tool_use_id", tr.toolUseId());
+                resultBlock.put("content", tr.content());
+                if (tr.isError()) {
+                    resultBlock.put("is_error", true);
+                }
+                contentArray.add(resultBlock);
+            }
             msgNode.set("content", contentArray);
         } else {
             // Plain text message — content is a string

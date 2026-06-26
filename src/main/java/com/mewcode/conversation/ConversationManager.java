@@ -32,6 +32,7 @@ public class ConversationManager {
     private final String platform;
     private final String currentDate;
     private final ToolRegistry toolRegistry;
+    private String activeSkillsContent = "";
 
     // ---- constructors ----
 
@@ -139,7 +140,8 @@ public class ConversationManager {
 
         ReminderContext ctx = new ReminderContext(
                 iteration, planMode, workingDirectory, platform, currentDate,
-                toolRegistry != null ? toolRegistry.getDeferredToolNames() : List.of());
+                toolRegistry != null ? toolRegistry.getDeferredToolNames() : List.of(),
+                activeSkillsContent);
         String reminder = promptBuilder.composeReminder(ctx);
 
         if (!reminder.isBlank()) {
@@ -220,6 +222,14 @@ public class ConversationManager {
 
         messages.add(0, new Message("user", wrapped));
         ltmInjected = true;
+    }
+
+    /**
+     * Set the active skills SOP content for reminder injection.
+     * Called by AgentLoop before each iteration when skills are active.
+     */
+    public void setActiveSkillsContent(String content) {
+        this.activeSkillsContent = content != null ? content : "";
     }
 
     /**

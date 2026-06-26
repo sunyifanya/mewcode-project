@@ -92,19 +92,22 @@ public class McpManager {
      * and print connection status.
      *
      * @param registry the tool registry to register into
+     * @param writer   the writer to use for output (e.g. from TerminalUI)
      */
-    public void registerAllMcpTools(ToolRegistry registry) {
+    public void registerAllMcpTools(ToolRegistry registry, java.io.PrintWriter writer) {
         var result = connectAll();
         for (var t : result.tools()) {
             registry.register(t);
         }
 
         if (!result.serverNames().isEmpty()) {
-            System.out.println("MCP: " + result.serverNames().size() + " 个 Server 已连接，"
+            writer.println("MCP: " + result.serverNames().size() + " 个 Server 已连接，"
                     + result.tools().size() + " 个工具已注册");
+            writer.flush();
         }
         for (var err : result.errors()) {
-            System.err.println("警告: " + err);
+            writer.println("警告: " + err);
+            writer.flush();
         }
 
     }

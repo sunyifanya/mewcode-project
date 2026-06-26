@@ -1,9 +1,0 @@
-{"role":"user","content":"你好","ts":1781976762}
-{"role":"assistant","content":"你好！我是 MewCode，终端环境中的 AI 编程助手。有什么需要帮忙的？","ts":1781976764}
-{"role":"user","content":"读syf.txt这个文件","ts":1781976775}
-{"role":"assistant","content":"","ts":1781976777}
-{"role":"assistant","content":"这是 syf 的个人简介文件，主要内容：\n\n- **定位**：全栈软件工程师，偏向后端和 AI\n- **技术栈**：Python、TypeScript/JavaScript、Go、Java 都能写，熟悉 Linux、Docker、各种中间件\n- **理念**：先跑通再优化，不过度设计，写清楚 why\n- **经验**：电商后端、数据平台、API 网关、实时推送、内部工具\n- **近期关注**：AI 编程工具（MewCode/Claude Code）、Java Agent、MCP 协议、prompt-cache 优化\n\n有什么需要进一步了解的？","ts":1781976780}
-{"role":"user","content":"我们聊到哪了","ts":1782029788}
-{"role":"assistant","content":"刚才我们聊到你让我看了 `syf.txt` 文件，我帮你总结了一下 syf 的个人简介——全栈偏后端/AI 的软件工程师，技术栈涵盖 Python、TS、Go、Java 等，近期关注 AI 编程工具和 MCP 协议。\n\n需要接着做什么？","ts":1782029792}
-{"role":"user","content":"你好","ts":1782029877}
-{"role":"assistant","content":"你好，有什么需要帮忙的？","ts":1782029878}

@@ -16,12 +16,15 @@ import com.mewcode.provider.LLMProvider;
 import com.mewcode.provider.ProviderFactory;
 import com.mewcode.session.SessionCleanup;
 import com.mewcode.session.SessionManager;
+import com.mewcode.skill.SkillCatalog;
+import com.mewcode.skill.SkillTool;
 import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.ToolRegistry;
 import com.mewcode.tool.impl.*;
 import com.mewcode.tui.StreamingDisplay;
 import com.mewcode.tui.TerminalUI;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -38,14 +41,41 @@ public class MewCode {
 
         try {
             // 1. Load configuration
-            String configPath = args.length > 0 ? args[0] : "./mewcode.yaml";
-            AppConfig config = ConfigLoader.load(configPath);
+            // Strategy: 
+            //   - If command line arg provided, use that path
+            //   - Otherwise, try ./mewcode.yaml first (user config)
+            //   - If not found, load mewcode.yaml from classpath (built-in default)
+            String configPath;
+            AppConfig config;
+            
+            if (args.length > 0) {
+                // User specified config path
+                configPath = args[0];
+                config = ConfigLoader.load(configPath);
+            } else {
+                File userConfig = new File("./mewcode.yaml");
+                if (userConfig.exists()) {
+                    // Use user's config file
+                    configPath = "./mewcode.yaml";
+                    config = ConfigLoader.load(configPath);
+                } else {
+                    // Use built-in default from classpath
+                    configPath = "classpath:mewcode.yaml"; // for display purposes
+                    config = ConfigLoader.loadFromClasspath();
+                }
+            }
 
             // 1b. Resolve project root and working directory
-            java.nio.file.Path configFile = Paths.get(configPath).toAbsolutePath();
-            java.nio.file.Path projectRoot = configFile.getParent();
-            if (projectRoot == null) {
-                projectRoot = Paths.get(".").toAbsolutePath();
+            java.nio.file.Path projectRoot;
+            if (configPath.startsWith("classpath:")) {
+                // When loading from classpath, use current directory as project root
+                projectRoot = Paths.get(".").toAbsolutePath().normalize();
+            } else {
+                java.nio.file.Path configFile = Paths.get(configPath).toAbsolutePath();
+                projectRoot = configFile.getParent();
+                if (projectRoot == null) {
+                    projectRoot = Paths.get(".").toAbsolutePath();
+                }
             }
             projectRoot = projectRoot.toRealPath();
             String workingDirectory = projectRoot.toString();
@@ -58,7 +88,7 @@ public class MewCode {
             MemoryExtractor memoryExtractor = new MemoryExtractor();
 
             // 1e. Clean up expired sessions
-            int maxSessionAgeDays = config.getMaxSessionAgeDays() > 0 ? config.getMaxSessionAgeDays() : 30;
+            int maxSessionAgeDays = config.getMaxSessionAgeDays() > 0 ? config.getMaxSessionAgeDays() : 5;
             SessionCleanup.cleanIfNeeded(workingDirectory, maxSessionAgeDays);
 
             // 1f. Generate session ID for this run.
@@ -69,16 +99,10 @@ public class MewCode {
             // 2. Build tool registry (built-in tools)
             ToolRegistry toolRegistry = buildToolRegistry(config);
 
-            // 2b. Connect MCP servers and register their tools
-            McpManager mcpManager = initMcp(config, toolRegistry);
-
-            // 2c. Initialize slash command registry
-            CommandRegistry cmdRegistry = new CommandRegistry();
-
             // 3. Create provider
             LLMProvider provider = ProviderFactory.create(config, toolRegistry);
 
-            // 4. Terminal UI
+            // 4. Terminal UI (create early so MCP can use its writer for UTF-8 output)
             TerminalUI ui = new TerminalUI();
             ui.setWorkingDirectory(workingDirectory);
             ui.setMemoryManager(memoryManager);
@@ -89,6 +113,15 @@ public class MewCode {
                 sessionIdHolder[0] = resumedId;
                 ui.setCurrentSessionId(resumedId);
             });
+
+            // 2b. Connect MCP servers and register their tools (AFTER UI is created)
+            McpManager mcpManager = initMcp(config, toolRegistry, ui.getWriter());
+
+            // 2c. Load skills (AFTER MCP is connected — so MCP tools are in ToolRegistry)
+            SkillCatalog skillCatalog = SkillCatalog.loadCatalog(workingDirectory);
+
+            // 2d. Initialize slash command registry
+            CommandRegistry cmdRegistry = new CommandRegistry();
 
             // 5. Build permission checker
             PermissionMode mode = PermissionMode.fromString(config.getPermission().getMode());
@@ -101,10 +134,15 @@ public class MewCode {
             ui.setCommandRegistry(cmdRegistry);
             ui.setCurrentSessionId(sessionIdHolder[0]);
 
+            // Wire skill list supplier for /status command
+            ui.setSkillListSupplier(() -> skillCatalog.list().stream()
+                    .map(SkillCatalog.SkillMeta::name).toList());
+
             // Print startup info
             ui.getWriter().println("已加载 provider: " + provider.getProviderName());
             ui.getWriter().println("模型: " + config.getModel());
             ui.getWriter().println("工具: " + toolRegistry.size() + " 个");
+            ui.getWriter().println("技能: " + skillCatalog.list().size() + " 个");
             ui.getWriter().println("迭代上限: " + config.getMaxIterations() + " 轮");
             ui.getWriter().println("权限模式: " + permissionChecker.getMode());
             if (!instructionsContent.isEmpty()) {
@@ -125,9 +163,16 @@ public class MewCode {
             ConversationManager conversation = new ConversationManager(toolRegistry);
             ui.setConversation(conversation);
 
-            // Inject long-term context (instructions + memory index)
+            // Inject long-term context (instructions + memory index + available skills)
             conversation.injectLongTermContext(instructionsContent,
                     memoryManager.getAllMemoryTitles());
+
+            // 6b. Register SkillTool in toolRegistry
+            // SkillHost/ForkHost references use the currentAgent holder (updated per-turn).
+            // currentAgent[] is declared below but accessible via closure — we need it first.
+            // We'll create a holder then register the Skill tool.
+
+            // 6c. Wire skill commands into CommandRegistry (pending — needs agent holder)
 
             // 7. Streaming display
             StreamingDisplay display = new StreamingDisplay(ui.getWriter());
@@ -137,6 +182,20 @@ public class MewCode {
 
             // 9. Agent loop — created per user input
             AgentLoop[] currentAgent = { null };
+
+            // Register SkillTool now that currentAgent holder exists
+            SkillTool skillTool = new SkillTool(
+                    skillCatalog,
+                    () -> currentAgent[0],
+                    () -> currentAgent[0]
+            );
+            toolRegistry.register(skillTool);
+
+            // Wire skill commands into CommandRegistry
+            cmdRegistry.setSkillRegistry(skillCatalog,
+                    () -> currentAgent[0],
+                    () -> currentAgent[0]);
+            cmdRegistry.registerSkillCommands();
 
             // 10. Start event consumer thread
             Thread eventConsumer = startEventConsumer(eventQueue, display, ui, permissionChecker);
@@ -185,7 +244,13 @@ public class MewCode {
                 // Run agent on its own thread
                 Thread agentThread = new Thread(agent, "agent-loop");
                 agentThread.start();
-            }, conversation::clear);
+            }, () -> {
+                conversation.clear();
+                // Clear active skills when conversation is cleared
+                if (currentAgent[0] != null) {
+                    currentAgent[0].clearActiveSkills();
+                }
+            });
 
             // Cleanup
             if (currentAgent[0] != null) {
@@ -327,15 +392,18 @@ public class MewCode {
     /**
      * Initialize MCP connections if configured.
      *
+     * @param config   the application configuration
+     * @param registry the tool registry to register into
+     * @param writer   the PrintWriter for output (from TerminalUI)
      * @return the McpManager (non-null even if no servers configured — it's a no-op manager)
      */
-    private static McpManager initMcp(AppConfig config, ToolRegistry registry) {
+    private static McpManager initMcp(AppConfig config, ToolRegistry registry, java.io.PrintWriter writer) {
         AppConfig.McpConfigNode mcpConfig = config.getMcp();
         if (mcpConfig == null || mcpConfig.getServers() == null || mcpConfig.getServers().isEmpty()) {
             return null;
         }
         McpManager manager = new McpManager(mcpConfig.getServers());
-        manager.registerAllMcpTools(registry);
+        manager.registerAllMcpTools(registry, writer);
         return manager;
     }
 

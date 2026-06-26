@@ -4,6 +4,9 @@ import com.mewcode.compact.AutoCompactTrackingState;
 import com.mewcode.compact.ContextCompactor;
 import com.mewcode.compact.RecoveryState;
 import com.mewcode.conversation.ConversationManager;
+import com.mewcode.conversation.Message;
+import com.mewcode.conversation.SystemPromptBuilder;
+import com.mewcode.conversation.ToolResultBlock;
 import com.mewcode.memory.MemoryExtractor;
 import com.mewcode.memory.MemoryManager;
 import com.mewcode.permission.PermissionChecker;
@@ -13,6 +16,8 @@ import com.mewcode.permission.RuleEngine;
 import com.mewcode.permission.RuleEntry;
 import com.mewcode.provider.LLMProvider;
 import com.mewcode.session.SessionManager;
+import com.mewcode.skill.SkillForkHost;
+import com.mewcode.skill.SkillHost;
 import com.mewcode.tool.Tool;
 import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.ToolRegistry;
@@ -21,7 +26,6 @@ import com.mewcode.toolresult.ApplyResult;
 import com.mewcode.toolresult.ContentReplacementState;
 import com.mewcode.toolresult.ReplacementRecordsIO;
 import com.mewcode.toolresult.ToolResultBudget;
-import com.mewcode.conversation.Message;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +33,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -43,7 +48,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  *   <li>Layer 2 — ContextCompactor triggers an LLM summary when tokens exceed 80%</li>
  * </ol>
  */
-public class AgentLoop implements Runnable {
+public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 
     private final LLMProvider provider;
     private final ToolRegistry toolRegistry;
@@ -74,6 +79,14 @@ public class AgentLoop implements Runnable {
     private String workingDirectory;
     private int contextWindow = 200_000;
     private String sessionId;
+
+    // ---- skill system ----
+
+    /** Active skill name → SOP body. Multi-skill support. */
+    private final Map<String, String> activeSkills = new LinkedHashMap<>();
+
+    /** Current tool name filter from the last-activated skill. null = no filter. */
+    private Predicate<String> skillToolFilter;
 
     // ---- memory extraction ----
     private MemoryExtractor memoryExtractor;
@@ -170,6 +183,176 @@ public class AgentLoop implements Runnable {
         this.providerForMemory = provider;
     }
 
+    // ---- SkillHost implementation ----
+
+    @Override
+    public void activateSkill(String name, String body) {
+        activeSkills.put(name, body);
+    }
+
+    @Override
+    public void setToolFilter(Predicate<String> filter) {
+        this.skillToolFilter = filter;
+    }
+
+    @Override
+    public ToolRegistry toolRegistry() {
+        return this.toolRegistry;
+    }
+
+    @Override
+    public void recordSkillInvocation(String name, String body) {
+        // Record the skill SOP in recovery state for compact recovery
+        recoveryState.recordSkillInvocation(name, body);
+    }
+
+    // ---- SkillForkHost implementation ----
+
+    @Override
+    public List<Message> snapshotParentMessages() {
+        var msgs = conversation.getMessages();
+        return msgs != null ? List.copyOf(msgs) : List.of();
+    }
+
+    @Override
+    public String runSubAgent(String body, List<Message> seed, List<String> allowedTools, String model) {
+        // If a different model is requested, warn but use current provider
+        if (model != null && !model.isBlank()) {
+            String currentModel = "";
+            offerEvent(AgentEvent.of(AgentEventType.PROGRESS)
+                    .message("[system warning] Skill requested model '" + model
+                            + "', but fork sub-agents always use the current provider's model. "
+                            + "Multi-provider model switching is not yet implemented.")
+                    .build());
+        }
+
+        // Create a fresh ConversationManager for the sub-agent
+        var subConv = new ConversationManager();
+        // Inject seed messages as history
+        for (var msg : seed) {
+            var messagesMutable = subConv.getMessagesMutable();
+            messagesMutable.add(msg);
+        }
+
+        // Inject the skill SOP as a system-reminder
+        if (body != null && !body.isBlank()) {
+            var messagesMutable = subConv.getMessagesMutable();
+            messagesMutable.add(new Message("user",
+                    "<system-reminder>\n## Active Skill\n\n" + body + "\n</system-reminder>"));
+        }
+
+        // Tool whitelist for sub-agent
+        var subToolFilter = (allowedTools != null && !allowedTools.isEmpty())
+                ? (java.util.function.Predicate<String>) allowedTools::contains
+                : null;
+
+        // Create a sub-agent loop
+        var subEventQueue = new LinkedBlockingQueue<AgentEvent>(256);
+        var subLoop = new AgentLoop(
+                provider,
+                toolRegistry,
+                subConv,
+                subEventQueue,
+                maxIterations,
+                (int) (streamTimeoutMs / 1000),
+                permissionChecker
+        );
+        subLoop.setPlanMode(false);
+        subLoop.setWorkingDirectory(workingDirectory);
+        subLoop.setSessionId(sessionId);
+        subLoop.setContextWindow(contextWindow);
+
+        // Apply tool filter (excluding Skill tool from filtering)
+        if (subToolFilter != null) {
+            subLoop.setToolFilter(subToolFilter);
+        }
+
+        // Run the sub-agent synchronously on a new thread
+        Thread subThread = new Thread(subLoop, "skill-fork-agent");
+        subThread.start();
+
+        // Collect the final text output
+        var output = new StringBuilder();
+        boolean hadError = false;
+        String errorMsg = "";
+
+        try {
+            while (true) {
+                var event = subEventQueue.poll(streamTimeoutMs,
+                        java.util.concurrent.TimeUnit.MILLISECONDS);
+                if (event == null) {
+                    hadError = true;
+                    errorMsg = "Fork sub-agent timed out after " + (streamTimeoutMs / 1000) + "s";
+                    break;
+                }
+
+                switch (event.getType()) {
+                    case TEXT_DELTA -> {
+                        if (event.getText() != null) {
+                            output.append(event.getText());
+                        }
+                    }
+                    case ERROR -> {
+                        hadError = true;
+                        errorMsg = event.getMessage() != null ? event.getMessage() : "Unknown error";
+                    }
+                    case LOOP_FINISHED -> {
+                        return output.toString().trim();
+                    }
+                    case CANCELLED -> {
+                        hadError = true;
+                        errorMsg = "Fork sub-agent was cancelled";
+                    }
+                    default -> {}
+                }
+
+                if (hadError) {
+                    break;
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            hadError = true;
+            errorMsg = "Fork sub-agent was interrupted";
+        }
+
+        if (hadError) {
+            subLoop.cancel();
+            return "[fork error] " + errorMsg;
+        }
+
+        subLoop.cancel();
+        return output.toString().trim();
+    }
+
+    // ---- active skills accessors ----
+
+    /** Get a copy of the currently active skills map (name → body). */
+    public Map<String, String> getActiveSkills() {
+        return new LinkedHashMap<>(activeSkills);
+    }
+
+    /** Get the active skills context string for system prompt injection. */
+    public String getActiveSkillsContext() {
+        if (activeSkills.isEmpty()) {
+            return "";
+        }
+        var sb = new StringBuilder();
+        sb.append("## Active Skills\n\n");
+        var sorted = activeSkills.keySet().stream().sorted().toList();
+        for (var name : sorted) {
+            sb.append("### ").append(name).append("\n");
+            sb.append(activeSkills.get(name)).append("\n\n");
+        }
+        return sb.toString();
+    }
+
+    /** Clear all activated skills (called by /clear). */
+    public void clearActiveSkills() {
+        activeSkills.clear();
+        skillToolFilter = null;
+    }
+
     // ---- compaction helpers (used by /compact command) ----
 
     public AutoCompactTrackingState getCompactTracking() { return compactTracking; }
@@ -198,6 +381,11 @@ public class AgentLoop implements Runnable {
                         .message("第 " + (iter + 1) + "/" + maxIterations + " 轮").build());
 
                 // ---- context compaction ----
+
+                // Inject active skills into conversation (per-turn)
+                if (!activeSkills.isEmpty()) {
+                    conversation.setActiveSkillsContent(getActiveSkillsContext());
+                }
 
                 // Build tool schemas for this iteration (for Layer 2 recovery attachment)
                 List<Map<String, Object>> toolSchemas = buildToolSchemas();
@@ -408,7 +596,8 @@ public class AgentLoop implements Runnable {
                     }
                 }
 
-                // ---- push results to UI and conversation ----
+                // ---- push results to UI and conversation (batched into one message) ----
+                List<ToolResultBlock> resultBlocks = new ArrayList<>();
                 for (int i = 0; i < toolCalls.size(); i++) {
                     ToolCall tc = toolCalls.get(i);
                     ToolResult result = results.get(i);
@@ -419,8 +608,9 @@ public class AgentLoop implements Runnable {
                             .toolResult(result)
                             .build());
 
-                    conversation.addToolResultMessage(tc.getId(), result);
+                    resultBlocks.add(new ToolResultBlock(tc.getId(), result.getContent(), !result.isSuccess()));
                 }
+                conversation.addToolResultsMessage(resultBlocks);
             }
 
             // Hit iteration limit
@@ -454,6 +644,14 @@ public class AgentLoop implements Runnable {
         if (activeTools.isEmpty() && planMode) {
             activeTools = toolRegistry.getAllTools();
         }
+
+        // Apply skill tool filter (Skill tool always passes through)
+        if (skillToolFilter != null) {
+            activeTools = activeTools.stream()
+                    .filter(t -> "Skill".equals(t.getName()) || skillToolFilter.test(t.getName()))
+                    .toList();
+        }
+
         return toolRegistry.toApiFormat(activeTools);
     }
 

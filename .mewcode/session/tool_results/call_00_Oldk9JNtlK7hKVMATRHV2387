@@ -1,0 +1,1771 @@
+diff --git a/.claude/settings.local.json b/.claude/settings.local.json
+index 8ea7780..e805027 100644
+--- a/.claude/settings.local.json
++++ b/.claude/settings.local.json
+@@ -9,7 +9,14 @@
+       "Bash(curl -fsSL https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip -o /tmp/maven.zip)",
+       "Bash(unzip -o /tmp/maven.zip -d /tmp/)",
+       "mcp__codegraph__codegraph_explore",
+-      "mcp__codegraph__codegraph_search"
++      "mcp__codegraph__codegraph_search",
++      "Bash(where java *)",
++      "Bash(java --version)",
++      "Bash(/c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn compile *)",
++      "Bash(JAVA_HOME=\"/c/Program Files/Common Files/Oracle/Java/javapath\" \"/c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn\" --version)",
++      "Bash(\"/c/Program Files/Common Files/Oracle/Java/javapath/java.exe\" -XshowSettings:properties -version)",
++      "Bash(JAVA_HOME=\"/d/sorftware/jdk-21.0.11\" /c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn compile *)",
++      "mcp__ide__getDiagnostics"
+     ]
+   }
+ }
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+index ee19d59..14dc230 100644
+--- a/.idea/workspace.xml
++++ b/.idea/workspace.xml
+@@ -4,7 +4,14 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
++    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置">
++      <change afterPath="$PROJECT_DIR$/MEWCODE.md" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" afterDir="false" />
++    </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+@@ -40,6 +47,7 @@
+     "ModuleVcsDetector.initialDetectionPerformed": "true",
+     "RunOnceActivity.ShowReadmeOnStart": "true",
+     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
++    "RunOnceActivity.git.unshallow": "true",
+     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+     "codeWithMe.voiceChat.enabledByDefault": "false",
+@@ -75,6 +83,7 @@
+       <workItem from="1781892933131" duration="1405000" />
+       <workItem from="1781926183273" duration="33388000" />
+       <workItem from="1782007456819" duration="11425000" />
++      <workItem from="1782031582638" duration="4017000" />
+     </task>
+     <task id="LOCAL-00001" summary="新建工程">
+       <option name="closed" value="true" />
+@@ -92,7 +101,15 @@
+       <option name="project" value="LOCAL" />
+       <updated>1782031339243</updated>
+     </task>
+-    <option name="localTasksCounter" value="3" />
++    <task id="LOCAL-00003" summary="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置">
++      <option name="closed" value="true" />
++      <created>1782031621323</created>
++      <option name="number" value="00003" />
++      <option name="presentableId" value="LOCAL-00003" />
++      <option name="project" value="LOCAL" />
++      <updated>1782031621323</updated>
++    </task>
++    <option name="localTasksCounter" value="4" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -112,6 +129,7 @@
+   <component name="VcsManagerConfiguration">
+     <MESSAGE value="新建工程" />
+     <MESSAGE value="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
+-    <option name="LAST_COMMIT_MESSAGE" value="chore(ide): 清理IDE配置文件中的变更列表&#10;&#10;- 移除大量项目文件的变更跟踪记录&#10;- 更新任务计数器值为2&#10;- 添加新建工程的提交消息配置&#10;- 重置工作时间统计以反映最新活动" />
++    <MESSAGE value="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置" />
++    <option name="LAST_COMMIT_MESSAGE" value="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置" />
+   </component>
+ </project>
+\ No newline at end of file
+diff --git a/.mewcode/sessions/20260621-170718-3641.jsonl b/.mewcode/sessions/20260621-170718-3641.jsonl
+new file mode 100644
+index 0000000..8a52d78
+--- /dev/null
++++ b/.mewcode/sessions/20260621-170718-3641.jsonl
+@@ -0,0 +1,2 @@
++{"role":"user","content":"你好","ts":1782032850}
++{"role":"assistant","content":"你好！有什么想法需要一起理一理？","ts":1782032929}
+diff --git a/MEWCODE.md b/MEWCODE.md
+new file mode 100644
+index 0000000..d8b16ff
+--- /dev/null
++++ b/MEWCODE.md
+@@ -0,0 +1,31 @@
++你是一个一个终端 AI 编程助手，名字叫 MewCode，使用的编程语言是java。
++
++每次我会提出一个初步的想法，需要你通过向我提问，帮助我澄清需求、挖掘边缘场景。澄清清楚后共创三份文档，按编号递增分别放入：
++
++- `reference/spec/NN-feature-name-spec.md`
++- `reference/tasks/NN-feature-name-tasks.md`
++- `reference/checklist/NN-feature-name-checklist.md`
++
++三个目录均在 `reference/` 下：`reference/spec/`、`reference/tasks/`、`reference/checklist/`。文件名带后缀（`-spec`/`-tasks`/`-checklist`），避免跨目录搜索时出现同名文件无法区分。
++
++例如 `reference/spec/03-agent-loop-spec.md`、`reference/tasks/03-agent-loop-tasks.md`、`reference/checklist/03-agent-loop-checklist.md`。编号规则：查看各文件夹内已有的最大编号 +1。
++
++# 三份文档的角色与边界
++
++## spec.md
++回答：要解决什么问题、做哪些能力、不做哪些、什么算完成。
++写：背景、目标用户、能力清单（一句话一条）、非功能要求、设计骨架、Out of Scope
++不写：具体函数名 / 参数名 / 默认值 / 错误文本 / 行号 / SDK 类型名
++（这些是实现细节，spec 改一次就过期，维护爆炸）
++
++## tasks.md
++回答：按什么顺序做、每步动什么文件。
++- 5~15 个任务，每个能在一次专注会话内完成
++- 每个任务标注：影响文件、依赖任务、参考资料定位（精确到函数/行号都可以）
++- 最后一定有「接入主流程」+「端到端验证」两个任务
++
++## checklist.md
++每一项必须可勾选、可观测，不许写「实现完整」「质量良好」。
++- 把 spec 里被砍掉的具体值（错误文本、默认值、阈值）放进来作为验收项
++- 写法举例：「`grep -r X` 返回 ≥3 条」「输入 Y 看到输出 Z」
++- 至少一条端到端验收
+diff --git a/reference/checklist/10-slash-command-checklist.md b/reference/checklist/10-slash-command-checklist.md
+new file mode 100644
+index 0000000..c396222
+--- /dev/null
++++ b/reference/checklist/10-slash-command-checklist.md
+@@ -0,0 +1,81 @@
++# checklist.md — Slash Command System（斜杠命令注册与分发）
++
++## A. 命令注册中心
++
++- [ ] **A1** 启动 MewCode 后 `grep -c "CommandRegistry"` 日志中无 "conflict" 或 "duplicate" 字样（别名无冲突）
++- [ ] **A2** 在代码中手动注册两条 name 相同的命令，启动时应立即 `System.exit(1)` 并在 stderr 中输出冲突详情（含冲突名称和涉及的两条命令名）
++- [ ] **A3** 在代码中手动注册一条命令的 alias 与另一条命令的 name 相同，启动时同样 `System.exit(1)`（别名与主名冲突被检测）
++- [ ] **A4** `grep -r "registerDefaults" src/` 返回的注册调用数量 = 13（13 条内置命令全部注册）
++- [ ] **A5** 在代码中将 `/help` 的 `hidden` 设为 `true`，输入 `/help` 仍能执行（精确匹配不受隐藏影响），但输入 `/` + Tab 补全列表中不出现 `help`
++
++## B. 命令解析
++
++- [ ] **B1** 输入 `/help` 显示可用命令列表（含名称、别名、描述），输出行数 ≥13（13 条可见命令）
++- [ ] **B2** 输入 `/HELP`（全大写）和 `/Help`（混合大小写），输出与 `/help` 完全一致
++- [ ] **B3** 输入 `/h`（别名）和 `/?`（别名），输出与 `/help` 完全一致
++- [ ] **B4** 输入 `/help status` 显示 `/status` 命令的详细用法（含名称、描述、别名、用法示例），而非全部命令列表
++- [ ] **B5** 输入 `/help nonexistent` 显示 "Unknown command: nonexistent"（或等效未命中提示）
++- [ ] **B6** 输入单独的 `/` 后直接回车（空命令），不执行任何操作、不报错、不退出
++- [ ] **B7** 输入 `/   `（斜杠后只有空格）后回车，视为空命令，不执行操作
++- [ ] **B8** 输入 `/unknowncommand`，显示含 "未知命令" 和 "/help" 字样的提示
++- [ ] **B9** 输入 `/status extra args here`，命令正常执行（`extra args here` 作为参数忽略或显示，命令不报错）
++
++## C. 三种执行模式
++
++### LOCAL
++
++- [ ] **C1** 输入 `/status`（或 `/s`），终端输出含：工作目录绝对路径、模型名、权限模式、Token 用量（`input` 和 `output` 字段）、工具数量
++- [ ] **C2** 输入 `/status` 后，对话历史中不新增用户消息（`grep -c "/status"` 在会话 JSONL 中为 0）
++- [ ] **C3** 输入 `/status` 不消耗 LLM Token（Token 计数在命令前后不变）
++- [ ] **C4** 输入 `/compact`（或 `/c`），终端显示压缩结果文本，含已压缩的消息数量或 Token 节省量
++- [ ] **C5** 输入 `/session list`，输出会话列表（如无存档会话则显示"无会话"类提示），格式含会话 ID 和消息数
++- [ ] **C6** 输入 `/memory list`，输出记忆列表（如无记忆则显示"暂无记忆"类提示）
++- [ ] **C7** 输入 `/memory clear`，所有记忆被清除，再次 `/memory list` 返回空列表
++- [ ] **C8** 输入 `/permission info`，输出当前权限模式名称（`default` / `acceptEdits` / `plan` / `bypassPermissions` 之一）
++- [ ] **C9** 输入 `/permission mode acceptEdits`，权限模式切换到 ACCEPT_EDITS，再次 `/permission info` 显示 `acceptEdits`
++
++### LOCAL_UI
++
++- [ ] **C10** 输入 `/clear`，界面消息列表清空，对话历史重置（`conversation.getMessages().isEmpty() == true`）
++- [ ] **C11** 输入 `/plan`（或 `/p`），状态栏标记变为 `[PLAN]`，Agent 只能使用只读工具（尝试调用 Write 工具应被拒绝）
++- [ ] **C12** 输入 `/do`，状态栏标记恢复 `[DEFAULT]`，Agent 恢复全部工具权限
++- [ ] **C13** 在 DEFAULT 模式下输入 `/mode` 一次，权限模式切换为 ACCEPT_EDITS；输入 `/mode` 第二次，切换为 BYPASS；输入 `/mode` 第三次，回到 DEFAULT。三次切换后状态栏始终显示 `[DEFAULT]`（不被 /mode 改变）
++- [ ] **C14** 在 PLAN 模式下输入 `/mode`，应退出 PLAN 并切换到 DEFAULT（PLAN 不参与 /mode 循环）
++- [ ] **C15** 输入 `/exit`（或 `/q`），程序正常退出（exit code = 0），不弹异常栈
++- [ ] **C16** 输入 `/resume`（或 `/r`），显示会话选择界面（列表格式，含编号/ID/摘要），选择有效编号后成功恢复历史对话
++
++### PROMPT
++
++- [ ] **C17** 输入 `/review`，对话中新增一条用户消息（内容含 "review the current git diff" 等关键词），随后 LLM 开始审查代码变更
++- [ ] **C18** 输入 `/review focus on security issues`，新增的用户消息中同时包含 "review the current git diff" 和 "focus on security issues"
++- [ ] **C19** `/review` 触发的对话消耗 LLM Token（Token 计数在命令后增加）
++
++## D. Tab 补全
++
++- [ ] **D1** 输入 `/` 后按 Tab，弹出命令补全菜单，列表包含所有非隐藏命令，按名称排序
++- [ ] **D2** 补全菜单中不出现标记为 `hidden=true` 的命令
++- [ ] **D3** 输入 `/s` 后按 Tab——由于 `/status` 和 `/session` 均以 s 开头，弹出多选菜单（至少含 `status` 和 `session`）
++- [ ] **D4** 输入 `/sta` 后按 Tab——仅 `/status` 匹配，直接补全为 `/status `（自动追加尾随空格）
++- [ ] **D5** 输入 `/Q`（大写）后按 Tab——如果 `/q` 是 `/exit` 的唯一匹配别名，直接补全为 `/exit `（大小写不敏感补全）
++- [ ] **D6** 补全菜单打开时按 Esc 键，菜单关闭，输入缓冲区恢复原样
++
++## E. 状态栏
++
++- [ ] **E1** 启动时状态栏显示 `[DEFAULT]`（默认执行模式）
++- [ ] **E2** 输入 `/plan` 后状态栏立即切换为 `[PLAN]`
++- [ ] **E3** 输入 `/do` 后状态栏恢复 `[DEFAULT]`
++- [ ] **E4** 输入 `/mode` 循环权限模式时，状态栏始终显示 `[DEFAULT]`（不被 /mode 改变）
++- [ ] **E5** 状态栏中不再出现 `[接受编辑]` 或 `[YOLO]` 标记（已简化为两种标记）
++
++## F. 分流器
++
++- [ ] **F1** 输入 `/help`，响应时间 <100ms（不经过 LLM，纯本地返回）
++- [ ] **F2** 输入普通文本 "hello"，正常进入 LLM 对话流程（不触发命令分发）
++- [ ] **F3** 输入以 `/` 开头但不是命令的文本（如 `/notacommand`），显示错误提示，不将文本发送给 LLM
++- [ ] **F4** 输入空行，不触发任何处理，直接显示新提示符
++
++## G. 端到端验收
++
++- [ ] **G1** 完整流程：启动 MewCode → 验证 `[DEFAULT]` 状态栏 → `/plan` → 验证 `[PLAN]` 状态栏 → `/do` → 验证 `[DEFAULT]` 状态栏 → `/status` → 验证状态输出 → `/mode` 三次 → 验证权限循环 → `/help` → 验证命令列表 → `/compact` → 验证压缩 → `/clear` → 验证清空 → `/exit` → 验证退出
++- [ ] **G2** 别名流程：`/h` = `/help`、`/?` = `/help`、`/s` = `/status`、`/c` = `/compact`、`/p` = `/plan`、`/perm` = `/permission`、`/q` = `/exit`、`/r` = `/resume`——共 8 个别名全部可正常执行
++- [ ] **G3** 大小写流程：`/HELP`、`/Help`、`/help` 三者行为完全一致
+diff --git a/reference/spec/10-slash-command-spec.md b/reference/spec/10-slash-command-spec.md
+new file mode 100644
+index 0000000..3e2e517
+--- /dev/null
++++ b/reference/spec/10-slash-command-spec.md
+@@ -0,0 +1,146 @@
++# spec.md — Slash Command System（斜杠命令注册与分发）
++
++## 背景
++
++当前 TerminalUI 中斜杠命令硬编码在一个 `switch` 语句里（`TerminalUI.java:150-230`）：每个命令直接写死匹配字符串和处理逻辑，无元数据、无别名、无补全、无冲突检测。新增命令需要改核心 UI 代码，也容易写错别名而不自知。
++
++参考项目（mewcode-java）已实现了一套基础的 Command 注册机制，但缺少别名冲突启动检测、命令解析器、Tab 补全、子命令支持等能力。
++
++本 spec 描述将此机制完整迁移到 MewCode 并增强的设计。
++
++## 目标用户
++
++使用 MewCode 的开发者，希望用斜杠开头的输入快速执行本地操作（清屏、查状态、切换模式、压缩上下文等），绕过 LLM 省 Token、响应快、行为确定。
++
++典型场景：
++- 输入 `/plan` 进入只读调研模式，状态栏立即显示 `[PLAN]`，不需要 LLM 解释
++- 输入 `/help status` 查看某个命令的详细用法
++- 输入 `/c`（别名）触发 `/compact`，少打几个字
++- 输入 `/` 后按 Tab，弹出可用命令菜单，选择确认
++
++## 能力清单
++
++### A. 命令注册中心
++
++1. **命令元数据登记**：每条命令定义包含名称、别名列表、简短描述、用法示例、命令类型、可选参数提示、是否隐藏，以及处理函数（LOCAL 和 PROMPT 类型需要，LOCAL_UI 类型可无）。名称和别名均为不含斜杠前缀的纯小写字符串。
++
++2. **启动期别名冲突检测**：注册阶段检查新命令的名称及每个别名是否与已注册命令的名称或别名重复（大小写不敏感）。检测到冲突时立即 panic 退出（`System.exit(1)` 并输出冲突详情），不等运行时再炸。
++
++3. **命令查询**：支持按名称或别名的精确匹配查找；支持按前缀模糊搜索（大小写不敏感），只返回可见命令，排序后输出。
++
++4. **可见/隐藏控制**：标记为隐藏的命令不参与 `/help` 列表展示，不参与模糊搜索，不参与 Tab 补全，但精确匹配仍可执行。
++
++### B. 命令解析与分发
++
++5. **斜杠识别与解析**：输入以 `/` 开头即判定为命令。取第一个空格前为命令名（去掉 `/` 前缀，转小写），第一个空格后到行尾为参数字符串。命令名大小写不敏感。
++
++6. **空输入与未命中处理**：`/` 后无内容视为空命令，不执行任何操作。命令名未注册时输出"未知命令"提示，并引导用户输入 `/help` 查看可用命令。
++
++7. **三分支执行模式**：
++   - **LOCAL**（纯本地）：执行处理函数，返回文本字符串，直接显示给用户，不经过 LLM
++   - **LOCAL_UI**（影响界面状态）：不返回文本，直接操作界面状态（清屏、切换模式、退出等），由 TerminalUI 内部分发
++   - **PROMPT**（预设提示词）：执行处理函数生成提示词文本，构造为用户消息注入对话，交给 LLM 处理
++
++8. **用户入口分流器**：在用户回车处理入口处判断输入是否以 `/` 开头——是则走命令分发（本地处理），否则走正常 LLM 对话流程。两个路径互不干扰。
++
++### C. 别名与 Tab 补全
++
++9. **别名支持**：每条命令可注册零个或多个别名。别名和主名称在匹配、搜索时地位平等（大小写不敏感）。别名冲突在注册期即被拦截。
++
++10. **Tab 补全**：用户输入 `/` 及若干字符后按 Tab 键触发补全——模糊搜索非隐藏命令。匹配结果仅一条时直接补全命令名并追加一个尾随空格；匹配结果多条时弹出选择菜单（上下键导航、Enter 或 Tab 确认、Esc 关闭）。隐藏命令不参与补全。
++
++### D. 界面控制抽象
++
++11. **CommandContext 运行时状态注入**：定义命令上下文对象，通过函数式接口（`Supplier`、`IntSupplier` 等）向 LOCAL 和 PROMPT 命令处理器提供运行时数据——参数字符串、工作目录、模型名、权限模式、计划模式状态、工具数量、Token 用量、记忆列表、会话信息等。命令处理器只依赖此上下文接口，不绑定具体渲染框架。
++
++12. **状态栏联动模式标记**：状态栏显示当前工作模式标记——`[PLAN]`（计划模式）或 `[DEFAULT]`（执行模式）。`/plan` 进入计划模式后标记立即切换为 `[PLAN]`；`/do` 退回执行模式后标记恢复 `[DEFAULT]`。`/mode` 循环权限模式不改变此标记。
++
++### E. 内置命令
++
++13. **/help**（LOCAL）—— 显示命令列表或单个命令详情。无参数时列出所有可见命令（名称、别名、描述）；带参数时显示指定命令的详细用法。别名：`h`、`?`。
++
++14. **/status**（LOCAL）—— 显示当前运行状态（工作目录、模型、权限模式、Token 用量、工具数量、记忆条数）。别名：`s`。
++
++15. **/compact**（LOCAL）—— 触发上下文压缩，返回压缩结果文本。别名：`c`。
++
++16. **/session**（LOCAL）—— 会话管理。子命令 `list` 列出所有存档会话，`info` 显示当前会话信息。无子命令时默认等同于 `list`。
++
++17. **/memory**（LOCAL）—— 记忆管理。子命令 `list` 列出所有自动记忆，`clear` 清除全部记忆。无子命令时默认等同于 `list`。
++
++18. **/permission**（LOCAL）—— 权限管理。子命令 `info` 显示当前权限模式，`mode <模式名>` 切换到指定模式。别名：`perm`。
++
++19. **/clear**（LOCAL_UI）—— 清空当前对话历史和界面消息列表，重置计划模式状态。
++
++20. **/plan**（LOCAL_UI）—— 进入计划（只读调研）模式，限制 Agent 仅能使用只读工具。别名：`p`。
++
++21. **/do**（LOCAL_UI）—— 退出计划模式，恢复到进入计划模式前的权限模式。
++
++22. **/mode**（LOCAL_UI）—— 循环切换权限模式（DEFAULT → ACCEPT_EDITS → BYPASS → DEFAULT），跳过 PLAN 模式（PLAN 仅通过 `/plan` 进入）。
++
++23. **/exit**（LOCAL_UI）—— 退出 MewCode。别名：`q`。
++
++24. **/resume**（LOCAL_UI）—— 打开会话恢复选择界面。别名：`r`。
++
++25. **/review**（PROMPT）—— 将"审查当前代码变更"的预设提示词注入对话，交给 LLM 处理。支持可选参数指定额外关注点。
++
++## 非功能要求
++
++- 命令注册与冲突检测在启动阶段完成，典型耗时 <10ms（13 条命令内存操作）
++- 命令匹配（精确或模糊搜索）典型耗时 <1ms（13 条命令的线性扫描）
++- Tab 补全响应 <100ms（含文件系统操作，如有路径补全需求）
++- 所有命令处理不抛未捕获异常——错误以文本形式返回显示
++- 命令注册中心的查找操作是线程安全的（会话恢复可能在后台线程触发命令查询）
++
++## 设计骨架
++
++```
++com.mewcode.command/                              ← 新包
++├── Command                                        ← 命令元数据记录（名称、别名、描述、用法、类型、隐藏、参数提示）
++├── CommandType                                    ← 枚举：LOCAL / LOCAL_UI / PROMPT
++├── CommandContext                                 ← 运行时上下文（函数式注入，不依赖具体 UI 框架）
++└── CommandRegistry                                ← 注册中心（注册、冲突检测、搜索、查找、执行）
++
++修改:
++├── tui/TerminalUI.java                            ← 接入 CommandRegistry，替换硬编码 switch，添加分流器 + Tab 补全 + 状态栏简化
++└── MewCode.java                                   ← 启动时初始化 CommandRegistry，构建 CommandContext，传入 TerminalUI
++```
++
++### 关键数据流
++
++```
++MewCode 启动:
++  1. new CommandRegistry() → 自动注册 13 条内置命令 + 冲突检测
++  2. 将 CommandRegistry 传入 TerminalUI
++
++用户输入处理:
++  3. TerminalUI.start() 读入用户输入
++     → 以 / 开头？
++        是 → 命令 Parser 提取 name + args
++             → CommandRegistry.find(name)
++                命中 → 按 CommandType 分发：
++                  LOCAL     → execute(name, ctx) → 显示返回文本
++                  LOCAL_UI  → TerminalUI 内部 switch 处理 → 直接操作界面
++                  PROMPT    → execute(name, ctx) → 构造用户消息 → 注入对话 → 交给 LLM
++                未命中 → 显示"未知命令"提示 + /help 引导
++        否 → 交给 Agent Loop 正常对话
++
++Tab 补全:
++  4. 用户输入 /<prefix> 后按 Tab
++     → CommandRegistry.search(prefix) → 非隐藏命令匹配
++        1 条 → 直接补全命令名 + " "
++        N 条 → 弹出选择菜单 → 用户确认 → 补全
++        0 条 → 不操作
++
++状态栏:
++  5. 每次渲染时根据 planMode 布尔值显示 [DEFAULT] 或 [PLAN]
++```
++
++## Out of Scope
++
++- 用户自定义命令（留给后续 Skill 系统）
++- 动态生成提示词（PROMPT 命令的提示词在注册时写死）
++- 命令级权限控制（如禁止在某种模式下执行某命令——当前所有命令在任何模式下可执行）
++- 命令别名国际化
++- 命令执行日志/审计
++- 命令嵌套管道（一个命令的输出作为另一个命令的输入）
++- 斜杠命令参数的类型校验和自动转换（参数始终以纯字符串传递）
+diff --git a/reference/tasks/10-slash-command-tasks.md b/reference/tasks/10-slash-command-tasks.md
+new file mode 100644
+index 0000000..b685d29
+--- /dev/null
++++ b/reference/tasks/10-slash-command-tasks.md
+@@ -0,0 +1,253 @@
++# tasks.md — Slash Command System（斜杠命令注册与分发）
++
++## 任务总览
++
++共 10 个任务，按依赖关系排序。推荐执行顺序：A 核心数据结构 → B 注册中心 → C 内置命令注册 → D 界面集成 → E 端到端验证。
++
++---
++
++## Task 1: 创建 Command 与 CommandType 数据类
++
++**影响文件**：新建 `com.mewcode.command.Command`、`com.mewcode.command.CommandType`
++
++**依赖任务**：无
++
++**参考资料**：
++- 参考项目 `Command` record（`D:\mewcode-java\java\src\main\java\com\mewcode\command\Command.java:18-24`）
++- 参考项目 `CommandType` 枚举（同上 `:27-34`）
++- spec 能力清单第 1 条（命令元数据字段）、第 7 条（三种执行模式）
++
++**工作内容**：
++- 定义 `CommandType` 枚举：`LOCAL`（纯本地，返回文本）、`LOCAL_UI`（影响界面状态）、`PROMPT`（预设提示词送 LLM）
++- 定义 `Command` 记录类，字段包含：`name`（String，不含前缀的小写名称）、`description`（String，一行描述）、`aliases`（String[]，别名列表）、`usage`（String，用法示例）、`type`（CommandType）、`paramHint`（String，可选参数提示）、`hidden`（boolean，是否隐藏）
++- 实现 `matches(String input)` 方法：精确匹配 name 或任意 alias（大小写不敏感）
++- 注意：`Command` 为纯元数据记录，不包含处理函数（处理函数在 CommandRegistry 中独立管理）
++
++---
++
++## Task 2: 创建 CommandContext 运行时上下文
++
++**影响文件**：新建 `com.mewcode.command.CommandContext`
++
++**依赖任务**：无
++
++**参考资料**：
++- 参考项目 `CommandContext` record（`D:\mewcode-java\java\src\main\java\com\mewcode\command\CommandContext.java:17-28`）
++- spec 能力清单第 11 条（函数式接口注入）
++
++**工作内容**：
++- 定义 `CommandContext` 记录类，字段全部使用函数式接口以避免绑定具体渲染框架：
++  - `args`（String）—— 命令参数（命令名之后的部分）
++  - `workDir`（String）—— 当前工作目录绝对路径
++  - `model`（String）—— 当前使用的模型名称
++  - `permissionMode`（`Supplier<String>`）—— 当前权限模式名称
++  - `planMode`（`Supplier<Boolean>`）—— 是否处于计划模式
++  - `toolCount`（`IntSupplier`）—— 已注册工具数量
++  - `tokenCount`（`Supplier<int[]>`）—— 返回 `[inputTokens, outputTokens]`
++  - `memoryList`（`Supplier<List<String>>`）—— 记忆标题列表
++  - `memoryClear`（`Runnable`）—— 清除全部记忆的回调
++  - `sessionInfo`（`Supplier<String>`）—— 当前会话信息文本
++- 所有字段均为 record component，由调用方在构造时注入具体实现
++
++---
++
++## Task 3: 创建 CommandRegistry 注册中心核心
++
++**影响文件**：新建 `com.mewcode.command.CommandRegistry`
++
++**依赖任务**：Task 1（Command）、Task 2（CommandContext）
++
++**参考资料**：
++- 参考项目 `CommandRegistry`（`D:\mewcode-java\java\src\main\java\com\mewcode\command\CommandRegistry.java:18-112`）
++- spec 能力清单第 2 条（别名冲突检测）、第 3 条（命令查询）、第 4 条（隐藏控制）
++
++**工作内容**：
++- 维护内部数据结构：`List<Command>`（所有命令）和 `Map<String, Function<CommandContext, String>>`（命令名/别名 → 处理函数）
++- 实现 `register(Command cmd, Function<CommandContext, String> handler)`：
++  - 冲突检测：将 `cmd.name()` 和 `cmd.aliases()` 全部转小写，与已有命令的所有名称及别名（均转小写后）比较；发现重复则输出冲突详情（哪个名字与哪个命令冲突）并调用 `System.exit(1)`
++  - 通过检测后：`cmd` 加入 `commands` 列表；`cmd.name()` 以及每个别名分别映射到 `handler`（如 handler 非 null）
++  - 冲突检测时机：每次 register 调用时执行，不等所有注册完成后
++- 实现 `search(String prefix)`：对所有非隐藏命令，按 name 和 aliases 做前缀匹配（`startsWith`，大小写不敏感），结果按 name 排序后返回
++- 实现 `find(String name)`：精确匹配（大小写不敏感）name 或 alias，返回 `Optional<Command>`
++- 实现 `execute(String name, CommandContext ctx)`：按 name 查 handler（name 可以是主名或别名），找到则 `handler.apply(ctx)` 返回文本；找不到 handler 返回 `"No handler for /" + name`
++- 实现 `listVisible()`：返回所有非隐藏命令，按 name 排序
++- 实现 `listAll()`：返回所有命令的不可变视图
++- 构造函数不自动注册命令——内置命令注册统一在 Task 4 中通过 `registerDefaults()` 或显式调用完成
++
++---
++
++## Task 4: 注册内置 LOCAL 命令
++
++**影响文件**：修改 `com.mewcode.command.CommandRegistry`（续 Task 3）
++
++**依赖任务**：Task 3（registry 核心可用）
++
++**参考资料**：
++- 参考项目 `registerDefaults()` 中 LOCAL 命令注册（`D:\mewcode-java\java\src\main\java\com\mewcode\command\CommandRegistry.java:118-294`）
++- spec 能力清单第 13-18 条
++
++**工作内容**：
++- 在 `CommandRegistry` 中新增 `registerDefaults()` 私有方法，注册以下 LOCAL 命令及其处理函数：
++
++  **`/help`**（别名 `h`, `?`）：
++  - 无参数时遍历 `listVisible()` 拼接可用命令列表（含名称、别名、描述）
++  - 有参数时 `find(args)` 查找目标命令，显示详细用法（名称、描述、别名、用法示例）
++  
++  **`/status`**（别名 `s`）：
++  - 读取 `ctx` 各字段，拼接状态文本（模式、模型、工作目录、Token 用量、工具数量、记忆条数）
++  
++  **`/compact`**（别名 `c`）：
++  - 调用外部注入的 compact 回调（通过构造函数或 setter 传入），返回压缩结果文本
++  - 注：compact 需要访问 AgentLoop，不能在 CommandRegistry 内部持有，需通过函数式接口注入
++  
++  **`/session`**（无别名）：
++  - 解析子命令（`args` 按空格拆分第一个词），支持 `list` 和 `info`，无子命令默认 `list`
++  - `list` 和 `info` 均返回 `ctx.sessionInfo().get()` 内容
++  
++  **`/memory`**（无别名）：
++  - 解析子命令，支持 `list` 和 `clear`，无子命令默认 `list`
++  - `list`：遍历 `ctx.memoryList().get()` 拼接记忆列表
++  - `clear`：调用 `ctx.memoryClear().run()`
++  
++  **`/permission`**（别名 `perm`）：
++  - 解析子命令，支持 `info` 和 `mode <name>`
++  - `info`：返回当前权限模式 `ctx.permissionMode().get()`
++  - `mode <name>`：返回权限模式说明文本（实际切换由 LOCAL_UI 处理，这里只返回信息）
++
++---
++
++## Task 5: 注册内置 LOCAL_UI 命令
++
++**影响文件**：修改 `com.mewcode.command.CommandRegistry`（续 Task 4）
++
++**依赖任务**：Task 4（registry 已有 register 能力）
++
++**参考资料**：
++- 参考项目 `registerDefaults()` 中 LOCAL_UI 命令注册（`D:\mewcode-java\java\src\main\java\com\mewcode\command\CommandRegistry.java:153-266`）
++- spec 能力清单第 19-24 条
++
++**工作内容**：
++- 在 `registerDefaults()` 中注册以下 LOCAL_UI 命令（handler 传 `null`，执行在 TerminalUI 的 LOCAL_UI switch 中处理）：
++
++  - `/clear`（无别名）—— 清空对话
++  - `/plan`（别名 `p`）—— 进入计划模式
++  - `/do`（无别名）—— 退出计划模式
++  - `/mode`（无别名）—— 循环权限模式
++  - `/exit`（别名 `q`）—— 退出应用
++  - `/resume`（别名 `r`）—— 打开会话恢复界面
++
++- 每条命令登记完整的元数据（name、description、aliases、usage 示例、type=LOCAL_UI、paramHint、hidden=false）
++- 用法示例格式如 `"/plan — Enter plan mode"`、`"/mode — Cycle: DEFAULT→ACCEPT_EDITS→BYPASS→DEFAULT"`
++
++---
++
++## Task 6: 注册内置 PROMPT 命令
++
++**影响文件**：修改 `com.mewcode.command.CommandRegistry`（续 Task 5）
++
++**依赖任务**：Task 5
++
++**参考资料**：
++- 参考项目 `/review` 命令注册（`D:\mewcode-java\java\src\main\java\com\mewcode\command\CommandRegistry.java:281-294`）
++- spec 能力清单第 25 条
++
++**工作内容**：
++- 在 `registerDefaults()` 中注册：
++  - `/review`（无别名，type=PROMPT，hidden=false）
++    - 处理函数：生成预设提示词 "Please review the current git diff for code changes..."，如果 `ctx.args()` 非空则追加 "Additional focus: ..."
++    - 返回完整的提示词文本，由 TerminalUI 的 PROMPT 分支注入对话
++
++---
++
++## Task 7: 重构 TerminalUI——命令分发与补全
++
++**影响文件**：修改 `tui/TerminalUI.java`
++
++**依赖任务**：Task 6（所有内置命令注册完成）
++
++**参考资料**：
++- 当前 TerminalUI 硬编码命令（`D:\code\mewcode\mewcode\src\main\java\com\mewcode\tui\TerminalUI.java:150-230`）
++- 参考项目 `executeSlashCommand()`（`D:\mewcode-java\java\src\main\java\com\mewcode\tui\MewCodeModel.java:944-1062`）
++- 参考项目 `updateSlashMenu()`（同上 `:903-912`）
++- 参考项目 `handleChatKey()` 中 slash menu 处理（同上 `:715-754`）
++- spec 能力清单第 5-12 条
++
++**工作内容**：
++- **构造函数变更**：新增 `setCommandRegistry(CommandRegistry registry)` 方法（或通过构造函数注入）
++- **新增 `setCompactCallback(Supplier<String> callback)`**：供 CommandRegistry 在执行 `/compact` 时调用
++- **命令分流器**：在 `start()` 方法的输入处理中，将现有的 `if (input.startsWith("/")) { switch(...) }` 替换为：
++  1. 解析输入：提取 `/` 后的 commandName（第一个空格前，转小写）和 args（第一个空格后）
++  2. `cmdRegistry.find(commandName)` 查找命令
++  3. 命中 → 按 `CommandType` 分发：
++     - `LOCAL`：`buildCommandContext(args)` → `cmdRegistry.execute(name, ctx)` → 显示返回文本
++     - `LOCAL_UI`：进入内部 switch（保留现有 `/clear`、`/plan`、`/do`、`/mode`、`/exit`、`/compact`、`/resume` 的处理逻辑）
++     - `PROMPT`：`buildCommandContext(args)` → `cmdRegistry.execute(name, ctx)` → 将返回文本作为用户消息注入对话（如有 InputHandler 回调，调用之）
++  4. 未命中 → 显示 "未知命令: /{name} — 输入 /help 查看可用命令"
++- **状态栏简化**：将四种权限模式标记（`DEFAULT`/`[接受编辑]`/`[Plan]`/`[YOLO]`）简化为两种——`planMode == true` 时显示 `[PLAN]`，`planMode == false` 时显示 `[DEFAULT]`。修改 `start()` 中 `dynamicPrompt` 的构建逻辑
++- **Tab 补全实现**（配合 JLine 的 `Completer` 机制）：
++  - 实现一个 `SlashCommandCompleter`（实现 `org.jline.reader.Completer`），当输入缓冲区以 `/` 开头时：提取 `/` 到光标位置的文本作为前缀 → `cmdRegistry.search(prefix)` → 匹配结果 1 条直接补全命令名 + 空格；多条时返回所有候选项让 JLine 弹出菜单
++  - 将 completer 注册到 `LineReader`：`lineReader.setCompleter(slashCommandCompleter)`
++  - 注意：隐藏命令不参与补全
++- **`buildCommandContext(args)` 方法**：从当前 TerminalUI 持有的引用（agentLoop、permissionChecker、memoryManager 等）构造 `CommandContext` 实例
++
++---
++
++## Task 8: 接入 MewCode 主流程
++
++**影响文件**：修改 `MewCode.java`
++
++**依赖任务**：Task 7（TerminalUI 已支持 CommandRegistry 注入）
++
++**参考资料**：
++- 当前 `MewCode.main()` 中 UI 初始化部分（`D:\code\mewcode\mewcode\src\main\java\com\mewcode\MewCode.java:78-106`）
++- 参考项目 `MewCodeModel` 构造函数中 `this.cmdRegistry = new CommandRegistry()`（`D:\mewcode-java\java\src\main\java\com\mewcode\tui\MewCodeModel.java:215`）
++
++**工作内容**：
++- 在 `MewCode.main()` 中，实例化 `CommandRegistry`（在创建 `TerminalUI` 之前）
++- 调用 `ui.setCommandRegistry(registry)` 注入
++- 如有需要，将 compact 回调绑定到 CommandRegistry（让 `/compact` 能访问 `AgentLoop.forceCompact()`）
++- 无需修改 Provider、ConversationManager 等已有组件的初始化逻辑
++
++---
++
++## Task 9: /resume 从 LOCAL_UI 重构为子命令 + 注册中心调度
++
++**影响文件**：修改 `tui/TerminalUI.java`（续 Task 7）
++
++**依赖任务**：Task 7（TerminalUI 重构完成）
++
++**参考资料**：
++- 当前 `TerminalUI.handleResume()`（`D:\code\mewcode\mewcode\src\main\java\com\mewcode\tui\TerminalUI.java:255-352`）
++- spec 能力清单第 16 条（`/session` 支持 `list` 子命令）
++
++**工作内容**：
++- 将现有 `handleResume()` 的实现保留在 TerminalUI 中，但调度改为由 LOCAL_UI 分支触发
++- `/session list`（LOCAL 命令）返回会话列表的文本摘要
++- `/resume`（LOCAL_UI 命令）打开交互式选择界面（保留现有逻辑：上下键选择、Enter 确认、Esc 取消）
++- 两者共享 `SessionManager.listSessions()` 的调用
++
++---
++
++## Task 10: 端到端验证
++
++**影响文件**：无（手动验证 + 自动化检查）
++
++**依赖任务**：Task 1-9 全部完成
++
++**工作内容**：
++1. 启动 MewCode，验证启动阶段无别名冲突 panic
++2. 依次输入 `/help`、`/h`、`/?`——三者输出一致
++3. 输入 `/status`，验证显示工作目录、模型、Token 用量、工具数量、权限模式
++4. 输入 `/STATUS`、`/Status`——验证大小写不敏感，输出一致
++5. 输入 `/plan`，验证状态栏变为 `[PLAN]`；输入 `/do`，验证状态栏恢复 `[DEFAULT]`
++6. 输入 `/mode` 多次，验证权限模式循环切换（DEFAULT→ACCEPT_EDITS→BYPASS→DEFAULT），状态栏始终显示 `[DEFAULT]`
++7. 输入 `/compact`（或 `/c`），验证上下文压缩触发并显示结果
++8. 输入 `/session list`，验证列出存档会话
++9. 输入 `/memory list`，验证列出自动记忆
++10. 输入 `/permission info`，验证显示当前权限模式
++11. 输入 `/review`，验证提示词被注入对话并触发 LLM 审查
++12. 输入 `/clear`，验证对话清空
++13. 输入 `/exit`（或 `/q`），验证程序正常退出
++14. 输入一个未知命令（如 `/foo`），验证显示"未知命令"提示并引导 `/help`
++15. 输入 `/` 后按 Tab，验证弹出命令补全菜单（不包含隐藏命令）
++16. 输入普通文本（非 `/` 开头），验证正常走 LLM 对话流程
+diff --git a/src/main/java/com/mewcode/MewCode.java b/src/main/java/com/mewcode/MewCode.java
+index 08666aa..73f88e0 100644
+--- a/src/main/java/com/mewcode/MewCode.java
++++ b/src/main/java/com/mewcode/MewCode.java
+@@ -2,6 +2,7 @@ package com.mewcode;
+ 
+ import com.mewcode.agent.AgentEvent;
+ import com.mewcode.agent.AgentLoop;
++import com.mewcode.command.CommandRegistry;
+ import com.mewcode.config.AppConfig;
+ import com.mewcode.config.ConfigLoader;
+ import com.mewcode.conversation.ConversationManager;
+@@ -71,6 +72,9 @@ public class MewCode {
+             // 2b. Connect MCP servers and register their tools
+             McpManager mcpManager = initMcp(config, toolRegistry);
+ 
++            // 2c. Initialize slash command registry
++            CommandRegistry cmdRegistry = new CommandRegistry();
++
+             // 3. Create provider
+             LLMProvider provider = ProviderFactory.create(config, toolRegistry);
+ 
+@@ -78,9 +82,13 @@ public class MewCode {
+             TerminalUI ui = new TerminalUI();
+             ui.setWorkingDirectory(workingDirectory);
+             ui.setMemoryManager(memoryManager);
++            ui.setModel(config.getModel());
+             // Wire resume callback: update sessionId so subsequent saves
+             // append to the resumed session's JSONL file, not a new one.
+-            ui.setResumeCallback(resumedId -> sessionIdHolder[0] = resumedId);
++            ui.setResumeCallback(resumedId -> {
++                sessionIdHolder[0] = resumedId;
++                ui.setCurrentSessionId(resumedId);
++            });
+ 
+             // 5. Build permission checker
+             PermissionMode mode = PermissionMode.fromString(config.getPermission().getMode());
+@@ -89,6 +97,10 @@ public class MewCode {
+             // Wire permission checker to TerminalUI for mode cycling
+             ui.setPermissionChecker(permissionChecker);
+ 
++            // Wire command registry (after permission checker so mode handler is wired)
++            ui.setCommandRegistry(cmdRegistry);
++            ui.setCurrentSessionId(sessionIdHolder[0]);
++
+             // Print startup info
+             ui.getWriter().println("已加载 provider: " + provider.getProviderName());
+             ui.getWriter().println("模型: " + config.getModel());
+@@ -127,7 +139,7 @@ public class MewCode {
+             AgentLoop[] currentAgent = { null };
+ 
+             // 10. Start event consumer thread
+-            Thread eventConsumer = startEventConsumer(eventQueue, display, ui.getWriter(), permissionChecker);
++            Thread eventConsumer = startEventConsumer(eventQueue, display, ui, permissionChecker);
+ 
+             // 11. Start interactive input loop
+             ui.start(input -> {
+@@ -196,8 +208,9 @@ public class MewCode {
+      * them via StreamingDisplay.
+      */
+     private static Thread startEventConsumer(BlockingQueue<AgentEvent> queue, StreamingDisplay display,
+-                                              PrintWriter writer, PermissionChecker permissionChecker) {
++                                              TerminalUI ui, PermissionChecker permissionChecker) {
+         Thread consumer = new Thread(() -> {
++            PrintWriter writer = ui.getWriter();
+             while (true) {
+                 try {
+                     AgentEvent event = queue.take();
+@@ -222,6 +235,8 @@ public class MewCode {
+                                 writer.print("[cache: " + read + " tokens read, " + create + " created]");
+                                 writer.flush();
+                             }
++                            // Update token counts for /status display
++                            ui.setTokenCounts(event.getInputTokens(), event.getOutputTokens());
+                         }
+                         case PROGRESS -> {
+                             // Progress messages are for internal tracking; skip UI noise
+diff --git a/src/main/java/com/mewcode/agent/AgentLoop.java b/src/main/java/com/mewcode/agent/AgentLoop.java
+index b5eeaac..ea1b4c8 100644
+--- a/src/main/java/com/mewcode/agent/AgentLoop.java
++++ b/src/main/java/com/mewcode/agent/AgentLoop.java
+@@ -21,6 +21,7 @@ import com.mewcode.toolresult.ApplyResult;
+ import com.mewcode.toolresult.ContentReplacementState;
+ import com.mewcode.toolresult.ReplacementRecordsIO;
+ import com.mewcode.toolresult.ToolResultBudget;
++import com.mewcode.conversation.Message;
+ 
+ import java.nio.file.Path;
+ import java.nio.file.Paths;
+@@ -244,8 +245,7 @@ public class AgentLoop implements Runnable {
+                 }
+ 
+                 // Use cleaned messages from Layer 1 for the API call
+-                List<com.mewcode.conversation.Message> apiMessages =
+-                        applied.apiConv().getMessages(iter, planMode);
++                List<Message> apiMessages = applied.apiConv().getMessages(iter, planMode);
+                 provider.streamChat(apiMessages, collector, activeTools);
+ 
+                 boolean completed = collector.awaitCompletion(streamTimeoutMs);
+diff --git a/src/main/java/com/mewcode/command/Command.java b/src/main/java/com/mewcode/command/Command.java
+new file mode 100644
+index 0000000..20795d2
+--- /dev/null
++++ b/src/main/java/com/mewcode/command/Command.java
+@@ -0,0 +1,60 @@
++package com.mewcode.command;
++
++import java.util.Locale;
++
++/**
++ * A slash command metadata record.
++ *
++ * <p>Holds the canonical name (without leading slash), description, aliases,
++ * usage example, type, optional parameter hint, and visibility flag.
++ * Handler functions are managed separately in {@link CommandRegistry}.
++ *
++ * @param name        canonical name without the leading slash (e.g. "help")
++ * @param description one-line description shown in /help output
++ * @param aliases     alternative names (e.g. {"h", "?"} for help)
++ * @param usage       short usage example (e.g. "/help <command>")
++ * @param type        how the command is dispatched
++ * @param paramHint   optional hint for parameters shown in /help (e.g. "<command>")
++ * @param hidden      if true, omitted from /help listings and Tab completion
++ */
++public record Command(
++        String name,
++        String description,
++        String[] aliases,
++        String usage,
++        CommandType type,
++        String paramHint,
++        boolean hidden
++) {
++
++    /**
++     * Returns {@code true} when {@code input} matches the canonical name
++     * or any alias (case-insensitive comparison).
++     */
++    public boolean matches(String input) {
++        if (name.equalsIgnoreCase(input)) {
++            return true;
++        }
++        for (var alias : aliases) {
++            if (alias.equalsIgnoreCase(input)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
++    /**
++     * Returns the name in lowercase for case-insensitive keying.
++     */
++    public String lowerName() {
++        return name.toLowerCase(Locale.ROOT);
++    }
++
++    /**
++     * Convenience constructor without paramHint and usage.
++     */
++    public Command(String name, String description, String[] aliases,
++                   CommandType type, boolean hidden) {
++        this(name, description, aliases, "/" + name, type, "", hidden);
++    }
++}
+diff --git a/src/main/java/com/mewcode/command/CommandContext.java b/src/main/java/com/mewcode/command/CommandContext.java
+new file mode 100644
+index 0000000..a411096
+--- /dev/null
++++ b/src/main/java/com/mewcode/command/CommandContext.java
+@@ -0,0 +1,26 @@
++package com.mewcode.command;
++
++import java.util.List;
++import java.util.function.BooleanSupplier;
++import java.util.function.IntSupplier;
++import java.util.function.Supplier;
++
++/**
++ * Runtime context passed to command handlers, providing access to the current
++ * application state (permission mode, token counts, model, etc.).
++ *
++ * <p>All dynamic values use functional interfaces so command handlers
++ * don't bind to any specific UI framework or component.
++ */
++public record CommandContext(
++        String args,
++        String workDir,
++        String model,
++        Supplier<String> permissionMode,
++        BooleanSupplier planMode,
++        IntSupplier toolCount,
++        Supplier<int[]> tokenCount,
++        Supplier<List<String>> memoryList,
++        Runnable memoryClear,
++        Supplier<String> sessionInfo
++) {}
+\ No newline at end of file
+diff --git a/src/main/java/com/mewcode/command/CommandRegistry.java b/src/main/java/com/mewcode/command/CommandRegistry.java
+new file mode 100644
+index 0000000..c3b895e
+--- /dev/null
++++ b/src/main/java/com/mewcode/command/CommandRegistry.java
+@@ -0,0 +1,395 @@
++package com.mewcode.command;
++
++import com.mewcode.command.Command;
++
++import java.util.*;
++import java.util.function.Consumer;
++import java.util.function.Function;
++import java.util.function.Supplier;
++import java.util.stream.Collectors;
++
++/**
++ * Central registry for all slash commands.
++ *
++ * <p>Commands are registered at startup. Alias conflicts are detected eagerly
++ * and cause an immediate {@link System#exit(int)} with a clear error message.
++ *
++ * <p>Built-in commands are registered via {@link #registerDefaults()}, which is
++ * called automatically from the constructor.
++ */
++public class CommandRegistry {
++
++    private final List<Command> commands = new ArrayList<>();
++    private final Map<String, Function<CommandContext, String>> handlers = new HashMap<>();
++
++    // ── Injectable callbacks ─────────────────────────────────────────────
++
++    /** Called by /compact to trigger context compaction. */
++    private Supplier<String> compactHandler;
++
++    /** Called by /permission mode to switch the permission mode. */
++    private Consumer<String> permissionModeHandler;
++
++    // ── Public API ───────────────────────────────────────────────────────
++
++    /** Creates a registry pre-populated with all built-in MewCode commands. */
++    public CommandRegistry() {
++        registerDefaults();
++    }
++
++    /**
++     * Registers a command with an optional handler.
++     *
++     * <p>Alias conflict detection runs eagerly: if {@code cmd.name()} or any
++     * alias in {@code cmd.aliases()} collides with an already-registered
++     * command's name or alias (case-insensitive), the process exits immediately
++     * with code 1 and a detailed error message.
++     *
++     * @param cmd     command definition
++     * @param handler handler function ({@code args -> output}); may be
++     *                {@code null} for UI-only commands
++     */
++    public void register(Command cmd, Function<CommandContext, String> handler) {
++        // ── Conflict detection ────────────────────────────────────────
++        String newLower = cmd.lowerName();
++        for (var existing : commands) {
++            if (existing.lowerName().equals(newLower)) {
++                System.err.println("命令注册冲突: /" + cmd.name()
++                        + " 的名称与已注册命令 /" + existing.name() + " 重复");
++                System.exit(1);
++            }
++            for (var alias : cmd.aliases()) {
++                String aliasLower = alias.toLowerCase(Locale.ROOT);
++                if (existing.lowerName().equals(aliasLower)) {
++                    System.err.println("命令注册冲突: /" + cmd.name()
++                            + " 的别名 \"" + alias + "\" 与已注册命令 /"
++                            + existing.name() + " 的名称重复");
++                    System.exit(1);
++                }
++                for (var existingAlias : existing.aliases()) {
++                    if (existingAlias.toLowerCase(Locale.ROOT).equals(aliasLower)) {
++                        System.err.println("命令注册冲突: /" + cmd.name()
++                                + " 的别名 \"" + alias + "\" 与已注册命令 /"
++                                + existing.name() + " 的别名 \"" + existingAlias + "\" 重复");
++                        System.exit(1);
++                    }
++                }
++            }
++        }
++
++        commands.add(cmd);
++        if (handler != null) {
++            handlers.put(cmd.lowerName(), handler);
++            for (var alias : cmd.aliases()) {
++                handlers.put(alias.toLowerCase(Locale.ROOT), handler);
++            }
++        }
++    }
++
++    /**
++     * Finds a command by exact name or alias match (case-insensitive).
++     */
++    public Optional<Command> find(String name) {
++        return commands.stream()
++                .filter(c -> c.matches(name))
++                .findFirst();
++    }
++
++    /**
++     * Returns all non-hidden commands whose name or alias starts with
++     * {@code prefix} (case-insensitive), sorted by name.
++     */
++    public List<Command> search(String prefix) {
++        String lower = prefix.toLowerCase(Locale.ROOT);
++        return commands.stream()
++                .filter(c -> !c.hidden())
++                .filter(c -> {
++                    if (c.lowerName().startsWith(lower)) {
++                        return true;
++                    }
++                    for (var alias : c.aliases()) {
++                        if (alias.toLowerCase(Locale.ROOT).startsWith(lower)) {
++                            return true;
++                        }
++                    }
++                    return false;
++                })
++                .sorted(Comparator.comparing(Command::name))
++                .collect(Collectors.toList());
++    }
++
++    /**
++     * Executes a LOCAL or PROMPT command handler and returns its output.
++     *
++     * @param name command name or alias (case-insensitive)
++     * @param ctx  runtime context
++     * @return handler output, or an error message if not found / no handler
++     */
++    public String execute(String name, CommandContext ctx) {
++        String key = name.toLowerCase(Locale.ROOT);
++        Function<CommandContext, String> handler = handlers.get(key);
++        if (handler != null) {
++            return handler.apply(ctx);
++        }
++        // Try canonical name
++        Optional<Command> cmd = find(name);
++        if (cmd.isPresent()) {
++            handler = handlers.get(cmd.get().lowerName());
++            if (handler != null) {
++                return handler.apply(ctx);
++            }
++            return "No handler registered for /" + cmd.get().name();
++        }
++        return "Unknown command: /" + name;
++    }
++
++    /** Returns an unmodifiable view of all registered commands. */
++    public List<Command> listAll() {
++        return Collections.unmodifiableList(commands);
++    }
++
++    /** Returns all non-hidden commands, sorted by name. */
++    public List<Command> listVisible() {
++        return commands.stream()
++                .filter(c -> !c.hidden())
++                .sorted(Comparator.comparing(Command::name))
++                .collect(Collectors.toList());
++    }
++
++    // ── Callback setters ─────────────────────────────────────────────────
++
++    /** Set the handler for /compact. */
++    public void setCompactHandler(Supplier<String> handler) {
++        this.compactHandler = handler;
++    }
++
++    /** Set the handler for /permission mode switching. */
++    public void setPermissionModeHandler(Consumer<String> handler) {
++        this.permissionModeHandler = handler;
++    }
++
++    // ── Built-in command registration ────────────────────────────────────
++
++    private void registerDefaults() {
++
++        // ── /help (LOCAL, aliases: h, ?) ─────────────────────────────
++        register(new Command("help", "显示可用命令列表或单个命令详情",
++                        new String[]{"h", "?"}, "/help [<command>]",
++                        CommandType.LOCAL, "<命令名>", false),
++                ctx -> {
++                    String args = ctx.args();
++                    if (args != null && !args.isBlank()) {
++                        Optional<Command> target = find(args.strip());
++                        if (target.isEmpty()) {
++                            return "未知命令: " + args.strip()
++                                    + " — 输入 /help 查看可用命令";
++                        }
++                        Command c = target.get();
++                        var sb = new StringBuilder();
++                        sb.append(c.usage()).append("\n");
++                        sb.append("  ").append(c.description()).append("\n");
++                        if (c.aliases().length > 0) {
++                            sb.append("  别名: ")
++                                    .append(String.join(", ", c.aliases()))
++                                    .append("\n");
++                        }
++                        if (c.paramHint() != null && !c.paramHint().isBlank()) {
++                            sb.append("  参数: ").append(c.paramHint()).append("\n");
++                        }
++                        return sb.toString();
++                    }
++                    var sb = new StringBuilder();
++                    sb.append("可用命令:\n\n");
++                    for (var cmd : listVisible()) {
++                        String aliases = "";
++                        if (cmd.aliases().length > 0) {
++                            aliases = ", /" + String.join(", /", cmd.aliases());
++                        }
++                        String paramPart = cmd.paramHint() != null
++                                && !cmd.paramHint().isBlank()
++                                ? " " + cmd.paramHint() : "";
++                        sb.append("  /").append(cmd.name())
++                                .append(paramPart).append(aliases).append("\n");
++                        sb.append("    ").append(cmd.description()).append("\n");
++                    }
++                    sb.append("\n输入 /help <命令名> 查看详细信息。");
++                    return sb.toString();
++                });
++
++        // ── /status (LOCAL, alias: s) ────────────────────────────────
++        register(new Command("status", "显示当前运行状态",
++                        new String[]{"s"}, "/status",
++                        CommandType.LOCAL, "", false),
++                ctx -> {
++                    var sb = new StringBuilder();
++                    sb.append("MewCode 状态\n");
++                    sb.append("────────────\n");
++                    sb.append("  工作目录:   ").append(ctx.workDir()).append("\n");
++                    sb.append("  模型:       ").append(ctx.model()).append("\n");
++                    sb.append("  权限模式:   ").append(ctx.permissionMode().get())
++                            .append("\n");
++                    sb.append("  计划模式:   ")
++                            .append(ctx.planMode().getAsBoolean() ? "PLAN"
++                                    : "DEFAULT")
++                            .append("\n");
++                    int[] tokens = ctx.tokenCount().get();
++                    sb.append("  Token:      输入 ")
++                            .append(tokens[0]).append(" / 输出 ")
++                            .append(tokens[1]).append("\n");
++                    sb.append("  工具数量:    ")
++                            .append(ctx.toolCount().getAsInt()).append(" 个\n");
++                    var memories = ctx.memoryList().get();
++                    sb.append("  记忆条数:    ")
++                            .append(memories.size()).append(" 条\n");
++                    return sb.toString();
++                });
++
++        // ── /compact (LOCAL, alias: c) ───────────────────────────────
++        register(new Command("compact", "压缩对话上下文以节省 Token",
++                        new String[]{"c"}, "/compact",
++                        CommandType.LOCAL, "", false),
++                ctx -> {
++                    if (compactHandler != null) {
++                        return compactHandler.get();
++                    }
++                    return "Agent Loop 未初始化，无法执行压缩";
++                });
++
++        // ── /session (LOCAL) ─────────────────────────────────────────
++        register(new Command("session", "会话管理 (list / info)",
++                        new String[]{}, "/session [list|info]",
++                        CommandType.LOCAL, "list|info", false),
++                ctx -> {
++                    String args = ctx.args();
++                    String sub = (args == null || args.isBlank())
++                            ? "list"
++                            : args.strip().split("\\s+", 2)[0]
++                                    .toLowerCase(Locale.ROOT);
++                    return switch (sub) {
++                        case "list", "info" -> ctx.sessionInfo().get();
++                        default -> "用法: /session [list|info]\n"
++                                + "  list — 列出所有存档会话\n"
++                                + "  info — 显示当前会话信息";
++                    };
++                });
++
++        // ── /memory (LOCAL) ──────────────────────────────────────────
++        register(new Command("memory", "管理自动记忆 (list / clear)",
++                        new String[]{}, "/memory [list|clear]",
++                        CommandType.LOCAL, "list|clear", false),
++                ctx -> {
++                    String args = ctx.args();
++                    String sub = (args == null || args.isBlank())
++                            ? "list"
++                            : args.strip().split("\\s+", 2)[0]
++                                    .toLowerCase(Locale.ROOT);
++                    return switch (sub) {
++                        case "list" -> {
++                            var memories = ctx.memoryList().get();
++                            if (memories.isEmpty()) {
++                                yield "暂无自动记忆"
++                                        + "（完成几轮对话后会自动提取）";
++                            }
++                            var sb = new StringBuilder(
++                                    "自动记忆 (" + memories.size()
++                                            + " 条):\n");
++                            for (var m : memories) {
++                                sb.append("  • ").append(m).append("\n");
++                            }
++                            yield sb.toString();
++                        }
++                        case "clear" -> {
++                            ctx.memoryClear().run();
++                            yield "已清除所有自动记忆";
++                        }
++                        default -> "用法: /memory [list|clear]\n"
++                                + "  list  — 列出所有自动记忆\n"
++                                + "  clear — 清除全部记忆";
++                    };
++                });
++
++        // ── /permission (LOCAL, alias: perm) ─────────────────────────
++        register(new Command("permission", "权限管理 (info / mode <模式>)",
++                        new String[]{"perm"}, "/permission [info|mode <模式>]",
++                        CommandType.LOCAL, "info|mode", false),
++                ctx -> {
++                    String args = ctx.args();
++                    String sub = (args == null || args.isBlank())
++                            ? "info"
++                            : args.strip().split("\\s+", 2)[0]
++                                    .toLowerCase(Locale.ROOT);
++                    return switch (sub) {
++                        case "info" -> "当前权限模式: "
++                                + ctx.permissionMode().get();
++                        case "mode" -> {
++                            String rest = args.strip().substring(4).strip();
++                            if (rest.isEmpty()) {
++                                yield "用法: /permission mode "
++                                        + "<default|acceptEdits|bypass>\n"
++                                        + "当前模式: "
++                                        + ctx.permissionMode().get();
++                            }
++                            if (permissionModeHandler != null) {
++                                permissionModeHandler.accept(rest);
++                                yield "权限模式已切换为: " + rest;
++                            }
++                            yield "权限检查器未初始化，无法切换模式";
++                        }
++                        default -> "用法: /permission [info|mode <模式>]\n"
++                                + "  info      — 显示当前权限模式\n"
++                                + "  mode <m>  — 切换模式 (default / acceptEdits / bypass)";
++                    };
++                });
++
++        // ── /review (PROMPT) ─────────────────────────────────────────
++        register(new Command("review", "审查当前代码变更",
++                        new String[]{}, "/review [<关注点>]",
++                        CommandType.PROMPT, "<关注点>", false),
++                ctx -> {
++                    String args = ctx.args();
++                    String prompt = "Please review the current git diff "
++                            + "for code changes. Focus on:\n"
++                            + "1. Logic errors\n"
++                            + "2. Security issues\n"
++                            + "3. Performance problems\n"
++                            + "4. Code style";
++                    if (args != null && !args.isBlank()) {
++                        prompt += "\n\nAdditional focus: "
++                                + args.strip();
++                    }
++                    return prompt;
++                });
++
++        // ── LOCAL_UI commands (handler = null) ───────────────────────
++
++        register(new Command("clear", "清空当前对话历史",
++                        new String[]{}, "/clear",
++                        CommandType.LOCAL_UI, "", false),
++                null);
++
++        register(new Command("plan", "进入计划（只读调研）模式",
++                        new String[]{"p"}, "/plan",
++                        CommandType.LOCAL_UI, "", false),
++                null);
++
++        register(new Command("do", "退出计划模式，恢复执行模式",
++                        new String[]{}, "/do",
++                        CommandType.LOCAL_UI, "", false),
++                null);
++
++        register(new Command("mode", "循环切换权限模式 (DEFAULT→ACCEPT_EDITS→BYPASS→DEFAULT)",
++                        new String[]{}, "/mode",
++                        CommandType.LOCAL_UI, "", false),
++                null);
++
++        register(new Command("exit", "退出 MewCode",
++                        new String[]{"q"}, "/exit",
++                        CommandType.LOCAL_UI, "", false),
++                null);
++
++        register(new Command("resume", "恢复之前的会话",
++                        new String[]{"r"}, "/resume",
++                        CommandType.LOCAL_UI, "", false),
++                null);
++    }
++}
+diff --git a/src/main/java/com/mewcode/command/CommandType.java b/src/main/java/com/mewcode/command/CommandType.java
+new file mode 100644
+index 0000000..c3168eb
+--- /dev/null
++++ b/src/main/java/com/mewcode/command/CommandType.java
+@@ -0,0 +1,13 @@
++package com.mewcode.command;
++
++/**
++ * Dispatch style for a slash command.
++ */
++public enum CommandType {
++    /** Synchronous handler that returns text output. */
++    LOCAL,
++    /** TUI action (clear screen, mode switch) -- no text output. */
++    LOCAL_UI,
++    /** Generates a prompt string sent to the LLM agent. */
++    PROMPT
++}
+diff --git a/src/main/java/com/mewcode/tui/TerminalUI.java b/src/main/java/com/mewcode/tui/TerminalUI.java
+index 025aadc..167078a 100644
+--- a/src/main/java/com/mewcode/tui/TerminalUI.java
++++ b/src/main/java/com/mewcode/tui/TerminalUI.java
+@@ -1,6 +1,9 @@
+ package com.mewcode.tui;
+ 
+ import com.mewcode.agent.AgentLoop;
++import com.mewcode.command.Command;
++import com.mewcode.command.CommandContext;
++import com.mewcode.command.CommandRegistry;
+ import com.mewcode.conversation.ConversationManager;
+ import com.mewcode.memory.MemoryEntry;
+ import com.mewcode.memory.MemoryManager;
+@@ -15,13 +18,15 @@ import org.jline.terminal.TerminalBuilder;
+ import java.io.PrintWriter;
+ import java.nio.charset.StandardCharsets;
+ import java.util.List;
++import java.util.Locale;
+ import java.util.function.Consumer;
+ 
+ /**
+  * JLine-based interactive terminal UI loop.
+  *
+- * Handles slash commands (/exit, /clear, /plan, /do, /mode, /compact, /resume, /memory)
+- * and delegates regular input to a pluggable handler for LLM processing.
++ * <p>Slash commands are dispatched through {@link CommandRegistry} instead of
++ * a hardcoded switch. Tab completion, alias support, and conflict detection
++ * are provided by the registry.
+  */
+ public class TerminalUI {
+ 
+@@ -37,11 +42,14 @@ public class TerminalUI {
+     private PrintWriter writer;
+     private volatile boolean planMode;
+     private PermissionChecker permissionChecker;
+-    private AgentLoop agentLoop;
+     private ConversationManager conversation;
+     private MemoryManager memoryManager;
+     private String workingDirectory;
+     private Consumer<String> resumeCallback;
++    private CommandRegistry cmdRegistry;
++    private int totalInputTokens;
++    private int totalOutputTokens;
++    private String currentSessionId;
+ 
+     public TerminalUI() {
+         try {
+@@ -51,6 +59,7 @@ public class TerminalUI {
+             writer = terminal.writer();
+             lineReader = LineReaderBuilder.builder()
+                     .terminal(terminal)
++                    .completer(new SlashCommandCompleter())
+                     .build();
+         } catch (Exception e) {
+             System.err.println("无法初始化终端: " + e.getMessage());
+@@ -73,9 +82,22 @@ public class TerminalUI {
+         this.permissionChecker = permissionChecker;
+     }
+ 
+-    /** Wire the agent loop for slash commands like /compact. */
++    /**
++     * Wire the agent loop for /compact callback.
++     * Also updates the registry's compact handler so /compact always
++     * delegates to the current agent.
++     */
+     public void setAgentLoop(AgentLoop agentLoop) {
+-        this.agentLoop = agentLoop;
++        if (cmdRegistry != null && agentLoop != null) {
++            final AgentLoop captured = agentLoop;
++            cmdRegistry.setCompactHandler(() -> {
++                try {
++                    return captured.forceCompact();
++                } catch (Exception e) {
++                    return "压缩失败: " + e.getMessage();
++                }
++            });
++        }
+     }
+ 
+     /** Wire the conversation manager for session resume. */
+@@ -98,10 +120,39 @@ public class TerminalUI {
+         this.resumeCallback = callback;
+     }
+ 
++    /** Wire the command registry for slash command dispatch and Tab completion. */
++    public void setCommandRegistry(CommandRegistry cmdRegistry) {
++        this.cmdRegistry = cmdRegistry;
++        // Wire permission mode switching callback
++        if (permissionChecker != null) {
++            cmdRegistry.setPermissionModeHandler(modeName -> {
++                PermissionMode newMode = PermissionMode.fromString(modeName);
++                permissionChecker.setMode(newMode);
++                // Sync planMode if mode is explicitly set to PLAN
++                if (newMode == PermissionMode.PLAN) {
++                    planMode = true;
++                    permissionChecker.setPlanMode(true);
++                }
++            });
++        }
++    }
++
++    /** Update token counts for /status display. */
++    public void setTokenCounts(int inputTokens, int outputTokens) {
++        this.totalInputTokens = inputTokens;
++        this.totalOutputTokens = outputTokens;
++    }
++
++    /** Update the current session ID for /session display. */
++    public void setCurrentSessionId(String sessionId) {
++        this.currentSessionId = sessionId;
++    }
++
+     /**
+      * Start the read-eval-print loop.
+      *
+-     * @param handler called with each non-command user input (on the calling thread)
++     * @param handler called with each non-command user input
++     *                (on the calling thread)
+      * @param onClear called when /clear is entered
+      */
+     public void start(InputHandler handler, Runnable onClear) {
+@@ -112,24 +163,17 @@ public class TerminalUI {
+         }));
+ 
+         writer.println("MewCode - 终端 AI 助手");
+-        writer.println("输入 /exit 退出, /clear 清空对话, /plan 调研模式, /do 执行模式, /mode 切换权限模式, /compact 压缩上下文, /resume 恢复会话, /memory 查看记忆");
++        writer.println("输入 /help 查看命令, "
++                + "/plan 调研模式, /do 执行模式, /exit 退出");
+         writer.println();
+         writer.flush();
+ 
+         while (true) {
+             try {
+-                // Dynamic prompt with permission mode indicator
+-                String dynamicPrompt = PROMPT;
+-                if (permissionChecker != null) {
+-                    PermissionMode mode = permissionChecker.getMode();
+-                    String indicator = switch (mode) {
+-                        case DEFAULT       -> "";
+-                        case ACCEPT_EDITS  -> "\033[1;32m[接受编辑]\033[0m ";
+-                        case PLAN          -> "\033[1;33m[Plan]\033[0m ";
+-                        case BYPASS        -> "\033[1;31m[YOLO]\033[0m ";
+-                    };
+-                    dynamicPrompt = indicator + PROMPT;
+-                }
++                // Dynamic prompt with plan-mode indicator
++                String dynamicPrompt = planMode
++                        ? "\033[1;33m[PLAN]\033[0m " + PROMPT
++                        : "\033[1;32m[DEFAULT]\033[0m " + PROMPT;
+ 
+                 String input = lineReader.readLine(dynamicPrompt);
+ 
+@@ -147,87 +191,9 @@ public class TerminalUI {
+                     continue;
+                 }
+ 
+-                // Slash commands
++                // ── Command dispatch (via CommandRegistry) ────────────
+                 if (input.startsWith("/")) {
+-                    switch (input) {
+-                        case "/exit" -> {
+-                            writer.println("Goodbye!");
+-                            writer.flush();
+-                            System.exit(0);
+-                            return;
+-                        }
+-                        case "/clear" -> {
+-                            onClear.run();
+-                            planMode = false;
+-                            if (permissionChecker != null) {
+-                                permissionChecker.setPlanMode(false);
+-                            }
+-                            writer.println("对话已清空");
+-                            writer.flush();
+-                        }
+-                        case "/plan" -> {
+-                            planMode = true;
+-                            if (permissionChecker != null) {
+-                                permissionChecker.setPlanMode(true);
+-                                permissionChecker.setMode(PermissionMode.PLAN);
+-                            }
+-                            writer.println("已进入 Plan Mode，仅可调研（只读工具）");
+-                            writer.flush();
+-                        }
+-                        case "/do" -> {
+-                            planMode = false;
+-                            if (permissionChecker != null) {
+-                                permissionChecker.setPlanMode(false);
+-                                permissionChecker.setMode(PermissionMode.DEFAULT);
+-                            }
+-                            writer.println("已退出 Plan Mode，恢复 DEFAULT 权限模式");
+-                            writer.flush();
+-                        }
+-                        case "/mode" -> {
+-                            if (permissionChecker != null) {
+-                                PermissionMode current = permissionChecker.getMode();
+-                                // Skip PLAN in normal cycling (PLAN is entered via /plan)
+-                                PermissionMode next = switch (current) {
+-                                    case DEFAULT       -> PermissionMode.ACCEPT_EDITS;
+-                                    case ACCEPT_EDITS  -> PermissionMode.BYPASS;
+-                                    case BYPASS        -> PermissionMode.DEFAULT;
+-                                    case PLAN          -> PermissionMode.DEFAULT;
+-                                };
+-                                permissionChecker.setMode(next);
+-                                String desc = switch (next) {
+-                                    case DEFAULT       -> "默认 — 读取自动放行，写入/命令需确认";
+-                                    case ACCEPT_EDITS  -> "接受编辑 — 读取/写入自动放行，命令需确认";
+-                                    case BYPASS        -> "YOLO — 全部自动放行（危险）";
+-                                    case PLAN          -> "Plan — 只读调研模式";
+-                                };
+-                                writer.println("权限模式 → " + desc);
+-                            } else {
+-                                writer.println("权限检查器未初始化");
+-                            }
+-                            writer.flush();
+-                        }
+-                        case "/compact" -> {
+-                            if (agentLoop != null) {
+-                                writer.println("正在压缩...");
+-                                writer.flush();
+-                                String result = agentLoop.forceCompact();
+-                                writer.println(result);
+-                            } else {
+-                                writer.println("Agent Loop 未初始化");
+-                            }
+-                            writer.flush();
+-                        }
+-                        case "/resume" -> {
+-                            handleResume();
+-                        }
+-                        case "/memory" -> {
+-                            handleMemory();
+-                        }
+-                        default -> {
+-                            writer.println("未知命令: " + input);
+-                            writer.flush();
+-                        }
+-                    }
++                    dispatchCommand(input, handler, onClear);
+                 } else {
+                     handler.handle(input);
+                 }
+@@ -250,7 +216,196 @@ public class TerminalUI {
+         }
+     }
+ 
+-    // ---- /resume command ----
++    // ── Command dispatch ──────────────────────────────────────────────────
++
++    private void dispatchCommand(String input, InputHandler handler,
++                                  Runnable onClear) {
++        // Parse: first space separates command name from args
++        String body = input.substring(1); // strip leading /
++        if (body.isEmpty()) {
++            return; // bare "/" — no-op
++        }
++
++        String[] parts = body.split("\\s+", 2);
++        String cmdName = parts[0].toLowerCase(Locale.ROOT);
++        String cmdArgs = parts.length > 1 ? parts[1] : "";
++
++        if (cmdRegistry == null) {
++            writer.println("命令系统未初始化");
++            writer.flush();
++            return;
++        }
++
++        var optCmd = cmdRegistry.find(cmdName);
++        if (optCmd.isEmpty()) {
++            writer.println("未知命令: /" + cmdName
++                    + " — 输入 /help 查看可用命令");
++            writer.flush();
++            return;
++        }
++
++        Command command = optCmd.get();
++
++        switch (command.type()) {
++            case LOCAL -> {
++                CommandContext ctx = buildCommandContext(cmdArgs);
++                String output = cmdRegistry.execute(cmdName, ctx);
++                if (output != null && !output.isEmpty()) {
++                    writer.println(output);
++                }
++                writer.flush();
++            }
++            case LOCAL_UI -> handleLocalUiCommand(command.name(), onClear);
++            case PROMPT -> {
++                CommandContext ctx = buildCommandContext(cmdArgs);
++                String prompt = cmdRegistry.execute(cmdName, ctx);
++                if (prompt != null && !prompt.isBlank()) {
++                    handler.handle(prompt);
++                }
++            }
++        }
++    }
++
++    // ── LOCAL_UI handlers ─────────────────────────────────────────────────
++
++    private void handleLocalUiCommand(String name, Runnable onClear) {
++        switch (name) {
++            case "clear" -> {
++                onClear.run();
++                planMode = false;
++                if (permissionChecker != null) {
++                    permissionChecker.setPlanMode(false);
++                }
++                writer.println("对话已清空");
++                writer.flush();
++            }
++            case "plan" -> {
++                planMode = true;
++                if (permissionChecker != null) {
++                    permissionChecker.setPlanMode(true);
++                    permissionChecker.setMode(PermissionMode.PLAN);
++                }
++                writer.println("已进入 Plan Mode，仅可调研（只读工具）");
++                writer.flush();
++            }
++            case "do" -> {
++                planMode = false;
++                if (permissionChecker != null) {
++                    permissionChecker.setPlanMode(false);
++                    permissionChecker.setMode(PermissionMode.DEFAULT);
++                }
++                writer.println("已退出 Plan Mode，恢复 DEFAULT 权限模式");
++                writer.flush();
++            }
++            case "mode" -> {
++                if (permissionChecker != null) {
++                    PermissionMode current = permissionChecker.getMode();
++                    // Skip PLAN in normal cycling
++                    PermissionMode next = switch (current) {
++                        case DEFAULT       -> PermissionMode.ACCEPT_EDITS;
++                        case ACCEPT_EDITS  -> PermissionMode.BYPASS;
++                        case BYPASS        -> PermissionMode.DEFAULT;
++                        case PLAN          -> PermissionMode.DEFAULT;
++                    };
++                    permissionChecker.setMode(next);
++                    // /mode exits plan mode if currently in plan
++                    if (current == PermissionMode.PLAN) {
++                        planMode = false;
++                        permissionChecker.setPlanMode(false);
++                    }
++                    String desc = switch (next) {
++                        case DEFAULT -> "默认 — 读取自动放行，写入/命令需确认";
++                        case ACCEPT_EDITS -> "接受编辑 — 读取/写入自动放行，命令需确认";
++                        case BYPASS -> "YOLO — 全部自动放行（危险）";
++                        case PLAN -> "Plan — 只读调研模式";
++                    };
++                    writer.println("权限模式 → " + desc);
++                } else {
++                    writer.println("权限检查器未初始化");
++                }
++                writer.flush();
++            }
++            case "exit" -> {
++                writer.println("Goodbye!");
++                writer.flush();
++                System.exit(0);
++            }
++            case "resume" -> {
++                handleResume();
++            }
++        }
++    }
++
++    // ── CommandContext builder ─────────────────────────────────────────────
++
++    private CommandContext buildCommandContext(String args) {
++        String model = modelForContext;
++        return new CommandContext(
++                args,
++                workingDirectory != null ? workingDirectory : ".",
++                model,
++                () -> permissionChecker != null
++                        ? permissionChecker.getMode().name().toLowerCase(Locale.ROOT)
++                        : "default",
++                () -> planMode,
++                () -> 0, // tool count updated externally
++                () -> new int[]{totalInputTokens, totalOutputTokens},
++                () -> {
++                    if (memoryManager != null) {
++                        List<MemoryEntry> entries = memoryManager.listAll();
++                        return entries.stream()
++                                .map(e -> "[" + e.type() + "] " + e.description())
++                                .toList();
++                    }
++                    return List.of();
++                },
++                () -> {
++                    if (memoryManager != null) {
++                        for (var entry : memoryManager.listAll()) {
++                            memoryManager.deleteEntry(entry.name(), entry.type());
++                        }
++                    }
++                },
++                () -> {
++                    if (currentSessionId != null) {
++                        return "当前会话: " + currentSessionId;
++                    }
++                    if (workingDirectory != null) {
++                        var sessions = SessionManager
++                                .listSessions(workingDirectory);
++                        if (sessions.isEmpty()) {
++                            return "没有找到之前的会话记录";
++                        }
++                        var sb = new StringBuilder("会话列表 ("
++                                + sessions.size() + " 个):\n");
++                        int maxShow = Math.min(sessions.size(), 20);
++                        for (int i = 0; i < maxShow; i++) {
++                            var s = sessions.get(i);
++                            String title = s.firstMessage().isEmpty()
++                                    ? "(无标题)" : s.firstMessage();
++                            String time = SessionManager
++                                    .formatRelativeTime(s.modTime());
++                            sb.append("  [").append(i + 1).append("] ")
++                                    .append(s.id())
++                                    .append(" — ").append(s.messageCount())
++                                    .append(" 条 | ").append(time)
++                                    .append("\n");
++                            sb.append("      ").append(title).append("\n");
++                        }
++                        return sb.toString();
++                    }
++                    return "工作目录未设置";
++                }
++        );
++    }
++
++    /** Called by MewCode to update the model name for /status display. */
++    public void setModel(String model) {
++        this.modelForContext = model;
++    }
++    private String modelForContext = "unknown";
++
++    // ── /resume command ───────────────────────────────────────────────────
+ 
+     private void handleResume() {
+         if (workingDirectory == null) {
+@@ -326,12 +481,10 @@ public class TerminalUI {
+                     } else if ("assistant".equals(role)) {
+                         conversation.addAssistantMessage(msg.content());
+                     }
+-                    // Other roles are preserved but added as user messages for simplicity
+                 }
+             }
+ 
+             // Persist the resumed session ID so subsequent saves append
+-            // to the existing file instead of creating a new one.
+             if (resumeCallback != null) {
+                 resumeCallback.accept(selected.id());
+             }
+@@ -351,36 +504,43 @@ public class TerminalUI {
+         }
+     }
+ 
+-    // ---- /memory command ----
++    // ── Tab completion ────────────────────────────────────────────────────
+ 
+-    private void handleMemory() {
+-        if (memoryManager == null) {
+-            writer.println("记忆管理器未初始化");
+-            writer.flush();
+-            return;
+-        }
++    /**
++     * JLine Completer that provides Tab completion for slash commands.
++     *
++     * <p>When the input starts with {@code /}, searches the
++     * {@link CommandRegistry} for matching non-hidden commands.
++     * Single match → auto-completes with trailing space.
++     * Multiple matches → populates the candidate list for JLine's menu.
++     */
++    private class SlashCommandCompleter implements Completer {
++        @Override
++        public void complete(LineReader reader, ParsedLine line,
++                             List<Candidate> candidates) {
++            String input = line.line();
++            if (input == null || !input.startsWith("/")) {
++                return;
++            }
+ 
+-        List<MemoryEntry> entries = memoryManager.listAll();
+-        if (entries.isEmpty()) {
+-            writer.println("暂无自动记忆（完成几轮对话后会自动提取）");
+-            writer.flush();
+-            return;
+-        }
++            // Only complete when cursor is at/near end of the first word
++            int cursor = Math.min(line.cursor(), input.length());
++            String upToCursor = input.substring(0, cursor);
+ 
+-        writer.println();
+-        writer.println("════════ 自动记忆 (" + entries.size() + " 条) ════════");
+-        for (MemoryEntry entry : entries) {
+-            String typeLabel = switch (entry.type()) {
+-                case "user" -> "👤 用户";
+-                case "feedback" -> "💬 反馈";
+-                case "project" -> "📁 项目";
+-                case "reference" -> "🔗 参考";
+-                default -> "   " + entry.type();
+-            };
+-            writer.println(" [" + typeLabel + "] " + entry.description());
+-            writer.println("   文件: " + entry.name() + ".md");
++            // Only complete the command name (before first space)
++            if (upToCursor.contains(" ")) {
++                return;
++            }
++
++            String prefix = upToCursor.substring(1); // strip leading /
++            if (cmdRegistry == null) {
++                return;
++            }
++
++            List<Command> matches = cmdRegistry.search(prefix);
++            for (Command cmd : matches) {
++                candidates.add(new Candidate(cmd.name()));
++            }
+         }
+-        writer.println("══════════════════════════════════════");
+-        writer.flush();
+     }
+ }
+
+退出码: 0

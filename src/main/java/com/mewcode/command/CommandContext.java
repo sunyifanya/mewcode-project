@@ -22,5 +22,6 @@ public record CommandContext(
         Supplier<int[]> tokenCount,
         Supplier<List<String>> memoryList,
         Runnable memoryClear,
-        Supplier<String> sessionInfo
+        Supplier<String> sessionInfo,
+        Supplier<List<String>> skillList
 ) {}

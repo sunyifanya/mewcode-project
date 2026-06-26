@@ -31,6 +31,9 @@ public class SystemPromptBuilder {
     /** Name of the Plan Mode module that gets rhythm-controlled injection. */
     public static final String PLAN_MODE_MODULE_NAME = "plan_mode";
 
+    /** Name of the Active Skills module that gets content from ReminderContext. */
+    public static final String ACTIVE_SKILLS_MODULE_NAME = "已激活Skill";
+
     public SystemPromptBuilder(List<SystemPromptModule> modules) {
         this.modules = List.copyOf(modules);
     }
@@ -97,6 +100,9 @@ public class SystemPromptBuilder {
             } else {
                 raw = module.getTerseContent();
             }
+        } else if (ACTIVE_SKILLS_MODULE_NAME.equals(module.getName())) {
+            // Active Skills module: inject context from AgentLoop active skills
+            raw = ctx.getActiveSkillsContent();
         } else {
             raw = module.getContent();
         }

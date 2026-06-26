@@ -50,6 +50,7 @@ public class TerminalUI {
     private int totalInputTokens;
     private int totalOutputTokens;
     private String currentSessionId;
+    private java.util.function.Supplier<List<String>> skillListSupplier;
 
     public TerminalUI() {
         try {
@@ -148,6 +149,11 @@ public class TerminalUI {
         this.currentSessionId = sessionId;
     }
 
+    /** Set supplier for skill name list (used by /status and other commands). */
+    public void setSkillListSupplier(java.util.function.Supplier<List<String>> supplier) {
+        this.skillListSupplier = supplier;
+    }
+
     /**
      * Start the read-eval-print loop.
      *
@@ -165,7 +171,7 @@ public class TerminalUI {
         writer.println("MewCode - 终端 AI 助手");
         writer.println("输入 /help 查看命令, /plan 调研模式, /do 执行模式, "
                 + "/mode 切换权限, /compact 压缩上下文, /clear 清空对话, "
-                + "/resume 恢复会话, /memory 查看记忆, /exit 退出");
+                + "/skill 技能列表, /resume 恢复会话, /memory 查看记忆, /exit 退出");
         writer.println();
         writer.flush();
 
@@ -404,7 +410,10 @@ public class TerminalUI {
                         return sb.toString();
                     }
                     return "工作目录未设置";
-                }
+                },
+                () -> skillListSupplier != null
+                        ? skillListSupplier.get()
+                        : List.of()
         );
     }
 

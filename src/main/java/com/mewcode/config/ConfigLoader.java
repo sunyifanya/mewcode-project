@@ -5,14 +5,22 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
  * Loads and validates mewcode.yaml configuration.
+ * 
+ * <p>Configuration loading strategy:
+ * <ol>
+ *   <li>Try to load from the specified file path (default: ./mewcode.yaml)</li>
+ *   <li>If not found, load mewcode.yaml from classpath resources</li>
+ * </ol>
  */
 public class ConfigLoader {
 
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
+    private static final String CLASSPATH_CONFIG = "/mewcode.yaml";
 
     public static AppConfig load(String filePath) {
         File file = new File(filePath);
@@ -44,6 +52,52 @@ public class ConfigLoader {
 
         // Validate required fields
         validate(config, filePath);
+
+        // Normalize protocol to lowercase
+        config.setProtocol(config.getProtocol().toLowerCase().trim());
+
+        // Validate protocol value
+        if (!config.getProtocol().equals("anthropic") && !config.getProtocol().equals("openai")) {
+            System.err.println("错误: protocol 必须是 'anthropic' 或 'openai'，当前值: " + config.getProtocol());
+            System.exit(1);
+        }
+
+        return config;
+    }
+
+    /**
+     * Load configuration from classpath resource (/mewcode.yaml).
+     * Used when no user configuration file exists.
+     *
+     * @return loaded AppConfig
+     */
+    public static AppConfig loadFromClasspath() {
+        InputStream resourceStream = ConfigLoader.class.getResourceAsStream(CLASSPATH_CONFIG);
+        
+        if (resourceStream == null) {
+            System.err.println("错误: 未找到内置配置文件 " + CLASSPATH_CONFIG);
+            System.err.println("请创建 mewcode.yaml 配置文件。");
+            System.exit(1);
+            return null;
+        }
+
+        AppConfig config;
+        try {
+            config = YAML_MAPPER.readValue(resourceStream, AppConfig.class);
+        } catch (Exception e) {
+            System.err.println("错误: 内置配置文件格式错误: " + e.getMessage());
+            System.exit(1);
+            return null;
+        }
+
+        if (config == null) {
+            System.err.println("错误: 内置配置文件为空。");
+            System.exit(1);
+            return null;
+        }
+
+        // Validate required fields (use "classpath:mewcode.yaml" as path for error messages)
+        validate(config, "classpath:mewcode.yaml");
 
         // Normalize protocol to lowercase
         config.setProtocol(config.getProtocol().toLowerCase().trim());

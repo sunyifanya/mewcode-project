@@ -5,6 +5,7 @@ model: deepseek-v4-pro
 base_url: https://api.deepseek.com/anthropic
 api_key: sk-3d07e4dc5649496b8be6ab96f0d1210d
 thinking_budget: 16000
+max_session_age_days: 5
 
 # Tool execution settings
 tool:

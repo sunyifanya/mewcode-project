@@ -1,6 +1,10 @@
 package com.mewcode.command;
 
 import com.mewcode.command.Command;
+import com.mewcode.skill.SkillCatalog;
+import com.mewcode.skill.SkillExecutor;
+import com.mewcode.skill.SkillForkHost;
+import com.mewcode.skill.SkillHost;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -29,6 +33,11 @@ public class CommandRegistry {
 
     /** Called by /permission mode to switch the permission mode. */
     private Consumer<String> permissionModeHandler;
+
+    /** Skill catalog for skill → command registration. */
+    private SkillCatalog skillCatalog;
+    private java.util.function.Supplier<SkillHost> skillHostSupplier;
+    private java.util.function.Supplier<SkillForkHost> skillForkHostSupplier;
 
     // ── Public API ───────────────────────────────────────────────────────
 
@@ -166,6 +175,73 @@ public class CommandRegistry {
     /** Set the handler for /permission mode switching. */
     public void setPermissionModeHandler(Consumer<String> handler) {
         this.permissionModeHandler = handler;
+    }
+
+    /**
+     * Set skill catalog, host, and fork host for skill → command auto-registration.
+     * Call after all built-in commands have been registered.
+     *
+     * @param catalog skill catalog
+     * @param hostSupplier provides the current agent SkillHost (created per-turn)
+     * @param forkHostSupplier provides the current agent SkillForkHost (created per-turn)
+     */
+    public void setSkillRegistry(SkillCatalog catalog,
+                                  java.util.function.Supplier<SkillHost> hostSupplier,
+                                  java.util.function.Supplier<SkillForkHost> forkHostSupplier) {
+        this.skillCatalog = catalog;
+        this.skillHostSupplier = hostSupplier;
+        this.skillForkHostSupplier = forkHostSupplier;
+    }
+
+    /**
+     * Auto-register all skills from the catalog as PROMPT-type slash commands.
+     * Skills whose name conflicts with an existing command are skipped (with a
+     * warning logged to stderr). This should be called after all built-in
+     * commands are registered and after setSkillRegistry().
+     */
+    public void registerSkillCommands() {
+        if (skillCatalog == null) return;
+        for (var meta : skillCatalog.list()) {
+            String name = meta.name();
+            if (find(name).isPresent()) {
+                System.err.println("[skills] command /" + name
+                        + " already exists — skill version skipped");
+                continue;
+            }
+            register(new Command(name, meta.description() + " [skill]",
+                            new String[]{}, "/" + name,
+                            CommandType.PROMPT, "", false),
+                    ctx -> {
+                        var skillOpt = skillCatalog.getFull(name);
+                        if (skillOpt.isEmpty()) {
+                            return "[skill error] not found: " + name;
+                        }
+                        var skill = skillOpt.get();
+                        var meta2 = skill.meta();
+                        String args = ctx.args();
+
+                        try {
+                            if ("fork".equals(meta2.mode())) {
+                                SkillForkHost forkHost = skillForkHostSupplier != null
+                                        ? skillForkHostSupplier.get() : null;
+                                if (forkHost == null) {
+                                    return "[skill error] fork mode not available for: " + name;
+                                }
+                                return SkillExecutor.executeFork(skill, args, forkHost);
+                            } else {
+                                SkillHost host = skillHostSupplier != null
+                                        ? skillHostSupplier.get() : null;
+                                if (host != null) {
+                                    SkillExecutor.executeInline(skill, args, host);
+                                }
+                                // Return the rendered body so it gets injected as a user message
+                                return SkillExecutor.substituteArguments(skill.promptBody(), args);
+                            }
+                        } catch (IllegalStateException e) {
+                            return "[skill error] " + e.getMessage();
+                        }
+                    });
+        }
     }
 
     // ── Built-in command registration ────────────────────────────────────
@@ -358,6 +434,37 @@ public class CommandRegistry {
                                 + args.strip();
                     }
                     return prompt;
+                });
+
+        // ── /skill (LOCAL) ─────────────────────────────────────────
+        register(new Command("skill", "列出所有可用的 Skill",
+                        new String[]{"skills"}, "/skill",
+                        CommandType.LOCAL, "", false),
+                ctx -> {
+                    if (skillCatalog == null) {
+                        return "Skill 目录未加载。";
+                    }
+                    var metas = skillCatalog.list();
+                    if (metas.isEmpty()) {
+                        return "暂无已安装的技能。\n\n"
+                                + "添加技能到 .mewcode/skills/<skill-name>/SKILL.md";
+                    }
+                    var sb = new StringBuilder();
+                    sb.append("可用技能 (").append(metas.size()).append(" 个):\n\n");
+                    for (var meta : metas) {
+                        sb.append("  /").append(meta.name())
+                                .append(" — ").append(meta.description()).append("\n");
+                        sb.append("    模式: ").append(meta.mode());
+                        if (meta.allowedTools() != null && !meta.allowedTools().isEmpty()) {
+                            sb.append("  |  工具: ")
+                                    .append(String.join(", ", meta.allowedTools()));
+                        }
+                        if (meta.model() != null && !meta.model().isBlank()) {
+                            sb.append("  |  模型: ").append(meta.model());
+                        }
+                        sb.append("\n");
+                    }
+                    return sb.toString();
                 });
 
         // ── LOCAL_UI commands (handler = null) ───────────────────────
