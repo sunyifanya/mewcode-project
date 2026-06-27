@@ -573,10 +573,15 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 
                 // ---- add tool_use message to conversation ----
                 conversation.addToolCallMessage(collector.getFullText().trim(), toolCalls);
-                // Save to session JSONL
+                // Save to session JSONL (with tool_use metadata for reliable recovery)
                 if (workingDirectory != null && sessionId != null) {
+                    List<String> toolUseIds = toolCalls.stream()
+                            .map(ToolCall::getId).toList();
+                    List<String> toolNames = toolCalls.stream()
+                            .map(ToolCall::getName).toList();
                     SessionManager.saveMessage(workingDirectory, sessionId,
-                            "assistant", collector.getFullText().trim());
+                            "assistant", collector.getFullText().trim(),
+                            null, false, toolUseIds, toolNames);
                 }
 
                 // ---- permission pre-check ----

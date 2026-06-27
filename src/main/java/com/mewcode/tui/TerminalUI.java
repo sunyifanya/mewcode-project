@@ -6,6 +6,7 @@ import com.mewcode.command.CommandContext;
 import com.mewcode.command.CommandRegistry;
 import com.mewcode.conversation.ConversationManager;
 import com.mewcode.conversation.ToolResultBlock;
+import com.mewcode.conversation.ToolUseBlock;
 import com.mewcode.memory.MemoryEntry;
 import com.mewcode.memory.MemoryManager;
 import com.mewcode.permission.PermissionChecker;
@@ -21,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -514,7 +516,20 @@ public class TerminalUI {
                         if ("user".equals(role)) {
                             conversation.addUserMessage(msg.content());
                         } else if ("assistant".equals(role)) {
-                            conversation.addAssistantMessage(msg.content());
+                            // Restore tool_use blocks if the message carried tool calls
+                            List<String> ids = msg.toolUseIds();
+                            if (ids != null && !ids.isEmpty()) {
+                                List<String> names = msg.toolNames();
+                                List<ToolUseBlock> blocks = new ArrayList<>();
+                                for (int i = 0; i < ids.size(); i++) {
+                                    String name = (names != null && i < names.size())
+                                            ? names.get(i) : "unknown";
+                                    blocks.add(new ToolUseBlock(ids.get(i), name, Map.of()));
+                                }
+                                conversation.addAssistantFull(msg.content(), null, blocks);
+                            } else {
+                                conversation.addAssistantMessage(msg.content());
+                            }
                         } else if ("system".equals(role)) {
                             // System messages from recovery (time-gap warnings, etc.)
                             conversation.addUserMessage("<system-reminder>\n"

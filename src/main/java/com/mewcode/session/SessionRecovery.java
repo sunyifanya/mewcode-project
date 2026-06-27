@@ -99,18 +99,9 @@ public class SessionRecovery {
     static List<SessionManager.SessionMessage> truncateIncompleteToolCalls(
             List<SessionManager.SessionMessage> messages, List<String> warnings) {
 
-        // We track open tool_use IDs. When we see a tool_result, we remove that ID.
-        // After processing all messages, if there are open tool_use IDs, we truncate
-        // to before the earliest open tool_use.
-        int lastSafeIndex = messages.size(); // exclusive
-
-        // Scan for the pattern: messages with tool_use info need to be tracked.
-        // Since we only have role+content+ts from JSONL (not structured tool use IDs),
-        // we use a heuristic: any message with role indicating tool usage.
-        // The actual structured data (toolUseId, etc.) is in the content JSON.
-
-        // For now, use a simple detection: messages where role starts with "tool_use"
-        // or contain structured tool_use in the content.
+        // Track open tool_use IDs. Tool_use messages now carry a dedicated
+        // toolUseIds field (set at save time), with legacy string-matching
+        // fallback for older JSONL files.
         record OpenCall(int index, String toolId) {}
         List<OpenCall> openCalls = new ArrayList<>();
 
@@ -168,6 +159,11 @@ public class SessionRecovery {
 
     static boolean isToolUse(SessionManager.SessionMessage msg) {
         if ("tool_use".equals(msg.role()) || "assistant".equals(msg.role())) {
+            // Dedicated field takes priority — reliable regardless of content text
+            if (msg.toolUseIds() != null && !msg.toolUseIds().isEmpty()) {
+                return true;
+            }
+            // Fallback: string matching for legacy JSONL files without the field
             String content = msg.content();
             return content != null && (content.contains("\"tool_use\"") || content.contains("\"toolUses\""));
         }
@@ -183,7 +179,11 @@ public class SessionRecovery {
     }
 
     static String extractToolUseId(SessionManager.SessionMessage msg) {
-        // Simple heuristic: find tool_use id in JSON-like content
+        // Dedicated field — return the first ID (most messages have a single tool call)
+        if (msg.toolUseIds() != null && !msg.toolUseIds().isEmpty()) {
+            return msg.toolUseIds().get(0);
+        }
+        // Fallback: legacy string matching for JSONL files without toolUseIds field
         if (msg.content() == null) return null;
         String content = msg.content();
         // Look for "toolUseId": "xxx" or "id": "xxx" patterns

@@ -1,7 +1,20 @@
-id: echo-test
-event: post_tool_use
-action:
-  type: command
-  command: "echo \"[Hook fired] tool=${tool} event=${event}\" >> /tmp/mewcode-hook-test.log"
-  timeout: 5
-  background: false
+hooks:
+  - id: echo-test
+    event: post_tool_use
+    action:
+      type: command
+      command: "echo \"[Hook fired] tool=${tool} event=${event}\" >> /tmp/mewcode-hook-test.log"
+      timeout: 5
+      background: false
+
+  - id: block-json-write
+    event: pre_tool_use
+    action:
+      type: command
+      command: |
+        if [ "$tool" = "write_file" ] && echo "$args_file_path" | grep -q '\.json$'; then
+          echo "[Hook] JSON file write blocked. Use dedicated JSON tool instead." >> /tmp/mewcode-hook-test.log
+          exit 1
+        fi
+      timeout: 5
+      background: false

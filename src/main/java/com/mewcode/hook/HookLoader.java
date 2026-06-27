@@ -13,7 +13,35 @@ import java.util.stream.Stream;
 /**
  * Loads hook YAML files from {@code .mewcode/hooks/} with centralised validation.
  *
- * <p>One file per hook. Malformed files are skipped with warnings.
+ * <p>Supports two YAML formats:
+ * <ol>
+ *   <li><b>Single-hook</b> — one file = one hook (legacy):
+ *     <pre>{@code
+ *     id: my-hook
+ *     event: post_tool_use
+ *     action:
+ *       type: command
+ *       command: "echo hello"
+ *     }</pre></li>
+ *   <li><b>Multi-hook</b> — one file can contain several hooks:
+ *     <pre>{@code
+ *     hooks:
+ *       - id: hook-1
+ *         event: turn_start
+ *         action:
+ *           type: prompt
+ *           message: "reminder"
+ *       - id: hook-2
+ *         event: post_tool_use
+ *         action:
+ *           type: command
+ *           command: "echo done"
+ *     }</pre></li>
+ * </ol>
+ *
+ * <p>Auto-detection: tries the multi-hook {@code hooks: [...]} wrapper first;
+ * if absent, falls back to single-hook parsing. Malformed files are skipped
+ * with warnings.
  */
 public final class HookLoader {
 
@@ -57,12 +85,26 @@ public final class HookLoader {
 
         for (Path file : yamlFiles) {
             try {
-                HookConfig config = YAML_MAPPER.readValue(file.toFile(), HookConfig.class);
-                List<String> issues = validate(config, file);
-                if (issues.isEmpty()) {
-                    valid.add(config);
+                // Try multi-hook format first: { hooks: [...] }
+                HookFile multi = YAML_MAPPER.readValue(file.toFile(), HookFile.class);
+                if (multi.hooks != null && !multi.hooks.isEmpty()) {
+                    for (HookConfig config : multi.hooks) {
+                        List<String> issues = validate(config, file);
+                        if (issues.isEmpty()) {
+                            valid.add(config);
+                        } else {
+                            warnings.addAll(issues);
+                        }
+                    }
                 } else {
-                    warnings.addAll(issues);
+                    // Fall back to single-hook format
+                    HookConfig config = YAML_MAPPER.readValue(file.toFile(), HookConfig.class);
+                    List<String> issues = validate(config, file);
+                    if (issues.isEmpty()) {
+                        valid.add(config);
+                    } else {
+                        warnings.addAll(issues);
+                    }
                 }
             } catch (IOException e) {
                 warnings.add("Hook YAML 解析失败 (" + file.getFileName() + "): " + e.getMessage());
@@ -70,6 +112,19 @@ public final class HookLoader {
         }
 
         return new LoadedHooks(valid, warnings);
+    }
+
+    // ---- YAML wrappers ----
+
+    /**
+     * Multi-hook YAML wrapper: {@code hooks: [...]}.
+     * If the top-level {@code hooks} key is present, each entry is a
+     * single {@link HookConfig}.  Absent → treat the whole file as one
+     * {@link HookConfig} (single-hook fallback).
+     */
+    private static class HookFile {
+        @com.fasterxml.jackson.annotation.JsonProperty("hooks")
+        List<HookConfig> hooks;
     }
 
     // ---- Validation ----

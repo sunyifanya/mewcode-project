@@ -21,10 +21,11 @@ import java.util.stream.Stream;
 public class SessionManager {
 
     public record SessionMessage(String role, String content, long timestamp,
-                                  String toolUseId, Boolean isError) {
+                                  String toolUseId, Boolean isError,
+                                  List<String> toolUseIds, List<String> toolNames) {
         /** Backward-compatible constructor for plain messages. */
         public SessionMessage(String role, String content, long timestamp) {
-            this(role, content, timestamp, null, null);
+            this(role, content, timestamp, null, null, null, null);
         }
     }
 
@@ -75,6 +76,24 @@ public class SessionManager {
      */
     public static void saveMessage(String workDir, String sessionId, String role, String content,
                                    String toolUseId, boolean isError) {
+        saveMessage(workDir, sessionId, role, content, toolUseId, isError, null, null);
+    }
+
+    /**
+     * Append one message line with full tool-call metadata to the session JSONL file.
+     *
+     * @param workDir    project working directory
+     * @param sessionId  session identifier
+     * @param role       message role
+     * @param content    message content
+     * @param toolUseId  tool_use ID (only meaningful for tool_result messages)
+     * @param isError    whether this is an error result
+     * @param toolUseIds tool_use IDs (for assistant messages carrying tool calls)
+     * @param toolNames  tool names (parallel list to toolUseIds)
+     */
+    public static void saveMessage(String workDir, String sessionId, String role, String content,
+                                   String toolUseId, boolean isError,
+                                   List<String> toolUseIds, List<String> toolNames) {
         try {
             Path baseDir = sessionsDir(workDir);
             Files.createDirectories(baseDir);
@@ -89,6 +108,12 @@ public class SessionManager {
             }
             if (isError) {
                 line.put("isError", true);
+            }
+            if (toolUseIds != null && !toolUseIds.isEmpty()) {
+                line.put("toolUseIds", toolUseIds);
+            }
+            if (toolNames != null && !toolNames.isEmpty()) {
+                line.put("toolNames", toolNames);
             }
 
             String json = MAPPER.writeValueAsString(line) + "\n";
@@ -124,10 +149,15 @@ public class SessionManager {
                     long ts = map.get("ts") instanceof Number n ? n.longValue() : 0L;
                     String toolUseId = (String) map.get("toolUseId");
                     Boolean isError = map.get("isError") instanceof Boolean b ? b : null;
+                    @SuppressWarnings("unchecked")
+                    List<String> toolUseIds = map.get("toolUseIds") instanceof List<?> l ? (List<String>) l : null;
+                    @SuppressWarnings("unchecked")
+                    List<String> toolNames = map.get("toolNames") instanceof List<?> l ? (List<String>) l : null;
                     if (role != null && content != null) {
                         // Allow empty content for tool_result/system messages
                         if (!content.isEmpty() || "tool_result".equals(role) || "system".equals(role)) {
-                            messages.add(new SessionMessage(role, content, ts, toolUseId, isError));
+                            messages.add(new SessionMessage(role, content, ts, toolUseId, isError,
+                                    toolUseIds, toolNames));
                         }
                     }
                 } catch (IOException ignored) {

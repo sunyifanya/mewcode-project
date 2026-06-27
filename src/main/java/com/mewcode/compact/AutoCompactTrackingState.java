@@ -13,7 +13,7 @@ public final class AutoCompactTrackingState {
     public int consecutiveFailures;
 
     public boolean isTripped() {
-        return consecutiveFailures < MAX_CONSECUTIVE_FAILURES;
+        return consecutiveFailures >= MAX_CONSECUTIVE_FAILURES;
     }
 
     public void recordFailure() {

@@ -6,6 +6,7 @@ import com.mewcode.tool.ToolResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -17,8 +18,12 @@ import java.util.regex.Pattern;
 /**
  * Executes a shell command with timeout control and a safety blacklist.
  *
- * Windows: runs via cmd /c
- * Unix:    runs via /bin/sh -c
+ * <p>Windows: runs via {@code cmd /q /s /c} (quiet, consistent quoting).
+ * <br>Unix:    runs via {@code /bin/sh -c}.
+ *
+ * <p>Output is read with explicit UTF-8 charset to avoid encoding issues
+ * on Windows systems where the platform default may differ from the
+ * child process's output encoding.
  */
 public class ExecuteCommandTool implements Tool {
 
@@ -88,6 +93,9 @@ public class ExecuteCommandTool implements Tool {
         boolean isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
         if (isWindows) {
             cmdList.add("cmd");
+            // /q = quiet (no echo), /s = consistent quote handling, /c = run command
+            cmdList.add("/q");
+            cmdList.add("/s");
             cmdList.add("/c");
         } else {
             cmdList.add("/bin/sh");
@@ -98,61 +106,46 @@ public class ExecuteCommandTool implements Tool {
         try {
             ProcessBuilder pb = new ProcessBuilder(cmdList);
             pb.directory(workingDir.toFile());
-            pb.redirectErrorStream(false); // keep stdout/stderr separate
+            // Merge stderr into stdout — avoids thread-coordination issues
+            // when the process exits before the stderr reader thread starts.
+            pb.redirectErrorStream(true);
 
             Process process = pb.start();
 
-            // Read stdout and stderr in separate threads to avoid deadlock
-            ByteArrayOutputStream stdoutBuf = new ByteArrayOutputStream();
-            ByteArrayOutputStream stderrBuf = new ByteArrayOutputStream();
-
-            Thread stdoutThread = new Thread(() -> {
+            // Merge stdout+stderr into one stream, read in a thread so the
+            // process pipe buffer never fills up while we wait for completion.
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            Thread reader = new Thread(() -> {
                 try {
-                    process.getInputStream().transferTo(stdoutBuf);
+                    process.getInputStream().transferTo(buf);
                 } catch (IOException ignored) {}
-            }, "cmd-stdout");
-            stdoutThread.start();
-
-            Thread stderrThread = new Thread(() -> {
-                try {
-                    process.getErrorStream().transferTo(stderrBuf);
-                } catch (IOException ignored) {}
-            }, "cmd-stderr");
-            stderrThread.start();
+            }, "cmd-reader");
+            reader.start();
 
             boolean finished = process.waitFor(effectiveTimeout, TimeUnit.SECONDS);
 
             if (!finished) {
                 process.destroyForcibly();
-                // Give threads a moment to collect partial output
-                stdoutThread.join(1000);
-                stderrThread.join(1000);
+                reader.join(1000);
                 return new ToolResult(false,
                         "命令超时（" + effectiveTimeout + " 秒）\n" +
-                        "stdout:\n" + stdoutBuf + "\n" +
-                        "stderr:\n" + stderrBuf,
+                        buf.toString(StandardCharsets.UTF_8),
                         "TIMEOUT");
             }
 
-            // Wait for reader threads to finish
-            stdoutThread.join(5000);
-            stderrThread.join(5000);
+            // Process done — wait for the reader to collect the last bytes
+            reader.join(5000);
 
             int exitCode = process.exitValue();
-            String stdout = stdoutBuf.toString();
-            String stderr = stderrBuf.toString();
-
-            StringBuilder output = new StringBuilder();
-            if (!stdout.isEmpty()) {
-                output.append(stdout);
+            String rawOutput = buf.toString(StandardCharsets.UTF_8).stripTrailing();
+            String output;
+            if (rawOutput.isEmpty()) {
+                output = "退出码: " + exitCode;
+            } else {
+                output = rawOutput + "\n退出码: " + exitCode;
             }
-            if (!stderr.isEmpty()) {
-                if (!output.isEmpty()) output.append("\n");
-                output.append(stderr);
-            }
-            output.append("\n退出码: ").append(exitCode);
 
-            return new ToolResult(true, output.toString().trim());
+            return new ToolResult(true, output);
         } catch (IOException e) {
             return new ToolResult(false, "命令执行失败: " + e.getMessage(), "IO_ERROR");
         } catch (InterruptedException e) {

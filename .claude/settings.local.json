@@ -44,7 +44,37 @@
       "Bash(gh auth *)",
       "Bash(curl.exe *)",
       "Bash(where mvn *)",
-      "Read(//c//**)"
+      "Read(//c//**)",
+      "Bash(claude *)",
+      "Bash(npm view *)",
+      "Bash(xxd \"C:/Users/16322/Desktop/屏幕截图 2026-06-27 185934.png\")",
+      "mcp__inchat-image-viewer__view_image",
+      "mcp__image-viewer__view_image",
+      "Bash(xxd \"C:/Users/16322/Desktop/test-screenshot.png\")",
+      "Bash(python3 -c \"import pytesseract; print\\('pytesseract available'\\)\")",
+      "Bash(python -c \"import pytesseract; print\\('pytesseract available'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(KMP_DUPLICATE_LIB_OK=TRUE python *)",
+      "Skill(read_picture)",
+      "Bash(curl -s \"http://127.0.0.1:15721/v1/models\" -H \"Authorization: Bearer PROXY_MANAGED\")",
+      "Bash(curl -s \"http://127.0.0.1:15721/v1/messages\" -H \"Authorization: Bearer PROXY_MANAGED\" -H \"Content-Type: application/json\" -d '{\"model\":\"claude-opus-4-8\",\"max_tokens\":10,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}')",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:15721/\")",
+      "Bash(curl -s \"http://127.0.0.1:15721/\")",
+      "Bash(curl -v \"http://127.0.0.1:15721/v1/chat/completions\" -H \"Authorization: Bearer PROXY_MANAGED\" -H \"Content-Type: application/json\" -d '{\"model\":\"claude-opus-4-8\",\"max_tokens\":10,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}')",
+      "Bash(curl -s \"http://127.0.0.1:15721/v1/messages\" -H \"x-api-key: PROXY_MANAGED\" -H \"anthropic-version: 2023-06-01\" -H \"Content-Type: application/json\" -d '{\"model\":\"claude-opus-4-8\",\"max_tokens\":10,\"messages\":[{\"role\":\"user\",\"content\":\"say hi\"}]}')",
+      "Bash(curl -v \"http://127.0.0.1:15721/v1/messages\" -H \"x-api-key: PROXY_MANAGED\" -H \"anthropic-version: 2023-06-01\" -H \"Content-Type: application/json\" -d '{\"model\":\"claude-opus-4-8\",\"max_tokens\":10,\"messages\":[{\"role\":\"user\",\"content\":\"say hi\"}]}')",
+      "Read(//d/sorftware/**)",
+      "Bash(find /d -name \"mvn\" -o -name \"mvn.cmd\")",
+      "Bash(\"/d/sorftware/apache-maven-3.9.15-bin/bin/mvn\" compile *)",
+      "Bash(javac -version)",
+      "Bash(JAVA_HOME=\"/d/sorftware/anaconda\" \"/d/sorftware/apache-maven-3.9.15-bin/bin/mvn\" compile -q)",
+      "Bash(JAVA_HOME=\"/d/sorftware/jdk-21.0.11\" \"/d/sorftware/apache-maven-3.9.15-bin/bin/mvn\" compile -q)",
+      "Bash(JAVA_HOME=\"/d/sorftware/jdk-21.0.11\" \"/d/sorftware/apache-maven-3.9.15-bin/bin/mvn\" package -DskipTests -q)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "image-viewer"
+  ]
 }
