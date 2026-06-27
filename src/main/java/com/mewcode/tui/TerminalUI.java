@@ -5,6 +5,7 @@ import com.mewcode.command.Command;
 import com.mewcode.command.CommandContext;
 import com.mewcode.command.CommandRegistry;
 import com.mewcode.conversation.ConversationManager;
+import com.mewcode.conversation.ToolResultBlock;
 import com.mewcode.memory.MemoryEntry;
 import com.mewcode.memory.MemoryManager;
 import com.mewcode.permission.PermissionChecker;
@@ -17,6 +18,7 @@ import org.jline.terminal.TerminalBuilder;
 
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -492,13 +494,37 @@ public class TerminalUI {
             // Clear current conversation and reload
             if (conversation != null) {
                 conversation.clear();
+
+                // Accumulate consecutive tool_results into a single message
+                List<ToolResultBlock> pendingToolResults = new ArrayList<>();
+
                 for (SessionManager.SessionMessage msg : recovery.messages()) {
                     String role = msg.role();
-                    if ("user".equals(role)) {
-                        conversation.addUserMessage(msg.content());
-                    } else if ("assistant".equals(role)) {
-                        conversation.addAssistantMessage(msg.content());
+                    if ("tool_result".equals(role)) {
+                        pendingToolResults.add(new ToolResultBlock(
+                                msg.toolUseId() != null ? msg.toolUseId() : "",
+                                msg.content(),
+                                msg.isError() != null && msg.isError()));
+                    } else {
+                        // Flush pending tool_results before non-tool_result message
+                        if (!pendingToolResults.isEmpty()) {
+                            conversation.addToolResultsMessage(new ArrayList<>(pendingToolResults));
+                            pendingToolResults.clear();
+                        }
+                        if ("user".equals(role)) {
+                            conversation.addUserMessage(msg.content());
+                        } else if ("assistant".equals(role)) {
+                            conversation.addAssistantMessage(msg.content());
+                        } else if ("system".equals(role)) {
+                            // System messages from recovery (time-gap warnings, etc.)
+                            conversation.addUserMessage("<system-reminder>\n"
+                                    + msg.content() + "\n</system-reminder>");
+                        }
                     }
+                }
+                // Flush any trailing tool_results
+                if (!pendingToolResults.isEmpty()) {
+                    conversation.addToolResultsMessage(new ArrayList<>(pendingToolResults));
                 }
             }
 

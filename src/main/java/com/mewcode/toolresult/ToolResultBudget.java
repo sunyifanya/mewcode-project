@@ -49,119 +49,119 @@ public final class ToolResultBudget {
     private ToolResultBudget() {}
 
     public static ApplyResult apply(
-            ConversationManager conv,
+            ConversationManager conversationManager,
             Path sessionDir,
-            ContentReplacementState state
+            ContentReplacementState contentReplacementState
     ) {
-        List<Message> messages = conv.getMessages();
+        List<Message> messages = conversationManager.getMessages();
         if (messages.isEmpty()) {
-            return new ApplyResult(conv, List.of());
+            return new ApplyResult(conversationManager, List.of());
         }
 
         Path spillDir = sessionDir.resolve(SPILL_SUBDIR);
         List<ContentReplacementRecord> records = new ArrayList<>();
         List<Message> newHistory = new ArrayList<>(messages.size());
 
-        for (Message msg : messages) {
-            List<ToolResultBlock> trs = msg.getToolResults();
-            if (trs == null || trs.isEmpty()) {
-                newHistory.add(msg);
+        for (Message message : messages) {
+            List<ToolResultBlock> toolResultList = message.getToolResults();
+            if (toolResultList == null || toolResultList.isEmpty()) {
+                newHistory.add(message);
                 continue;
             }
 
-            Map<String, String> decisions = new HashMap<>(trs.size() * 2);
+            Map<String, String> decisions = new HashMap<>(toolResultList.size() * 2);
             List<ToolResultBlock> fresh = new ArrayList<>();
 
-            for (ToolResultBlock tr : trs) {
-                String id = tr.toolUseId();
-                String existing = state.replacements().get(id);
+            for (ToolResultBlock toolResult : toolResultList) {
+                String toolUseId = toolResult.toolUseId();
+                String existing = contentReplacementState.replacements().get(toolUseId);
                 if (existing != null) {
-                    decisions.put(id, existing);
+                    decisions.put(toolUseId, existing);
                     continue;
                 }
-                if (state.seenIds().contains(id)) {
-                    decisions.put(id, tr.content());
+                if (contentReplacementState.seenIds().contains(toolUseId)) {
+                    decisions.put(toolUseId, toolResult.content());
                     continue;
                 }
-                if (isAlreadyReplaced(tr.content())) {
+                if (isAlreadyReplaced(toolResult.content())) {
                     // External pre-tagged content — freeze as the tag itself.
-                    state.seenIds().add(id);
-                    state.replacements().put(id, tr.content());
-                    decisions.put(id, tr.content());
-                    records.add(ContentReplacementRecord.toolResult(id, tr.content()));
+                    contentReplacementState.seenIds().add(toolUseId);
+                    contentReplacementState.replacements().put(toolUseId, toolResult.content());
+                    decisions.put(toolUseId, toolResult.content());
+                    records.add(ContentReplacementRecord.toolResult(toolUseId, toolResult.content()));
                     continue;
                 }
-                fresh.add(tr);
+                fresh.add(toolResult);
             }
 
             // Pass 1: persist any single result above SINGLE_RESULT_LIMIT.
             Set<String> persistedByP1 = new HashSet<>();
-            for (ToolResultBlock tr : fresh) {
-                if (tr.content().length() <= SINGLE_RESULT_LIMIT) continue;
-                String preview = spillAndPreview(spillDir, tr);
+            for (ToolResultBlock toolResultBlock : fresh) {
+                if (toolResultBlock.content().length() <= SINGLE_RESULT_LIMIT) continue;
+                String preview = spillAndPreview(spillDir, toolResultBlock);
                 if (preview == null) {
                     // Spill failed — freeze as raw, never revisit.
-                    state.seenIds().add(tr.toolUseId());
-                    decisions.put(tr.toolUseId(), tr.content());
-                    persistedByP1.add(tr.toolUseId());
+                    contentReplacementState.seenIds().add(toolResultBlock.toolUseId());
+                    decisions.put(toolResultBlock.toolUseId(), toolResultBlock.content());
+                    persistedByP1.add(toolResultBlock.toolUseId());
                     continue;
                 }
-                decisions.put(tr.toolUseId(), preview);
-                state.seenIds().add(tr.toolUseId());
-                state.replacements().put(tr.toolUseId(), preview);
-                records.add(ContentReplacementRecord.toolResult(tr.toolUseId(), preview));
-                persistedByP1.add(tr.toolUseId());
+                decisions.put(toolResultBlock.toolUseId(), preview);
+                contentReplacementState.seenIds().add(toolResultBlock.toolUseId());
+                contentReplacementState.replacements().put(toolResultBlock.toolUseId(), preview);
+                records.add(ContentReplacementRecord.toolResult(toolResultBlock.toolUseId(), preview));
+                persistedByP1.add(toolResultBlock.toolUseId());
             }
 
             // Pass 2: aggregate-spill the largest remaining fresh candidates
             // until total ≤ MESSAGE_AGGREGATE_LIMIT.
             List<ToolResultBlock> remaining = new ArrayList<>();
-            for (ToolResultBlock tr : fresh) {
-                if (!persistedByP1.contains(tr.toolUseId())) {
-                    remaining.add(tr);
+            for (ToolResultBlock toolResultBlock : fresh) {
+                if (!persistedByP1.contains(toolResultBlock.toolUseId())) {
+                    remaining.add(toolResultBlock);
                 }
             }
 
             int total = 0;
             for (String content : decisions.values()) total += content.length();
-            for (ToolResultBlock tr : remaining) total += tr.content().length();
+            for (ToolResultBlock toolResultBlock : remaining) total += toolResultBlock.content().length();
 
             if (total > MESSAGE_AGGREGATE_LIMIT && !remaining.isEmpty()) {
                 List<ToolResultBlock> sorted = new ArrayList<>(remaining);
                 sorted.sort(Comparator.comparingInt((ToolResultBlock t) -> t.content().length()).reversed());
-                for (ToolResultBlock tr : sorted) {
+                for (ToolResultBlock toolResultBlock : sorted) {
                     if (total <= MESSAGE_AGGREGATE_LIMIT) break;
-                    String preview = spillAndPreview(spillDir, tr);
+                    String preview = spillAndPreview(spillDir, toolResultBlock);
                     if (preview == null) {
-                        state.seenIds().add(tr.toolUseId());
-                        decisions.put(tr.toolUseId(), tr.content());
+                        contentReplacementState.seenIds().add(toolResultBlock.toolUseId());
+                        decisions.put(toolResultBlock.toolUseId(), toolResultBlock.content());
                         continue;
                     }
-                    decisions.put(tr.toolUseId(), preview);
-                    state.seenIds().add(tr.toolUseId());
-                    state.replacements().put(tr.toolUseId(), preview);
-                    records.add(ContentReplacementRecord.toolResult(tr.toolUseId(), preview));
-                    total -= tr.content().length() - preview.length();
+                    decisions.put(toolResultBlock.toolUseId(), preview);
+                    contentReplacementState.seenIds().add(toolResultBlock.toolUseId());
+                    contentReplacementState.replacements().put(toolResultBlock.toolUseId(), preview);
+                    records.add(ContentReplacementRecord.toolResult(toolResultBlock.toolUseId(), preview));
+                    total -= toolResultBlock.content().length() - preview.length();
                 }
             }
 
             // Freeze remaining fresh as "seen but not replaced".
-            for (ToolResultBlock tr : fresh) {
-                if (decisions.containsKey(tr.toolUseId())) continue;
-                state.seenIds().add(tr.toolUseId());
-                decisions.put(tr.toolUseId(), tr.content());
+            for (ToolResultBlock toolResultBlock : fresh) {
+                if (decisions.containsKey(toolResultBlock.toolUseId())) continue;
+                contentReplacementState.seenIds().add(toolResultBlock.toolUseId());
+                decisions.put(toolResultBlock.toolUseId(), toolResultBlock.content());
             }
 
             // Materialize new tool_results in original order.
-            List<ToolResultBlock> newResults = new ArrayList<>(trs.size());
-            for (ToolResultBlock tr : trs) {
+            List<ToolResultBlock> newResults = new ArrayList<>(toolResultList.size());
+            for (ToolResultBlock toolResultBlock : toolResultList) {
                 newResults.add(new ToolResultBlock(
-                        tr.toolUseId(),
-                        decisions.get(tr.toolUseId()),
-                        tr.isError()
+                        toolResultBlock.toolUseId(),
+                        decisions.get(toolResultBlock.toolUseId()),
+                        toolResultBlock.isError()
                 ));
             }
-            newHistory.add(copyMessageWithResults(msg, newResults));
+            newHistory.add(copyMessageWithResults(message, newResults));
         }
 
         // Pass 3: stale-snip on the new history.
@@ -175,15 +175,15 @@ public final class ToolResultBudget {
                 + " — read with ReadFile if needed]";
     }
 
-    private static String spillAndPreview(Path spillDir, ToolResultBlock tr) {
+    private static String spillAndPreview(Path spillDir, ToolResultBlock toolResultBlock) {
         try {
             Files.createDirectories(spillDir);
-            Path file = spillDir.resolve(tr.toolUseId());
-            if (Files.exists(file) && Files.size(file) == tr.content().length()) {
-                return buildSpillPreview(tr.content().length(), file);
+            Path file = spillDir.resolve(toolResultBlock.toolUseId());
+            if (Files.exists(file) && Files.size(file) == toolResultBlock.content().length()) {
+                return buildSpillPreview(toolResultBlock.content().length(), file);
             }
-            Files.writeString(file, tr.content());
-            return buildSpillPreview(tr.content().length(), file);
+            Files.writeString(file, toolResultBlock.content());
+            return buildSpillPreview(toolResultBlock.content().length(), file);
         } catch (IOException e) {
             return null;
         }
@@ -206,29 +206,29 @@ public final class ToolResultBudget {
         int turnsSeen = 0;
         int oldBoundary = totalTurns - KEEP_RECENT_TURNS;
 
-        for (Message m : messages) {
-            if ("assistant".equals(m.getRole()) && (m.getToolUses() == null || m.getToolUses().isEmpty())) {
+        for (Message message : messages) {
+            if ("assistant".equals(message.getRole()) && (message.getToolUses() == null || message.getToolUses().isEmpty())) {
                 turnsSeen++;
             }
-            if (turnsSeen > oldBoundary || m.getToolResults() == null || m.getToolResults().isEmpty()) {
-                out.add(m);
+            if (turnsSeen > oldBoundary || message.getToolResults() == null || message.getToolResults().isEmpty()) {
+                out.add(message);
                 continue;
             }
             List<ToolResultBlock> newResults = new ArrayList<>();
             boolean changed = false;
-            for (ToolResultBlock tr : m.getToolResults()) {
-                if (isAlreadyReplaced(tr.content()) || tr.content().length() <= OLD_RESULT_SNIP_CHARS) {
-                    newResults.add(tr);
+            for (ToolResultBlock toolResultBlock : message.getToolResults()) {
+                if (isAlreadyReplaced(toolResultBlock.content()) || toolResultBlock.content().length() <= OLD_RESULT_SNIP_CHARS) {
+                    newResults.add(toolResultBlock);
                     continue;
                 }
                 newResults.add(new ToolResultBlock(
-                        tr.toolUseId(),
-                        "[Stale output snipped: " + tr.content().length() + " chars]",
-                        tr.isError()
+                        toolResultBlock.toolUseId(),
+                        "[Stale output snipped: " + toolResultBlock.content().length() + " chars]",
+                        toolResultBlock.isError()
                 ));
                 changed = true;
             }
-            out.add(changed ? copyMessageWithResults(m, newResults) : m);
+            out.add(changed ? copyMessageWithResults(message, newResults) : message);
         }
         return out;
     }
@@ -250,22 +250,22 @@ public final class ToolResultBudget {
      * Skips system messages (the new manager already has one from its constructor).
      */
     private static ConversationManager buildManager(List<Message> messages) {
-        ConversationManager out = new ConversationManager();
-        for (Message m : messages) {
+        ConversationManager conversationManager = new ConversationManager();
+        for (Message message : messages) {
             // Skip system message — the new manager's constructor already added one
-            if ("system".equals(m.getRole())) continue;
-            boolean hasToolUses = m.getToolUses() != null && !m.getToolUses().isEmpty();
-            boolean hasToolResults = m.getToolResults() != null && !m.getToolResults().isEmpty();
+            if ("system".equals(message.getRole())) continue;
+            boolean hasToolUses = message.getToolUses() != null && !message.getToolUses().isEmpty();
+            boolean hasToolResults = message.getToolResults() != null && !message.getToolResults().isEmpty();
             if (hasToolUses) {
-                out.addAssistantFull(m.getContent(), m.getThinkingBlocks(), m.getToolUses());
+                conversationManager.addAssistantFull(message.getContent(), message.getThinkingBlocks(), message.getToolUses());
             } else if (hasToolResults) {
-                out.addToolResultsMessage(m.getToolResults());
-            } else if ("user".equals(m.getRole())) {
-                out.addUserMessage(m.getContent());
-            } else if ("assistant".equals(m.getRole())) {
-                out.addAssistantMessage(m.getContent());
+                conversationManager.addToolResultsMessage(message.getToolResults());
+            } else if ("user".equals(message.getRole())) {
+                conversationManager.addUserMessage(message.getContent());
+            } else if ("assistant".equals(message.getRole())) {
+                conversationManager.addAssistantMessage(message.getContent());
             }
         }
-        return out;
+        return conversationManager;
     }
 }

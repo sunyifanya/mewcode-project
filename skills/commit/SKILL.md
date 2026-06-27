@@ -1,7 +1,7 @@
 ---
 name: commit
 description: Generate a Conventional Commits message from the current git diff. Use when asked to create a commit message, commit changes, or write a commit.
-allowed_tools: [ReadFile, Grep, ExecuteCommand]
+allowed_tools: [read_file, grep, execute_command]
 mode: inline
 ---
 

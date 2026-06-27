@@ -13,14 +13,20 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
 /**
- * Manages session persistence as JSONL files in {@code .mewcode/sessions/}.
+ * Manages session persistence as JSONL files in {@code .mewcode/session_transcripts/}.
  *
  * <p>Each session is one JSONL file named {@code yyyyMMdd-HHmmss-xxxx.jsonl}.
  * No separate meta file — listing scans JSONL files directly.
  */
 public class SessionManager {
 
-    public record SessionMessage(String role, String content, long timestamp) {}
+    public record SessionMessage(String role, String content, long timestamp,
+                                  String toolUseId, Boolean isError) {
+        /** Backward-compatible constructor for plain messages. */
+        public SessionMessage(String role, String content, long timestamp) {
+            this(role, content, timestamp, null, null);
+        }
+    }
 
     public record SessionInfo(String id, String firstMessage, int messageCount,
                               long fileSize, Instant modTime) {}
@@ -28,7 +34,7 @@ public class SessionManager {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static Path sessionsDir(String workDir) {
-        return Path.of(workDir, ".mewcode", "sessions");
+        return Path.of(workDir, ".mewcode", "session_transcripts");
     }
 
     // ---- ID generation ----
@@ -54,6 +60,21 @@ public class SessionManager {
      * @param content   message content
      */
     public static void saveMessage(String workDir, String sessionId, String role, String content) {
+        saveMessage(workDir, sessionId, role, content, null, false);
+    }
+
+    /**
+     * Append one message line (with tool_result metadata) to the session JSONL file.
+     *
+     * @param workDir   project working directory
+     * @param sessionId session identifier
+     * @param role      message role
+     * @param content   message content
+     * @param toolUseId tool_use ID (only meaningful for tool_result messages)
+     * @param isError   whether this is an error result
+     */
+    public static void saveMessage(String workDir, String sessionId, String role, String content,
+                                   String toolUseId, boolean isError) {
         try {
             Path baseDir = sessionsDir(workDir);
             Files.createDirectories(baseDir);
@@ -63,6 +84,12 @@ public class SessionManager {
             line.put("role", role);
             line.put("content", content);
             line.put("ts", Instant.now().getEpochSecond());
+            if (toolUseId != null) {
+                line.put("toolUseId", toolUseId);
+            }
+            if (isError) {
+                line.put("isError", true);
+            }
 
             String json = MAPPER.writeValueAsString(line) + "\n";
             Files.writeString(file, json, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -95,8 +122,13 @@ public class SessionManager {
                     String role = (String) map.get("role");
                     String content = (String) map.get("content");
                     long ts = map.get("ts") instanceof Number n ? n.longValue() : 0L;
-                    if (role != null && content != null && !content.isEmpty()) {
-                        messages.add(new SessionMessage(role, content, ts));
+                    String toolUseId = (String) map.get("toolUseId");
+                    Boolean isError = map.get("isError") instanceof Boolean b ? b : null;
+                    if (role != null && content != null) {
+                        // Allow empty content for tool_result/system messages
+                        if (!content.isEmpty() || "tool_result".equals(role) || "system".equals(role)) {
+                            messages.add(new SessionMessage(role, content, ts, toolUseId, isError));
+                        }
                     }
                 } catch (IOException ignored) {
                     // skip malformed lines

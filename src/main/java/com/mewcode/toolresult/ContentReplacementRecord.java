@@ -7,9 +7,9 @@ package com.mewcode.toolresult;
  */
 public record ContentReplacementRecord(String kind, String toolUseId, String replacement) {
 
-    public static final String KIND_TOOL_RESULT = "tool-result";
+    public static final String TOOL_RESULT = "tool-result";
 
     public static ContentReplacementRecord toolResult(String toolUseId, String replacement) {
-        return new ContentReplacementRecord(KIND_TOOL_RESULT, toolUseId, replacement);
+        return new ContentReplacementRecord(TOOL_RESULT, toolUseId, replacement);
     }
 }

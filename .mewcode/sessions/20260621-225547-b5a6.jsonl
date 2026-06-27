@@ -1,2 +1,0 @@
-{"role":"user","content":"你会用skill-creator这个skill吗","ts":1782053782}
-{"role":"assistant","content":"会。`skill-creator` 是用来创建、修改和优化 skill 的工具。Skill 本质上是给 AI 的一段专项指令+SOP，让我在特定场景下表现更稳定——比如约定好的 commit 风格、代码审查流程、或者前端设计的审美倾向。\n\n你可以用它做几件事：\n\n- **从零创建新 skill** — 描述一个你希望我重复执行的流程，我帮你提炼成 skill。\n- **修改现有 skill** — 调整触发条件、SOP 步骤，或者优化措辞让它更精准地被命中。\n- **跑 eval 测试 skill** — 给几个输入样本，看 skill 是否按预期被激活、输出是否达标。\n\n你想用 skill-creator 做什么？比如创建某个工作流的 skill，还是调优已有的？","ts":1782053788}

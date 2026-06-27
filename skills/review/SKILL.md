@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Review current code changes for bugs, security issues, and code quality. Use when the user asks to review code, audit changes, check a PR, or scan for issues.
-allowed_tools: [ReadFile, Grep, Glob, ExecuteCommand]
+allowed_tools: [read_file, grep, glob, execute_command]
 mode: inline
 ---
 

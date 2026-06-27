@@ -23,6 +23,7 @@ import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.ToolRegistry;
 import com.mewcode.tool.ToolResult;
 import com.mewcode.toolresult.ApplyResult;
+import com.mewcode.toolresult.ContentReplacementRecord;
 import com.mewcode.toolresult.ContentReplacementState;
 import com.mewcode.toolresult.ReplacementRecordsIO;
 import com.mewcode.toolresult.ToolResultBudget;
@@ -169,6 +170,22 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
+        // Auto-load replacement state for resumed sessions so spill placeholders
+        // from previous runs are recognized without re-spilling.
+        if (workingDirectory != null && sessionId != null && replacementState.seenIds().isEmpty()) {
+            try {
+                Path sessionDir = Paths.get(workingDirectory, ".mewcode", "session_save_content", sessionId);
+                List<ContentReplacementRecord> records = ReplacementRecordsIO.load(sessionDir);
+                if (!records.isEmpty()) {
+                    for (ContentReplacementRecord r : records) {
+                        replacementState.seenIds().add(r.toolUseId());
+                        replacementState.replacements().put(r.toolUseId(), r.replacement());
+                    }
+                }
+            } catch (Exception ignored) {
+                // Best-effort: if file doesn't exist or is corrupt, start fresh
+            }
+        }
     }
 
     public void setMemoryExtractor(MemoryExtractor memoryExtractor) {
@@ -261,6 +278,7 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         subLoop.setWorkingDirectory(workingDirectory);
         subLoop.setSessionId(sessionId);
         subLoop.setContextWindow(contextWindow);
+        subLoop.setReplacementState(this.replacementState.copy());
 
         // Apply tool filter (excluding Skill tool from filtering)
         if (subToolFilter != null) {
@@ -400,7 +418,8 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 
                 // Layer 1: Apply tool-result budget (runs AFTER Layer 2 — reads from
                 // the possibly-compacted conversation, returns a fresh apiConv)
-                Path sessionDir = Paths.get(workingDirectory, ".mewcode", "session");
+                Path sessionDir = Paths.get(workingDirectory, ".mewcode", "session_save_content",
+                        sessionId != null ? sessionId : "_unknown");
                 ApplyResult applied = ToolResultBudget.apply(conversation, sessionDir, replacementState);
                 if (!applied.newRecords().isEmpty()) {
                     try {
@@ -611,6 +630,15 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                     resultBlocks.add(new ToolResultBlock(tc.getId(), result.getContent(), !result.isSuccess()));
                 }
                 conversation.addToolResultsMessage(resultBlocks);
+
+                // Persist tool_results to session JSONL so /resume can
+                // reconstruct the full tool-call chain.
+                if (workingDirectory != null && sessionId != null) {
+                    for (ToolResultBlock block : resultBlocks) {
+                        SessionManager.saveMessage(workingDirectory, sessionId,
+                                "tool_result", block.content(), block.toolUseId(), block.isError());
+                    }
+                }
             }
 
             // Hit iteration limit

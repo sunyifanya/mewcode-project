@@ -34,12 +34,12 @@ public final class ReplacementRecordsIO {
                 file, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND
         )) {
-            for (ContentReplacementRecord r : records) {
-                String kind = r.kind() == null || r.kind().isEmpty()
-                        ? ContentReplacementRecord.KIND_TOOL_RESULT
-                        : r.kind();
+            for (ContentReplacementRecord contentReplacementRecord : records) {
+                String kind = contentReplacementRecord.kind() == null || contentReplacementRecord.kind().isEmpty()
+                        ? ContentReplacementRecord.TOOL_RESULT
+                        : contentReplacementRecord.kind();
                 ContentReplacementRecord normalized = new ContentReplacementRecord(
-                        kind, r.toolUseId(), r.replacement());
+                        kind, contentReplacementRecord.toolUseId(), contentReplacementRecord.replacement());
                 try {
                     w.write(MAPPER.writeValueAsString(normalized));
                 } catch (JsonProcessingException e) {
