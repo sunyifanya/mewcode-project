@@ -1,0 +1,7 @@
+id: echo-test
+event: post_tool_use
+action:
+  type: command
+  command: "echo \"[Hook fired] tool=${tool} event=${event}\" >> /tmp/mewcode-hook-test.log"
+  timeout: 5
+  background: false

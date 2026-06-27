@@ -6,6 +6,11 @@ import com.mewcode.command.CommandRegistry;
 import com.mewcode.config.AppConfig;
 import com.mewcode.config.ConfigLoader;
 import com.mewcode.conversation.ConversationManager;
+import com.mewcode.hook.EventName;
+import com.mewcode.hook.HookContext;
+import com.mewcode.hook.HookEngine;
+import com.mewcode.hook.HookErrorLogger;
+import com.mewcode.hook.HookLoader;
 import com.mewcode.instructions.InstructionsLoader;
 import com.mewcode.mcp.McpManager;
 import com.mewcode.memory.MemoryExtractor;
@@ -28,6 +33,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -167,6 +173,21 @@ public class MewCode {
             conversation.injectLongTermContext(instructionsContent,
                     memoryManager.getAllMemoryTitles());
 
+            // 6a. Load hooks from .mewcode/hooks/
+            Path hooksDir = Paths.get(workingDirectory, ".mewcode", "hooks");
+            HookLoader.LoadedHooks loadedHooks = HookLoader.load(hooksDir);
+            Path hooksErrorLog = Paths.get(workingDirectory, ".mewcode", "hooks-errors.log");
+            HookErrorLogger hookErrorLogger = new HookErrorLogger(hooksErrorLog);
+            HookEngine hookEngine = new HookEngine(hookErrorLogger);
+            hookEngine.loadHooks(loadedHooks.valid());
+            if (!loadedHooks.valid().isEmpty()) {
+                ui.getWriter().println("Hook: 已加载 " + loadedHooks.valid().size() + " 条规则");
+            }
+            for (String warning : loadedHooks.warnings()) {
+                ui.getWriter().println(" ⚠ Hook 警告: " + warning);
+            }
+            ui.getWriter().flush();
+
             // 6b. Register SkillTool in toolRegistry
             // SkillHost/ForkHost references use the currentAgent holder (updated per-turn).
             // currentAgent[] is declared below but accessible via closure — we need it first.
@@ -236,6 +257,7 @@ public class MewCode {
                 agent.setMemoryExtractor(memoryExtractor);
                 agent.setMemoryManager(memoryManager);
                 agent.setProviderForMemory(provider);
+                agent.setHookEngine(hookEngine);
                 currentAgent[0] = agent;
 
                 // Wire agent loop to TerminalUI for /compact command
@@ -258,6 +280,9 @@ public class MewCode {
             }
             eventConsumer.interrupt();
             memoryExtractor.shutdown();
+
+            // ---- hook: shutdown ----
+            hookEngine.runHooks(EventName.SHUTDOWN, HookContext.of(EventName.SHUTDOWN));
 
             // Shutdown MCP connections
             shutdownMcp(mcpManager);

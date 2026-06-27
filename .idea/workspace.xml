@@ -4,25 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="docs(skills): 添加技能系统规范、任务分解和检查清单&#10;&#10;- 新增技能系统功能规范文档，定义单文件和目录型技能格式&#10;- 添加三级存放路径（内置/用户/项目）及同名覆盖机制说明&#10;- 实现两阶段加载设计（启动期解析元数据，激活期加载完整内容）&#10;- 描述技能工具、工具白名单、内联和分支执行模式的技术细节&#10;- 提供内置样板技能（commit/review/test）的功能定义&#10;- 创建详细任务分解文档，涵盖13个开发任务的实现步骤&#10;- 编写技能系统完整检查清单，包含78个验证点覆盖所有功能">
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="refactor(session): 重构会话管理和工具结果持久化&#10;- 将会话文件目录从 .mewcode/sessions 重命名为 .mewcode/session_transcripts&#10;- 为会话消息添加工具调用ID和错误状态元数据支持&#10;- 实现会话恢复时自动加载替换状态的功能&#10;- 在子循环中传递替换状态副本以保持一致性&#10;- 将工具结果持久化到会话JSONL文件以便恢复重建&#10;- 清理过期会话时同时删除对应的临时工作目录&#10;- 修复ContentReplacementRecord中的常量命名问题&#10;- 改进会话恢复时的工具结果消息累积处理逻辑&#10;- 更新技能配置中的工具名称为小写格式&#10;- 移除过期的临时会话文件和相关配置更改">
+      <change afterPath="$PROJECT_DIR$/.mewcode/hooks/echo-test.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/ActionType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/CommandExecutor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/ConditionEvaluator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/EventName.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookAction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookCondition.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookConditionGroup.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookContext.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookEngine.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookErrorLogger.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HttpExecutor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/PreToolResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/PromptExecutor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/TemplateEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session/replacement_records.jsonl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session/tool_results/call_00_5qccRir2z7CRgCFmeym32396" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session/tool_results/call_00_Oldk9JNtlK7hKVMATRHV2387" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session/tool_results/call_01_S7VZHDQIbKmyHfe6tOp96406" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/sessions/20260621-225547-b5a6.jsonl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/sessions/20260621-231830-c57e.jsonl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/skills/commit/SKILL.md" beforeDir="false" afterPath="$PROJECT_DIR$/skills/commit/SKILL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skills/frontend-design/SKILL.md" beforeDir="false" afterPath="$PROJECT_DIR$/skills/frontend-design/SKILL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skills/review/SKILL.md" beforeDir="false" afterPath="$PROJECT_DIR$/skills/review/SKILL.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skills/test/SKILL.md" beforeDir="false" afterPath="$PROJECT_DIR$/skills/test/SKILL.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionCleanup.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionCleanup.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ContentReplacementRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ContentReplacementRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ReplacementRecordsIO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ReplacementRecordsIO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ToolResultBudget.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ToolResultBudget.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,7 +107,7 @@
       <workItem from="1782437520635" duration="139000" />
       <workItem from="1782437672973" duration="1884000" />
       <workItem from="1782481176572" duration="8032000" />
-      <workItem from="1782531857073" duration="9688000" />
+      <workItem from="1782531857073" duration="15598000" />
     </task>
     <task id="LOCAL-00001" summary="新建工程">
       <option name="closed" value="true" />
@@ -145,7 +149,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782490529412</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="refactor(session): 重构会话管理和工具结果持久化&#10;- 将会话文件目录从 .mewcode/sessions 重命名为 .mewcode/session_transcripts&#10;- 为会话消息添加工具调用ID和错误状态元数据支持&#10;- 实现会话恢复时自动加载替换状态的功能&#10;- 在子循环中传递替换状态副本以保持一致性&#10;- 将工具结果持久化到会话JSONL文件以便恢复重建&#10;- 清理过期会话时同时删除对应的临时工作目录&#10;- 修复ContentReplacementRecord中的常量命名问题&#10;- 改进会话恢复时的工具结果消息累积处理逻辑&#10;- 更新技能配置中的工具名称为小写格式&#10;- 移除过期的临时会话文件和相关配置更改">
+      <option name="closed" value="true" />
+      <created>1782550471059</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1782550471059</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -171,6 +183,7 @@
     <MESSAGE value="docs: 移动项目文档到 reference 目录&#10;- 将 checklist 文档从根目录移动到 reference/checklist&#10;- 将 spec 文档从根目录移动到 reference/spec  &#10;- 将 tasks 文档从根目录移动到 reference/tasks&#10;- 更新文件路径结构以更好地组织项目参考资料&#10;- 保持原有文档内容不变，仅调整存放位置" />
     <MESSAGE value="feat(command): 添加斜杠命令注册与分发系统&#10;- 实现 Command 记录类存储命令元数据（名称、别名、描述、类型等）&#10;- 实现 CommandRegistry 注册中心支持命令注册、冲突检测、查询搜索&#10;- 添加 CommandContext 运行时上下文提供函数式接口注入应用状态&#10;- 注册 13 条内置命令包括 /help、/status、/compact、/session、/memory 等&#10;- 实现命令解析器区分 LOCAL、LOCAL_UI、PROMPT 三种执行模式&#10;- 集成 Tab 补全功能支持命令前缀匹配和菜单选择&#10;- 更新 TerminalUI 状态栏显示 [DEFAULT] 和 [PLAN] 模式标记&#10;- 添加 /review 命令支持代码审查预设提示词注入对话&#10;- 实现别名冲突检测和大小写不敏感匹配机制" />
     <MESSAGE value="docs(skills): 添加技能系统规范、任务分解和检查清单&#10;&#10;- 新增技能系统功能规范文档，定义单文件和目录型技能格式&#10;- 添加三级存放路径（内置/用户/项目）及同名覆盖机制说明&#10;- 实现两阶段加载设计（启动期解析元数据，激活期加载完整内容）&#10;- 描述技能工具、工具白名单、内联和分支执行模式的技术细节&#10;- 提供内置样板技能（commit/review/test）的功能定义&#10;- 创建详细任务分解文档，涵盖13个开发任务的实现步骤&#10;- 编写技能系统完整检查清单，包含78个验证点覆盖所有功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs(skills): 添加技能系统规范、任务分解和检查清单&#10;&#10;- 新增技能系统功能规范文档，定义单文件和目录型技能格式&#10;- 添加三级存放路径（内置/用户/项目）及同名覆盖机制说明&#10;- 实现两阶段加载设计（启动期解析元数据，激活期加载完整内容）&#10;- 描述技能工具、工具白名单、内联和分支执行模式的技术细节&#10;- 提供内置样板技能（commit/review/test）的功能定义&#10;- 创建详细任务分解文档，涵盖13个开发任务的实现步骤&#10;- 编写技能系统完整检查清单，包含78个验证点覆盖所有功能" />
+    <MESSAGE value="refactor(session): 重构会话管理和工具结果持久化&#10;- 将会话文件目录从 .mewcode/sessions 重命名为 .mewcode/session_transcripts&#10;- 为会话消息添加工具调用ID和错误状态元数据支持&#10;- 实现会话恢复时自动加载替换状态的功能&#10;- 在子循环中传递替换状态副本以保持一致性&#10;- 将工具结果持久化到会话JSONL文件以便恢复重建&#10;- 清理过期会话时同时删除对应的临时工作目录&#10;- 修复ContentReplacementRecord中的常量命名问题&#10;- 改进会话恢复时的工具结果消息累积处理逻辑&#10;- 更新技能配置中的工具名称为小写格式&#10;- 移除过期的临时会话文件和相关配置更改" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor(session): 重构会话管理和工具结果持久化&#10;- 将会话文件目录从 .mewcode/sessions 重命名为 .mewcode/session_transcripts&#10;- 为会话消息添加工具调用ID和错误状态元数据支持&#10;- 实现会话恢复时自动加载替换状态的功能&#10;- 在子循环中传递替换状态副本以保持一致性&#10;- 将工具结果持久化到会话JSONL文件以便恢复重建&#10;- 清理过期会话时同时删除对应的临时工作目录&#10;- 修复ContentReplacementRecord中的常量命名问题&#10;- 改进会话恢复时的工具结果消息累积处理逻辑&#10;- 更新技能配置中的工具名称为小写格式&#10;- 移除过期的临时会话文件和相关配置更改" />
   </component>
 </project>

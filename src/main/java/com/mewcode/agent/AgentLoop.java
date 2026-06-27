@@ -7,6 +7,10 @@ import com.mewcode.conversation.ConversationManager;
 import com.mewcode.conversation.Message;
 import com.mewcode.conversation.SystemPromptBuilder;
 import com.mewcode.conversation.ToolResultBlock;
+import com.mewcode.hook.EventName;
+import com.mewcode.hook.HookContext;
+import com.mewcode.hook.HookEngine;
+import com.mewcode.hook.PreToolResult;
 import com.mewcode.memory.MemoryExtractor;
 import com.mewcode.memory.MemoryManager;
 import com.mewcode.permission.PermissionChecker;
@@ -76,6 +80,7 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
     private final AutoCompactTrackingState compactTracking = new AutoCompactTrackingState();
     private final RecoveryState recoveryState = new RecoveryState();
     private ContentReplacementState replacementState = new ContentReplacementState();
+    private HookEngine hookEngine;
 
     private String workingDirectory;
     private int contextWindow = 200_000;
@@ -159,6 +164,14 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
     public RecoveryState getRecoveryState() { return recoveryState; }
     public ContentReplacementState getReplacementState() { return replacementState; }
     public void setReplacementState(ContentReplacementState state) { this.replacementState = state; }
+
+    public void setHookEngine(HookEngine hookEngine) {
+        this.hookEngine = hookEngine;
+    }
+
+    public HookEngine getHookEngine() {
+        return hookEngine;
+    }
 
     public void setWorkingDirectory(String workingDirectory) {
         this.workingDirectory = workingDirectory;
@@ -385,6 +398,11 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 
         offerEvent(AgentEvent.of(AgentEventType.LOOP_STARTED).build());
 
+        // ---- hook: session_start ----
+        if (hookEngine != null) {
+            hookEngine.runHooks(EventName.SESSION_START, HookContext.of(EventName.SESSION_START));
+        }
+
         try {
             for (int iter = 0; iter < maxIterations; iter++) {
                 // ---- check cancellation ----
@@ -397,6 +415,11 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 // ---- progress ----
                 offerEvent(AgentEvent.of(AgentEventType.PROGRESS)
                         .message("第 " + (iter + 1) + "/" + maxIterations + " 轮").build());
+
+                // ---- hook: turn_start ----
+                if (hookEngine != null) {
+                    hookEngine.runHooks(EventName.TURN_START, HookContext.of(EventName.TURN_START));
+                }
 
                 // ---- context compaction ----
 
@@ -451,11 +474,24 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                     activeTools = toolRegistry.getAllTools();
                 }
 
+                // ---- hook: pre_send ----
+                if (hookEngine != null) {
+                    hookEngine.runHooks(EventName.PRE_SEND,
+                            HookContext.ofMessage(EventName.PRE_SEND, "Sending API request (turn " + (iter + 1) + ")"));
+                }
+
                 // Use cleaned messages from Layer 1 for the API call
                 List<Message> apiMessages = applied.apiConv().getMessages(iter, planMode);
                 provider.streamChat(apiMessages, collector, activeTools);
 
                 boolean completed = collector.awaitCompletion(streamTimeoutMs);
+
+                // ---- hook: post_receive ----
+                if (hookEngine != null) {
+                    hookEngine.runHooks(EventName.POST_RECEIVE,
+                            HookContext.ofMessage(EventName.POST_RECEIVE, "Received API response (turn " + (iter + 1) + ")"));
+                }
+
                 if (!completed) {
                     offerEvent(AgentEvent.of(AgentEventType.ERROR)
                             .message("LLM 流超时（" + (streamTimeoutMs / 1000) + " 秒）").build());
@@ -586,6 +622,26 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                     }
                 }
 
+                // ---- pre_tool_use hook interception (before execute, after permission) ----
+                for (int i = 0; i < toolCalls.size(); i++) {
+                    if (preResolved.containsKey(i)) continue; // already denied by permission
+                    ToolCall toolCall = toolCalls.get(i);
+                    if (hookEngine != null) {
+                        PreToolResult preToolResult = hookEngine.runPreToolHooks(toolCall.getName(), toolCall.getInput());
+                        if (preToolResult.rejected()) {
+                            preResolved.put(i, new ToolResult(false, preToolResult.message(), "HOOK_REJECTED"));
+                        }
+                    }
+                }
+
+                // Rebuild executableCalls excluding hook-rejected ones
+                executableCalls = new ArrayList<>();
+                for (int i = 0; i < toolCalls.size(); i++) {
+                    if (!preResolved.containsKey(i)) {
+                        executableCalls.add(toolCalls.get(i));
+                    }
+                }
+
                 // ---- execute tools (read-only concurrent, side-effects sequential) ----
                 List<ToolResult> execResults = executionStrategy.execute(executableCalls, toolRegistry);
 
@@ -627,6 +683,12 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                             .toolResult(result)
                             .build());
 
+                    // ---- hook: post_tool_use ----
+                    if (hookEngine != null) {
+                        hookEngine.runHooks(EventName.POST_TOOL_USE,
+                                HookContext.ofTool(EventName.POST_TOOL_USE, tc.getName(), tc.getInput()));
+                    }
+
                     resultBlocks.add(new ToolResultBlock(tc.getId(), result.getContent(), !result.isSuccess()));
                 }
                 conversation.addToolResultsMessage(resultBlocks);
@@ -639,6 +701,11 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                                 "tool_result", block.content(), block.toolUseId(), block.isError());
                     }
                 }
+
+                // ---- hook: turn_end ----
+                if (hookEngine != null) {
+                    hookEngine.runHooks(EventName.TURN_END, HookContext.of(EventName.TURN_END));
+                }
             }
 
             // Hit iteration limit
@@ -648,6 +715,11 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         } catch (Exception e) {
             offerEvent(AgentEvent.of(AgentEventType.ERROR)
                     .message("Agent Loop 异常: " + e.getMessage()).build());
+        } finally {
+            // ---- hook: session_end (fires on ALL exit paths) ----
+            if (hookEngine != null) {
+                hookEngine.runHooks(EventName.SESSION_END, HookContext.of(EventName.SESSION_END));
+            }
         }
     }
 
