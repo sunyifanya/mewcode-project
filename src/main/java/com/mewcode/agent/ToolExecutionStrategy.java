@@ -8,10 +8,7 @@ import com.mewcode.tool.ToolCategory;
 import com.mewcode.tool.ToolRegistry;
 import com.mewcode.tool.ToolResult;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -52,9 +49,9 @@ public class ToolExecutionStrategy {
         List<IndexedCall> others = new ArrayList<>();
 
         for (int i = 0; i < toolCalls.size(); i++) {
-            ToolCall tc = toolCalls.get(i);
-            Tool tool = registry.get(tc.getName());
-            IndexedCall ic = new IndexedCall(i, tc, tool);
+            ToolCall toolCall = toolCalls.get(i);
+            Tool tool = registry.get(toolCall.getName());
+            IndexedCall ic = new IndexedCall(i, toolCall, tool);
             if (tool != null && tool.category() == ToolCategory.READ) {
                 readOnly.add(ic);
             } else {
@@ -90,45 +87,41 @@ public class ToolExecutionStrategy {
         }
 
         // Phase 2: sequential WRITE + COMMAND
-        for (IndexedCall ic : others) {
-            ToolResult result = executeOne(ic.toolCall, ic.tool);
-            resultMap.put(ic.originalIndex, result);
+        for (IndexedCall indexedCall : others) {
+            ToolResult result = executeOne(indexedCall.toolCall, indexedCall.tool);
+            resultMap.put(indexedCall.originalIndex, result);
         }
 
         // Assemble in original order
         List<ToolResult> results = new ArrayList<>(toolCalls.size());
         for (int i = 0; i < toolCalls.size(); i++) {
             ToolResult r = resultMap.get(i);
-            if (r != null) {
-                results.add(r);
-            } else {
-                results.add(new ToolResult(false, "工具未执行 (内部错误)", "INTERNAL_ERROR"));
-            }
+            results.add(Objects.requireNonNullElseGet(r, () -> new ToolResult(false, "工具未执行 (内部错误)", "INTERNAL_ERROR")));
         }
 
         return results;
     }
 
-    private ToolResult executeOne(ToolCall tc, Tool tool) {
+    private ToolResult executeOne(ToolCall toolCall, Tool tool) {
         if (tool == null) {
-            return new ToolResult(false, "未知工具: " + tc.getName(), "UNKNOWN_TOOL");
+            return new ToolResult(false, "未知工具: " + toolCall.getName(), "UNKNOWN_TOOL");
         }
 
         // Safety-net permission check (ALLOW/DENY only; ASK should never reach here)
-        var pr = permissionChecker.check(tool, tc.getInput());
-        if (pr.isDeny()) {
+        var permissionResult = permissionChecker.check(tool, toolCall.getInput());
+        if (permissionResult.isDeny()) {
             return new ToolResult(false,
-                    "权限拒绝: " + pr.getReason() + "\n提示: " + pr.getHint(),
+                    "权限拒绝: " + permissionResult.getReason() + "\n提示: " + permissionResult.getHint(),
                     "PERMISSION_DENIED");
         }
-        if (pr.isAsk()) {
+        if (permissionResult.isAsk()) {
             return new ToolResult(false,
                     "内部错误: 权限检查返回 ASK 状态，应由 AgentLoop 预处理",
                     "PERMISSION_DENIED");
         }
 
         try {
-            return tool.execute(tc.getInput());
+            return tool.execute(toolCall.getInput());
         } catch (Exception e) {
             return new ToolResult(false,
                     "工具执行异常: " + e.getMessage(),

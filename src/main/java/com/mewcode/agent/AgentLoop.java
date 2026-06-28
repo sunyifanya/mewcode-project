@@ -5,7 +5,12 @@ import com.mewcode.compact.ContextCompactor;
 import com.mewcode.compact.RecoveryState;
 import com.mewcode.conversation.ConversationManager;
 import com.mewcode.conversation.Message;
-import com.mewcode.conversation.SystemPromptBuilder;
+import com.mewcode.subagent.SubAgentSpec;
+import com.mewcode.subagent.ToolFilter;
+
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit;
 import com.mewcode.conversation.ToolResultBlock;
 import com.mewcode.hook.EventName;
 import com.mewcode.hook.HookContext;
@@ -34,10 +39,6 @@ import com.mewcode.toolresult.ToolResultBudget;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -99,6 +100,27 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
     private MemoryManager memoryManager;
     private LLMProvider providerForMemory;
 
+    // ---- sub-agent configuration ----
+
+    /** True when this AgentLoop is a sub-agent (not the main agent). */
+    private boolean isSubAgent;
+
+    /** Display name shown in permission prompts, e.g. "[SubAgent explore]". */
+    private String subAgentName;
+
+    /** Override permission mode for this sub-agent. null = use parent's. */
+    private String subAgentPermissionMode;
+
+    /** Supplier of background task completion notifications. */
+    private Supplier<List<String>> notificationFn;
+
+    /**
+     * Timeout for {@link #runToCompletion()} in milliseconds. 0 means no timeout.
+     * Only used when {@link #isSubAgent} is true. Default 0 (no limit) — callers
+     * that need a deadline (e.g. {@code runWithTimeout}) apply their own.
+     */
+    private long subAgentTimeoutMs = 0;
+
     public AgentLoop(LLMProvider provider, ToolRegistry toolRegistry,
                      ConversationManager conversation,
                      BlockingQueue<AgentEvent> eventQueue,
@@ -114,6 +136,20 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         this.executionStrategy = new ToolExecutionStrategy(permissionChecker);
         this.workingDirectory = System.getProperty("user.dir", ".");
     }
+
+    /**
+     * Configure this AgentLoop as a sub-agent with the given spec.
+     */
+    public void configureAsSubAgent(String name, String systemPrompt, int effectiveMaxTurns,
+                                     String permissionMode) {
+        this.isSubAgent = true;
+        this.subAgentName = name;
+        this.subAgentPermissionMode = permissionMode;
+    }
+
+    public boolean isSubAgent() { return isSubAgent; }
+    public String getSubAgentName() { return subAgentName; }
+    public String getSubAgentPermissionMode() { return subAgentPermissionMode; }
 
     /**
      * Signal the loop to stop at the next check point.
@@ -169,6 +205,17 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         this.hookEngine = hookEngine;
     }
 
+    public void setNotificationFn(Supplier<List<String>> fn) {
+        this.notificationFn = fn;
+    }
+
+    /**
+     * Set the timeout for {@link #runToCompletion()}. 0 means no timeout.
+     */
+    public void setSubAgentTimeoutMs(long timeoutMs) {
+        this.subAgentTimeoutMs = timeoutMs;
+    }
+
     public HookEngine getHookEngine() {
         return hookEngine;
     }
@@ -190,9 +237,9 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 Path sessionDir = Paths.get(workingDirectory, ".mewcode", "session_save_content", sessionId);
                 List<ContentReplacementRecord> records = ReplacementRecordsIO.load(sessionDir);
                 if (!records.isEmpty()) {
-                    for (ContentReplacementRecord r : records) {
-                        replacementState.seenIds().add(r.toolUseId());
-                        replacementState.replacements().put(r.toolUseId(), r.replacement());
+                    for (ContentReplacementRecord contentReplacementRecord : records) {
+                        replacementState.seenIds().add(contentReplacementRecord.toolUseId());
+                        replacementState.replacements().put(contentReplacementRecord.toolUseId(), contentReplacementRecord.replacement());
                     }
                 }
             } catch (Exception ignored) {
@@ -248,7 +295,6 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
     public String runSubAgent(String body, List<Message> seed, List<String> allowedTools, String model) {
         // If a different model is requested, warn but use current provider
         if (model != null && !model.isBlank()) {
-            String currentModel = "";
             offerEvent(AgentEvent.of(AgentEventType.PROGRESS)
                     .message("[system warning] Skill requested model '" + model
                             + "', but fork sub-agents always use the current provider's model. "
@@ -257,31 +303,56 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         }
 
         // Create a fresh ConversationManager for the sub-agent
-        var subConv = new ConversationManager();
+        var subConversationManager = new ConversationManager();
         // Inject seed messages as history
         for (var msg : seed) {
-            var messagesMutable = subConv.getMessagesMutable();
-            messagesMutable.add(msg);
+            subConversationManager.getMessagesMutable().add(msg);
         }
 
         // Inject the skill SOP as a system-reminder
         if (body != null && !body.isBlank()) {
-            var messagesMutable = subConv.getMessagesMutable();
-            messagesMutable.add(new Message("user",
+            subConversationManager.getMessagesMutable().add(new Message("user",
                     "<system-reminder>\n## Active Skill\n\n" + body + "\n</system-reminder>"));
         }
 
-        // Tool whitelist for sub-agent
-        var subToolFilter = (allowedTools != null && !allowedTools.isEmpty())
-                ? (java.util.function.Predicate<String>) allowedTools::contains
-                : null;
+        // Build a temporary SubAgentSpec for this skill fork
+        // Use SubAgent infrastructure for tool filtering
+        List<String> disallowedTools = List.of();
+        if (allowedTools != null && !allowedTools.isEmpty()) {
+            // allowedTools is a whitelist — compute disallowed from full registry
+            List<String> allToolNames = toolRegistry.getAllTools().stream()
+                    .map(Tool::getName)
+                    .toList();
+            List<String> computedDisallowed = new java.util.ArrayList<>();
+            for (String tooltName : allToolNames) {
+                if (!allowedTools.contains(tooltName) && !"Skill".equals(tooltName)) {
+                    computedDisallowed.add(tooltName);
+                }
+            }
+            disallowedTools = computedDisallowed;
+        }
 
-        // Create a sub-agent loop
+        var skillForkSpec = new SubAgentSpec(
+                "skill-fork",
+                "Skill fork sub-agent",
+                List.of(),      // no whitelist — handled by disallowed
+                disallowedTools,
+                body,           // system prompt = skill SOP
+                maxIterations,  // inherit parent's max turns
+                null,           // inherit model
+                null,           // default permission mode
+                false
+        );
+
+        // Build tool filter via SubAgent's ToolFilter
+        var toolFilter = ToolFilter.buildFilter(skillForkSpec, false, false);
+
+        // Create sub-agent
         var subEventQueue = new LinkedBlockingQueue<AgentEvent>(256);
         var subLoop = new AgentLoop(
                 provider,
                 toolRegistry,
-                subConv,
+                subConversationManager,
                 subEventQueue,
                 maxIterations,
                 (int) (streamTimeoutMs / 1000),
@@ -292,11 +363,8 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         subLoop.setSessionId(sessionId);
         subLoop.setContextWindow(contextWindow);
         subLoop.setReplacementState(this.replacementState.copy());
-
-        // Apply tool filter (excluding Skill tool from filtering)
-        if (subToolFilter != null) {
-            subLoop.setToolFilter(subToolFilter);
-        }
+        subLoop.setToolFilter(toolFilter);
+        subLoop.configureAsSubAgent("skill-fork", body, maxIterations, "default");
 
         // Run the sub-agent synchronously on a new thread
         Thread subThread = new Thread(subLoop, "skill-fork-agent");
@@ -309,8 +377,7 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 
         try {
             while (true) {
-                var event = subEventQueue.poll(streamTimeoutMs,
-                        java.util.concurrent.TimeUnit.MILLISECONDS);
+                var event = subEventQueue.poll(streamTimeoutMs, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     hadError = true;
                     errorMsg = "Fork sub-agent timed out after " + (streamTimeoutMs / 1000) + "s";
@@ -320,7 +387,11 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 switch (event.getType()) {
                     case TEXT_DELTA -> {
                         if (event.getText() != null) {
-                            output.append(event.getText());
+                            // 只收集实际输出文本，排除思考过程
+                            var ct = event.getChunkType();
+                            if (ct == null || ct == com.mewcode.provider.ChunkType.TEXT) {
+                                output.append(event.getText());
+                            }
                         }
                     }
                     case ERROR -> {
@@ -343,17 +414,12 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            hadError = true;
             errorMsg = "Fork sub-agent was interrupted";
         }
 
-        if (hadError) {
-            subLoop.cancel();
-            return "[fork error] " + errorMsg;
-        }
-
         subLoop.cancel();
-        return output.toString().trim();
+        return "[fork error] " + errorMsg;
+
     }
 
     // ---- active skills accessors ----
@@ -415,6 +481,13 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 // ---- progress ----
                 offerEvent(AgentEvent.of(AgentEventType.PROGRESS)
                         .message("第 " + (iter + 1) + "/" + maxIterations + " 轮").build());
+
+                // ---- drain task notifications ----
+                if (notificationFn != null) {
+                    for (String note : notificationFn.get()) {
+                        conversation.addSystemReminder(note);
+                    }
+                }
 
                 // ---- hook: turn_start ----
                 if (hookEngine != null) {
@@ -589,34 +662,39 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 Map<Integer, ToolResult> preResolved = new LinkedHashMap<>();
 
                 for (int i = 0; i < toolCalls.size(); i++) {
-                    ToolCall tc = toolCalls.get(i);
-                    Tool tool = toolRegistry.get(tc.getName());
-                    PermissionResult pr = permissionChecker.check(tool, tc.getInput());
+                    ToolCall toolCall = toolCalls.get(i);
+                    Tool tool = toolRegistry.get(toolCall.getName());
+                    PermissionResult permissionResult = permissionChecker.check(tool, toolCall.getInput());
 
-                    switch (pr.getDecision()) {
-                        case ALLOW -> executableCalls.add(tc);
+                    // Sub-agent permission mode override
+                    if (isSubAgent) {
+                        permissionResult = adjustForSubAgentMode(permissionResult, tool);
+                    }
+
+                    switch (permissionResult.getDecision()) {
+                        case ALLOW -> executableCalls.add(toolCall);
                         case DENY -> preResolved.put(i, new ToolResult(false,
-                                "权限拒绝: " + pr.getReason() + "\n提示: " + pr.getHint(),
+                                "权限拒绝: " + permissionResult.getReason() + "\n提示: " + permissionResult.getHint(),
                                 "PERMISSION_DENIED"));
                         case ASK -> {
                             // Blocking human-in-the-loop
-                            PermissionResponse userDecision = waitForPermission(tc, pr);
+                            PermissionResponse userDecision = waitForPermission(toolCall, permissionResult);
                             if (userDecision == PermissionResponse.ALLOW
                                     || userDecision == PermissionResponse.ALLOW_ALWAYS) {
-                                executableCalls.add(tc);
+                                executableCalls.add(toolCall);
                                 // Add rule for future calls
-                                String keyParam = PermissionChecker.extractContent(tc.getName(), tc.getInput());
+                                String keyParam = PermissionChecker.extractContent(toolCall.getName(), toolCall.getInput());
                                 if (keyParam == null) {
-                                    keyParam = tc.getName(); // fallback: tool-level wildcard
+                                    keyParam = toolCall.getName(); // fallback: tool-level wildcard
                                 }
                                 String escapedKey = RuleEngine.escapeGlob(keyParam);
                                 if (userDecision == PermissionResponse.ALLOW_ALWAYS) {
                                     // Session-scoped "don't ask again"
-                                    permissionChecker.addAllowAlways(tc.getName(), keyParam);
+                                    permissionChecker.addAllowAlways(toolCall.getName(), keyParam);
                                 } else {
                                     // One-time — loop scope
                                     permissionChecker.getRuleEngine().addLoopRule(
-                                            new RuleEntry(tc.getName(), escapedKey, RuleEntry.RuleEffect.ALLOW));
+                                            new RuleEntry(toolCall.getName(), escapedKey, RuleEntry.RuleEffect.ALLOW));
                                 }
                             } else {
                                 preResolved.put(i, new ToolResult(false,
@@ -777,12 +855,24 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
     private PermissionResponse waitForPermission(ToolCall tc, PermissionResult checkResult) {
         waitingForPermission = true;
         try {
+            String message = checkResult.getReason();
+            // Annotate with sub-agent identity if applicable
+            if (isSubAgent && subAgentName != null) {
+                message = "[SubAgent " + subAgentName + "] " + message;
+            }
             offerEvent(AgentEvent.of(AgentEventType.PERMISSION_REQUIRED)
                     .permissionToolCall(tc)
                     .toolName(tc.getName())
                     .callId(tc.getId())
-                    .message(checkResult.getReason())
+                    .message(message)
                     .build());
+
+            // For sub-agents, use a 60-second timeout (vs indefinite for main agent)
+            if (isSubAgent) {
+                PermissionResponse permissionResponse = permissionResponseQueue.poll(60, TimeUnit.SECONDS);
+                // timeout → auto-deny
+                return Objects.requireNonNullElse(permissionResponse, PermissionResponse.DENY);
+            }
 
             // Block until UI calls respondToPermission()
             return permissionResponseQueue.take();
@@ -800,5 +890,110 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    // ── Sub-agent helpers ─────────────────────────────────────────────────
+
+    /**
+     * Adjust a permission result based on the sub-agent's permission mode.
+     */
+    private PermissionResult adjustForSubAgentMode(PermissionResult permissionResult, Tool tool) {
+        if (subAgentPermissionMode == null) return permissionResult;
+
+        return switch (subAgentPermissionMode) {
+            case "bypassPermissions" -> permissionResult.isDeny()
+                    ? permissionResult  // hard denies (sandbox, dangerous commands) still pass through
+                    : PermissionResult.allow("dontAsk mode: auto-allow " + tool.getName());
+
+            case "dontAsk" -> permissionResult.isAsk()
+                    ? PermissionResult.allow("dontAsk mode: auto-allow " + tool.getName())
+                    : permissionResult;
+
+            case "acceptEdits" -> (permissionResult.isAsk() && tool.category() == com.mewcode.tool.ToolCategory.WRITE)
+                    ? PermissionResult.allow("acceptEdits mode: auto-allow write " + tool.getName())
+                    : permissionResult;
+
+            case "plan" -> tool.category() == com.mewcode.tool.ToolCategory.READ
+                    ? PermissionResult.allow("plan mode: read-only tool " + tool.getName())
+                    : PermissionResult.deny("plan mode: only read-only tools allowed",
+                            "切换到执行模式或绕过权限");
+
+            default -> permissionResult;  // "default" — no change
+        };
+    }
+
+    /**
+     * Run this AgentLoop to completion synchronously and return the final output text.
+     */
+    public String runToCompletion() {
+        var output = new StringBuilder();
+        boolean hadError = false;
+        String errorMsg = "";
+
+        // Start the agent loop on a virtual thread
+        Thread loopThread = Thread.startVirtualThread(this);
+        long startTime = System.currentTimeMillis();
+        long timeoutMs = isSubAgent ? subAgentTimeoutMs : streamTimeoutMs;
+
+        try {
+            while (true) {
+                AgentEvent event;
+                try {
+                    long remaining;
+                    if (timeoutMs > 0) {
+                        remaining = timeoutMs - (System.currentTimeMillis() - startTime);
+                        if (remaining <= 0) {
+                            errorMsg = "Sub-agent timed out after " + (timeoutMs / 1000) + "s";
+                            break;
+                        }
+                    } else {
+                        remaining = 60_000; // no timeout — poll with 60s idle window
+                    }
+                    event = eventQueue.poll(Math.min(remaining, 30000), TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    errorMsg = "Sub-agent was interrupted";
+                    break;
+                }
+
+                if (event == null) {
+                    continue; // poll timeout, not an error
+                }
+
+                switch (event.getType()) {
+                    case TEXT_DELTA -> {
+                        if (event.getText() != null) {
+                            // 只收集实际输出文本，排除思考过程
+                            var ct = event.getChunkType();
+                            if (ct == null || ct == com.mewcode.provider.ChunkType.TEXT) {
+                                output.append(event.getText());
+                            }
+                        }
+                    }
+                    case ERROR -> {
+                        hadError = true;
+                        errorMsg = event.getMessage() != null ? event.getMessage() : "Unknown error";
+                    }
+                    case LOOP_FINISHED -> {
+                        return output.toString().trim();
+                    }
+                    case CANCELLED -> {
+                        hadError = true;
+                        errorMsg = "Sub-agent was cancelled";
+                    }
+                    default -> {
+                        // TOOL_CALL_START, TOOL_CALL_RESULT, PROGRESS, COMPACT,
+                        // TOKEN_USAGE, PERMISSION_REQUIRED, MEMORY_TICK — consume silently
+                    }
+                }
+
+                if (hadError) break;
+            }
+        } finally {
+            cancelled = true;
+        }
+
+        return "[sub-agent error] " + errorMsg;
+
     }
 }

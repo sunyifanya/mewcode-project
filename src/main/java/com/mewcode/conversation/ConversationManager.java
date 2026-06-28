@@ -126,6 +126,15 @@ public class ConversationManager {
     }
 
     /**
+     * Add a &lt;system-reminder&gt; wrapped message into the conversation.
+     * Used for task notifications, deferred tool notices, etc.
+     */
+    public void addSystemReminder(String content) {
+        messages.add(new Message("user",
+                "<system-reminder>\n" + content + "\n</system-reminder>"));
+    }
+
+    /**
      * Return a copy of the message list with the per-turn reminder injected.
      *
      * The reminder is prefixed to the last non-tool-result user message.

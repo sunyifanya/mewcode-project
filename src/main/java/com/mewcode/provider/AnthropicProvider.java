@@ -123,11 +123,14 @@ public class AnthropicProvider implements LLMProvider {
         root.put("max_tokens", 4096);
         root.put("stream", true);
 
-        // Extended thinking
-        var thinkingNode = jsonMapper.createObjectNode();
-        thinkingNode.put("type", "enabled");
-        thinkingNode.put("budget_tokens", config.getThinkingBudget());
-        root.set("thinking", thinkingNode);
+        // Extended thinking — only for models that support it
+        int thinkingBudget = config.getThinkingBudget();
+        if (thinkingBudget > 0) {
+            var thinkingNode = jsonMapper.createObjectNode();
+            thinkingNode.put("type", "enabled");
+            thinkingNode.put("budget_tokens", thinkingBudget);
+            root.set("thinking", thinkingNode);
+        }
 
         // Tools array — use the provided subset
         if (toolSubset != null && !toolSubset.isEmpty()) {

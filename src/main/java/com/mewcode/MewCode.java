@@ -23,8 +23,12 @@ import com.mewcode.session.SessionCleanup;
 import com.mewcode.session.SessionManager;
 import com.mewcode.skill.SkillCatalog;
 import com.mewcode.skill.SkillTool;
-import com.mewcode.tool.ToolCall;
+import com.mewcode.subagent.AgentCatalog;
+import com.mewcode.subagent.AgentLoader;
+import com.mewcode.subagent.AgentTool;
+import com.mewcode.task.TaskManager;
 import com.mewcode.tool.ToolRegistry;
+import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.impl.*;
 import com.mewcode.tui.StreamingDisplay;
 import com.mewcode.tui.TerminalUI;
@@ -72,12 +76,12 @@ public class MewCode {
             }
 
             // 1b. Resolve project root and working directory
-            java.nio.file.Path projectRoot;
+            Path projectRoot;
             if (configPath.startsWith("classpath:")) {
                 // When loading from classpath, use current directory as project root
                 projectRoot = Paths.get(".").toAbsolutePath().normalize();
             } else {
-                java.nio.file.Path configFile = Paths.get(configPath).toAbsolutePath();
+                Path configFile = Paths.get(configPath).toAbsolutePath();
                 projectRoot = configFile.getParent();
                 if (projectRoot == null) {
                     projectRoot = Paths.get(".").toAbsolutePath();
@@ -102,8 +106,14 @@ public class MewCode {
             // append to the resumed session's JSONL file, not a new one.
             String[] sessionIdHolder = { SessionManager.newId() };
 
+            // 1g. Load sub-agent definitions
+            AgentCatalog agentCatalog = AgentLoader.loadAll(projectRoot);
+
             // 2. Build tool registry (built-in tools)
             ToolRegistry toolRegistry = buildToolRegistry(config);
+
+            // 2a. Create task manager for sub-agent background tasks
+            TaskManager taskManager = new TaskManager();
 
             // 3. Create provider
             LLMProvider provider = ProviderFactory.create(config, toolRegistry);
@@ -146,9 +156,10 @@ public class MewCode {
 
             // Print startup info
             ui.getWriter().println("已加载 provider: " + provider.getProviderName());
-            ui.getWriter().println("模型: " + config.getModel());
-            ui.getWriter().println("工具: " + toolRegistry.size() + " 个");
-            ui.getWriter().println("技能: " + skillCatalog.list().size() + " 个");
+            ui.getWriter().println("model: " + config.getModel());
+            ui.getWriter().println("tool: " + toolRegistry.size() + " 个");
+            ui.getWriter().println("skill: " + skillCatalog.list().size() + " 个");
+            ui.getWriter().println("SubAgent角色: " + agentCatalog.listNames().size() + " 个 (" + String.join(", ", agentCatalog.listNames()) + ")");
             ui.getWriter().println("迭代上限: " + config.getMaxIterations() + " 轮");
             ui.getWriter().println("权限模式: " + permissionChecker.getMode());
             if (!instructionsContent.isEmpty()) {
@@ -212,6 +223,22 @@ public class MewCode {
             );
             toolRegistry.register(skillTool);
 
+            // Register Agent tool (sub-agent system)
+            boolean backgroundEnabled = config.getSubAgent().getBackground().isEnabled();
+            int subAgentMaxTurns = config.getSubAgent().getMaxTurns();
+            AgentTool agentTool = new AgentTool(
+                    provider, toolRegistry, agentCatalog, taskManager,
+                    permissionChecker, subAgentMaxTurns,
+                    config.getStreamTimeoutSeconds(), backgroundEnabled,
+                    workingDirectory);
+            toolRegistry.register(agentTool);
+
+            // Register background task management tools
+            toolRegistry.register(new TaskListTool(taskManager));
+            toolRegistry.register(new TaskGetTool(taskManager));
+            toolRegistry.register(new TaskStopTool(taskManager));
+            toolRegistry.register(new SendMessageTool(taskManager, () -> currentAgent[0]));
+
             // Wire skill commands into CommandRegistry
             cmdRegistry.setSkillRegistry(skillCatalog,
                     () -> currentAgent[0],
@@ -258,6 +285,19 @@ public class MewCode {
                 agent.setMemoryManager(memoryManager);
                 agent.setProviderForMemory(provider);
                 agent.setHookEngine(hookEngine);
+
+                // Wire AgentTool: update parent conversation each turn (for Fork support)
+                agentTool.setParentConversation(conversation);
+                agentTool.setParentReplacementState(agent.getReplacementState());
+
+                // Wire TaskManager: drain completed notifications before each turn
+                agent.setNotificationFn(() -> {
+                    var notes = new java.util.ArrayList<String>();
+                    for (var n : taskManager.drainNotifications()) {
+                        notes.add(n.format());
+                    }
+                    return notes;
+                });
                 currentAgent[0] = agent;
 
                 // Wire agent loop to TerminalUI for /compact command

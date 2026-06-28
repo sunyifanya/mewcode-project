@@ -4,18 +4,45 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理">
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理&#10;- 支持单钩子和多钩子 YAML 格式，实现自动检测和解析&#10;- 修复 AutoCompactTrackingState 中的条件判断错误&#10;- 优化 ExecuteCommandTool 的进程输出处理和字符编码&#10;- 增强会话管理中工具调用元数据的持久化和恢复功能">
+      <change afterPath="$PROJECT_DIR$/.codegraph/daemon.pid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-211949-44e9.jsonl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-212903-b62f.jsonl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-213311-dc7b.jsonl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-214055-3c02.jsonl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/checklist/13-subagent-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/spec/13-subagent-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/tasks/13-subagent-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/skills/local-vision/SKILL.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/skills/local-vision/scripts/ollama_vision.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentCatalog.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/ForkBuilder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/SubAgentSpec.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/ToolFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/task/BackgroundTask.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/task/TaskManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/task/TaskNotification.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/SendMessageTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/TaskGetTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/TaskListTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/TaskStopTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/subagent/builtin/explore.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/subagent/builtin/general-purpose.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/subagent/builtin/plan.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/hooks/echo-test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.mewcode/hooks/echo-test.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260627-123308-c387/replacement_records.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MEWCODE.md" beforeDir="false" afterPath="$PROJECT_DIR$/MEWCODE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/compact/AutoCompactTrackingState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/compact/AutoCompactTrackingState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionRecovery.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/session/SessionRecovery.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/ExecuteCommandTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/ExecuteCommandTool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tui/TerminalUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/ToolExecutionStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/ToolExecutionStrategy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/config/AppConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/AppConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/config/ConfigLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/ConfigLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/ConversationManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/conversation/ConversationManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/AnthropicProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/AnthropicProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ToolResultBudget.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ToolResultBudget.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mewcode.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mewcode.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +123,8 @@
       <workItem from="1782437520635" duration="139000" />
       <workItem from="1782437672973" duration="1884000" />
       <workItem from="1782481176572" duration="8032000" />
-      <workItem from="1782531857073" duration="25031000" />
+      <workItem from="1782531857073" duration="31282000" />
+      <workItem from="1782615793400" duration="18045000" />
     </task>
     <task id="LOCAL-00001" summary="新建工程">
       <option name="closed" value="true" />
@@ -162,7 +190,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782556529088</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理&#10;- 支持单钩子和多钩子 YAML 格式，实现自动检测和解析&#10;- 修复 AutoCompactTrackingState 中的条件判断错误&#10;- 优化 ExecuteCommandTool 的进程输出处理和字符编码&#10;- 增强会话管理中工具调用元数据的持久化和恢复功能">
+      <option name="closed" value="true" />
+      <created>1782568166053</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1782568166053</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -190,6 +226,7 @@
     <MESSAGE value="docs(skills): 添加技能系统规范、任务分解和检查清单&#10;&#10;- 新增技能系统功能规范文档，定义单文件和目录型技能格式&#10;- 添加三级存放路径（内置/用户/项目）及同名覆盖机制说明&#10;- 实现两阶段加载设计（启动期解析元数据，激活期加载完整内容）&#10;- 描述技能工具、工具白名单、内联和分支执行模式的技术细节&#10;- 提供内置样板技能（commit/review/test）的功能定义&#10;- 创建详细任务分解文档，涵盖13个开发任务的实现步骤&#10;- 编写技能系统完整检查清单，包含78个验证点覆盖所有功能" />
     <MESSAGE value="refactor(session): 重构会话管理和工具结果持久化&#10;- 将会话文件目录从 .mewcode/sessions 重命名为 .mewcode/session_transcripts&#10;- 为会话消息添加工具调用ID和错误状态元数据支持&#10;- 实现会话恢复时自动加载替换状态的功能&#10;- 在子循环中传递替换状态副本以保持一致性&#10;- 将工具结果持久化到会话JSONL文件以便恢复重建&#10;- 清理过期会话时同时删除对应的临时工作目录&#10;- 修复ContentReplacementRecord中的常量命名问题&#10;- 改进会话恢复时的工具结果消息累积处理逻辑&#10;- 更新技能配置中的工具名称为小写格式&#10;- 移除过期的临时会话文件和相关配置更改" />
     <MESSAGE value="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理" />
+    <MESSAGE value="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理&#10;- 支持单钩子和多钩子 YAML 格式，实现自动检测和解析&#10;- 修复 AutoCompactTrackingState 中的条件判断错误&#10;- 优化 ExecuteCommandTool 的进程输出处理和字符编码&#10;- 增强会话管理中工具调用元数据的持久化和恢复功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理&#10;- 支持单钩子和多钩子 YAML 格式，实现自动检测和解析&#10;- 修复 AutoCompactTrackingState 中的条件判断错误&#10;- 优化 ExecuteCommandTool 的进程输出处理和字符编码&#10;- 增强会话管理中工具调用元数据的持久化和恢复功能" />
   </component>
 </project>

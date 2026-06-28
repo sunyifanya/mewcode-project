@@ -45,6 +45,9 @@ public class AppConfig {
     @JsonProperty("extraction_interval")
     private int extractionInterval = 5;
 
+    @JsonProperty("subagent")
+    private SubAgentConfig subagent = new SubAgentConfig();
+
     // -- getters --
 
     public String getProtocol() { return protocol; }
@@ -59,6 +62,7 @@ public class AppConfig {
     public int getStreamTimeoutSeconds() { return streamTimeoutSeconds; }
     public int getMaxSessionAgeDays() { return maxSessionAgeDays; }
     public int getExtractionInterval() { return extractionInterval; }
+    public SubAgentConfig getSubAgent() { return subagent; }
 
     // -- setters (used by Jackson) --
 
@@ -74,6 +78,7 @@ public class AppConfig {
     public void setStreamTimeoutSeconds(int streamTimeoutSeconds) { this.streamTimeoutSeconds = streamTimeoutSeconds; }
     public void setMaxSessionAgeDays(int maxSessionAgeDays) { this.maxSessionAgeDays = maxSessionAgeDays; }
     public void setExtractionInterval(int extractionInterval) { this.extractionInterval = extractionInterval; }
+    public void setSubAgent(SubAgentConfig subagent) { this.subagent = subagent; }
 
     /**
      * Nested configuration node for {@code permission} section in mewcode.yaml.
@@ -97,5 +102,35 @@ public class AppConfig {
 
         public Map<String, McpServerConfig> getServers() { return servers; }
         public void setServers(Map<String, McpServerConfig> servers) { this.servers = servers; }
+    }
+
+    /**
+     * Nested configuration node for {@code subagent} section in mewcode.yaml.
+     */
+    public static class SubAgentConfig {
+
+        @JsonProperty("background")
+        private SubAgentBackgroundConfig background = new SubAgentBackgroundConfig();
+
+        @JsonProperty("max_turns")
+        private int maxTurns = 25;
+
+        public SubAgentBackgroundConfig getBackground() { return background; }
+        public void setBackground(SubAgentBackgroundConfig background) { this.background = background; }
+
+        public int getMaxTurns() { return maxTurns; }
+        public void setMaxTurns(int maxTurns) { this.maxTurns = maxTurns; }
+
+        /**
+         * Nested config for background execution.
+         */
+        public static class SubAgentBackgroundConfig {
+
+            @JsonProperty("enabled")
+            private boolean enabled = true;
+
+            public boolean isEnabled() { return enabled; }
+            public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        }
     }
 }

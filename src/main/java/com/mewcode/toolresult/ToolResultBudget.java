@@ -80,7 +80,19 @@ public final class ToolResultBudget {
                     continue;
                 }
                 if (contentReplacementState.seenIds().contains(toolUseId)) {
-                    decisions.put(toolUseId, toolResult.content());
+                    // Previously passed through — if large, spill now (second-pass spill)
+                    if (toolResult.content().length() > SINGLE_RESULT_LIMIT) {
+                        String preview = spillAndPreview(spillDir, toolResult);
+                        if (preview != null) {
+                            contentReplacementState.replacements().put(toolUseId, preview);
+                            records.add(ContentReplacementRecord.toolResult(toolUseId, preview));
+                            decisions.put(toolUseId, preview);
+                        } else {
+                            decisions.put(toolUseId, toolResult.content());
+                        }
+                    } else {
+                        decisions.put(toolUseId, toolResult.content());
+                    }
                     continue;
                 }
                 if (isAlreadyReplaced(toolResult.content())) {
@@ -94,36 +106,34 @@ public final class ToolResultBudget {
                 fresh.add(toolResult);
             }
 
-            // Pass 1: persist any single result above SINGLE_RESULT_LIMIT.
-            Set<String> persistedByP1 = new HashSet<>();
+            // Pass 1: mark large fresh results as seen, pass through full content.
+            // Defer spill to the next turn (second-pass spill in seenIds branch),
+            // so the model sees the content at least once.
+            Set<String> passedThroughP1 = new HashSet<>();
             for (ToolResultBlock toolResultBlock : fresh) {
                 if (toolResultBlock.content().length() <= SINGLE_RESULT_LIMIT) continue;
-                String preview = spillAndPreview(spillDir, toolResultBlock);
-                if (preview == null) {
-                    // Spill failed — freeze as raw, never revisit.
-                    contentReplacementState.seenIds().add(toolResultBlock.toolUseId());
-                    decisions.put(toolResultBlock.toolUseId(), toolResultBlock.content());
-                    persistedByP1.add(toolResultBlock.toolUseId());
-                    continue;
-                }
-                decisions.put(toolResultBlock.toolUseId(), preview);
                 contentReplacementState.seenIds().add(toolResultBlock.toolUseId());
-                contentReplacementState.replacements().put(toolResultBlock.toolUseId(), preview);
-                records.add(ContentReplacementRecord.toolResult(toolResultBlock.toolUseId(), preview));
-                persistedByP1.add(toolResultBlock.toolUseId());
+                decisions.put(toolResultBlock.toolUseId(), toolResultBlock.content());
+                passedThroughP1.add(toolResultBlock.toolUseId());
             }
 
             // Pass 2: aggregate-spill the largest remaining fresh candidates
             // until total ≤ MESSAGE_AGGREGATE_LIMIT.
+            // Exclude passedThroughP1 results — their large content will be
+            // handled by second-pass spill on the next turn.
             List<ToolResultBlock> remaining = new ArrayList<>();
             for (ToolResultBlock toolResultBlock : fresh) {
-                if (!persistedByP1.contains(toolResultBlock.toolUseId())) {
+                if (!passedThroughP1.contains(toolResultBlock.toolUseId())) {
                     remaining.add(toolResultBlock);
                 }
             }
 
             int total = 0;
-            for (String content : decisions.values()) total += content.length();
+            for (var entry : decisions.entrySet()) {
+                if (!passedThroughP1.contains(entry.getKey())) {
+                    total += entry.getValue().length();
+                }
+            }
             for (ToolResultBlock toolResultBlock : remaining) total += toolResultBlock.content().length();
 
             if (total > MESSAGE_AGGREGATE_LIMIT && !remaining.isEmpty()) {
@@ -171,8 +181,7 @@ public final class ToolResultBudget {
     }
 
     private static String buildSpillPreview(int originalSize, Path path) {
-        return "[Result of " + originalSize + " chars saved to " + path
-                + " — read with ReadFile if needed]";
+        return "[Result of " + originalSize + " chars saved to " + path + "]";
     }
 
     private static String spillAndPreview(Path spillDir, ToolResultBlock toolResultBlock) {

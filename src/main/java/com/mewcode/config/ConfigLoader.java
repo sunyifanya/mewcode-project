@@ -128,8 +128,8 @@ public class ConfigLoader {
             System.err.println("错误: 配置文件缺少必填字段 'api_key'");
             System.exit(1);
         }
-        if (config.getThinkingBudget() <= 0) {
-            config.setThinkingBudget(16000);
+        if (config.getThinkingBudget() < 0) {
+            config.setThinkingBudget(0);
         }
 
         // Validate / default-fill tool config
