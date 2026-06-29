@@ -72,7 +72,13 @@
       "Bash(JAVA_HOME=\"/d/sorftware/jdk-21.0.11\" \"/d/sorftware/apache-maven-3.9.15-bin/bin/mvn\" compile -q)",
       "Bash(JAVA_HOME=\"/d/sorftware/jdk-21.0.11\" \"/d/sorftware/apache-maven-3.9.15-bin/bin/mvn\" package -DskipTests -q)",
       "Bash(java -XshowSettings:properties -version)",
-      "Bash(JAVA_HOME=\"D:/sorftware/jdk-21.0.11\" \"/c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn\" compile -q -f D:/code/mewcode/mewcode/pom.xml)"
+      "Bash(JAVA_HOME=\"D:/sorftware/jdk-21.0.11\" \"/c/Users/16322/AppData/Local/Temp/apache-maven-3.9.6/bin/mvn\" compile -q -f D:/code/mewcode/mewcode/pom.xml)",
+      "Bash(./gradlew compileJava)",
+      "Bash(javac --version)",
+      "mcp__codegraph__codegraph_callees",
+      "mcp__codegraph__codegraph_callers",
+      "Bash(curl *)",
+      "Bash(git *)"
     ]
   },
   "enableAllProjectMcpServers": true,

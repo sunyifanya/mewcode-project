@@ -2,6 +2,7 @@ package com.mewcode.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,6 +49,9 @@ public class AppConfig {
     @JsonProperty("subagent")
     private SubAgentConfig subagent = new SubAgentConfig();
 
+    @JsonProperty("worktree")
+    private WorktreeConfig worktree = new WorktreeConfig();
+
     // -- getters --
 
     public String getProtocol() { return protocol; }
@@ -63,6 +67,7 @@ public class AppConfig {
     public int getMaxSessionAgeDays() { return maxSessionAgeDays; }
     public int getExtractionInterval() { return extractionInterval; }
     public SubAgentConfig getSubAgent() { return subagent; }
+    public WorktreeConfig getWorktree() { return worktree; }
 
     // -- setters (used by Jackson) --
 
@@ -79,6 +84,7 @@ public class AppConfig {
     public void setMaxSessionAgeDays(int maxSessionAgeDays) { this.maxSessionAgeDays = maxSessionAgeDays; }
     public void setExtractionInterval(int extractionInterval) { this.extractionInterval = extractionInterval; }
     public void setSubAgent(SubAgentConfig subagent) { this.subagent = subagent; }
+    public void setWorktree(WorktreeConfig worktree) { this.worktree = worktree; }
 
     /**
      * Nested configuration node for {@code permission} section in mewcode.yaml.
@@ -131,6 +137,40 @@ public class AppConfig {
 
             public boolean isEnabled() { return enabled; }
             public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        }
+    }
+
+    /**
+     * Nested configuration node for {@code worktree} section in mewcode.yaml.
+     */
+    public static class WorktreeConfig {
+
+        @JsonProperty("enabled")
+        private boolean enabled = true;
+
+        @JsonProperty("symlink_dirs")
+        private List<String> symlinkDirs = List.of();
+
+        @JsonProperty("stale_cleanup_interval_seconds")
+        private int staleCleanupIntervalSeconds = 3600;
+
+        @JsonProperty("stale_cutoff_hours")
+        private int staleCutoffHours = 24;
+
+        public boolean isEnabled() { return enabled; }
+        public void setEnabled(boolean enabled) { this.enabled = enabled; }
+
+        public List<String> getSymlinkDirs() { return symlinkDirs; }
+        public void setSymlinkDirs(List<String> symlinkDirs) { this.symlinkDirs = symlinkDirs; }
+
+        public int getStaleCleanupIntervalSeconds() { return staleCleanupIntervalSeconds; }
+        public void setStaleCleanupIntervalSeconds(int staleCleanupIntervalSeconds) {
+            this.staleCleanupIntervalSeconds = staleCleanupIntervalSeconds;
+        }
+
+        public int getStaleCutoffHours() { return staleCutoffHours; }
+        public void setStaleCutoffHours(int staleCutoffHours) {
+            this.staleCutoffHours = staleCutoffHours;
         }
     }
 }

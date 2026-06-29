@@ -32,6 +32,9 @@ import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.impl.*;
 import com.mewcode.tui.StreamingDisplay;
 import com.mewcode.tui.TerminalUI;
+import com.mewcode.worktree.StaleCleanup;
+import com.mewcode.worktree.WorktreeManager;
+import com.mewcode.worktree.WorktreeSessionStore;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -40,7 +43,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class MewCode {
 
@@ -115,6 +120,15 @@ public class MewCode {
             // 2a. Create task manager for sub-agent background tasks
             TaskManager taskManager = new TaskManager();
 
+            // 2b. Create worktree manager (if enabled)
+            AppConfig.WorktreeConfig worktreeConfig = config.getWorktree();
+            WorktreeManager worktreeManager = null;
+            ScheduledExecutorService cleanupExecutor = null;
+            if (worktreeConfig.isEnabled()) {
+                worktreeManager = new WorktreeManager(workingDirectory,
+                        worktreeConfig.getSymlinkDirs(), worktreeConfig.getStaleCutoffHours());
+            }
+
             // 3. Create provider
             LLMProvider provider = ProviderFactory.create(config, toolRegistry);
 
@@ -162,6 +176,10 @@ public class MewCode {
             ui.getWriter().println("SubAgent角色: " + agentCatalog.listNames().size() + " 个 (" + String.join(", ", agentCatalog.listNames()) + ")");
             ui.getWriter().println("迭代上限: " + config.getMaxIterations() + " 轮");
             ui.getWriter().println("权限模式: " + permissionChecker.getMode());
+            if (worktreeManager != null) {
+                ui.getWriter().println("Worktree: 已启用 (清理间隔: " + worktreeConfig.getStaleCleanupIntervalSeconds()
+                        + "s, 过期阈值: " + worktreeConfig.getStaleCutoffHours() + "h)");
+            }
             if (!instructionsContent.isEmpty()) {
                 ui.getWriter().println("指令: 已加载 ("
                         + (instructionsContent.length() > 80
@@ -200,9 +218,6 @@ public class MewCode {
             ui.getWriter().flush();
 
             // 6b. Register SkillTool in toolRegistry
-            // SkillHost/ForkHost references use the currentAgent holder (updated per-turn).
-            // currentAgent[] is declared below but accessible via closure — we need it first.
-            // We'll create a holder then register the Skill tool.
 
             // 6c. Wire skill commands into CommandRegistry (pending — needs agent holder)
 
@@ -233,6 +248,28 @@ public class MewCode {
                     workingDirectory);
             toolRegistry.register(agentTool);
 
+            // Wire worktree manager to AgentTool (for isolation: "worktree")
+            if (worktreeManager != null) {
+                agentTool.setWorktreeManager(worktreeManager);
+                // Register worktree session tools
+                toolRegistry.register(new EnterWorktreeTool(worktreeManager, sessionIdHolder[0]));
+                toolRegistry.register(new ExitWorktreeTool(worktreeManager));
+                // Load and restore any saved worktree session
+                var savedSession = WorktreeSessionStore.load(workingDirectory);
+                if (savedSession != null) {
+                    WorktreeSessionStore.restoreSession(savedSession);
+                }
+                // Start stale cleanup loop
+                cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+                    Thread t = new Thread(r, "worktree-cleanup");
+                    t.setDaemon(true);
+                    return t;
+                });
+                StaleCleanup.startCleanupLoop(cleanupExecutor, workingDirectory,
+                        worktreeConfig.getStaleCleanupIntervalSeconds(),
+                        worktreeConfig.getStaleCutoffHours());
+            }
+
             // Register background task management tools
             toolRegistry.register(new TaskListTool(taskManager));
             toolRegistry.register(new TaskGetTool(taskManager));
@@ -240,9 +277,7 @@ public class MewCode {
             toolRegistry.register(new SendMessageTool(taskManager, () -> currentAgent[0]));
 
             // Wire skill commands into CommandRegistry
-            cmdRegistry.setSkillRegistry(skillCatalog,
-                    () -> currentAgent[0],
-                    () -> currentAgent[0]);
+            cmdRegistry.setSkillRegistry(skillCatalog, () -> currentAgent[0], () -> currentAgent[0]);
             cmdRegistry.registerSkillCommands();
 
             // 10. Start event consumer thread
@@ -320,6 +355,9 @@ public class MewCode {
             }
             eventConsumer.interrupt();
             memoryExtractor.shutdown();
+            if (cleanupExecutor != null) {
+                cleanupExecutor.shutdownNow();
+            }
 
             // ---- hook: shutdown ----
             hookEngine.runHooks(EventName.SHUTDOWN, HookContext.of(EventName.SHUTDOWN));

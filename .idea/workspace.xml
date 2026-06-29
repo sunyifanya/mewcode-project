@@ -4,11 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理&#10;- 支持单钩子和多钩子 YAML 格式，实现自动检测和解析&#10;- 修复 AutoCompactTrackingState 中的条件判断错误&#10;- 优化 ExecuteCommandTool 的进程输出处理和字符编码&#10;- 增强会话管理中工具调用元数据的持久化和恢复功能">
-      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-211949-44e9.jsonl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-212903-b62f.jsonl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-213311-dc7b.jsonl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260627-214055-3c02.jsonl" beforeDir="false" />
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.mewcode/agents/security-reviewer.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/checklist/14-worktree-isolation-checklist.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/spec/14-worktree-isolation-spec.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/reference/tasks/14-worktree-isolation-tasks.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/EnterWorktreeTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/tool/impl/ExitWorktreeTool.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/AgentWorktree.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/PostCreationSetup.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/SlugValidator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/StaleCleanup.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/WorktreeChanges.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/WorktreeManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/WorktreeSession.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/worktree/WorktreeSessionStore.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.codegraph/daemon.pid" beforeDir="false" afterPath="$PROJECT_DIR$/.codegraph/daemon.pid" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/ToolExecutionStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/ToolExecutionStrategy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/config/AppConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/AppConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/AnthropicProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/AnthropicProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/LLMProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/LLMProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mewcode.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mewcode.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,31 +58,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.MewCode.executor": "Debug",
-    "Maven.mewcode [clean].executor": "Run",
-    "Maven.mewcode [deploy].executor": "Run",
-    "Maven.mewcode [package].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "master",
-    "git.auto.fetch.suggestion.counter": "1",
-    "kotlin-language-version-configured": "true",
-    "nodejs_package_manager_path": "npm",
-    "onboarding.tips.debug.path": "D:/code/mewcode/mewcode/src/main/java/org/example/Main.java",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.MewCode.executor&quot;: &quot;Debug&quot;,
+    &quot;Maven.mewcode [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.mewcode [deploy].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.mewcode [package].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git.auto.fetch.suggestion.counter&quot;: &quot;1&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;D:/code/mewcode/mewcode/src/main/java/org/example/Main.java&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="" />
@@ -90,7 +111,9 @@
       <workItem from="1782437672973" duration="1884000" />
       <workItem from="1782481176572" duration="8032000" />
       <workItem from="1782531857073" duration="31282000" />
-      <workItem from="1782615793400" duration="18367000" />
+      <workItem from="1782615793400" duration="25958000" />
+      <workItem from="1782698489959" duration="8101000" />
+      <workItem from="1782714236925" duration="5840000" />
     </task>
     <task id="LOCAL-00001" summary="新建工程">
       <option name="closed" value="true" />
@@ -172,7 +195,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782642168859</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理&#10;- 支持单钩子和多钩子 YAML 格式，实现自动检测和解析&#10;- 修复 AutoCompactTrackingState 中的条件判断错误&#10;- 优化 ExecuteCommandTool 的进程输出处理和字符编码&#10;- 增强会话管理中工具调用元数据的持久化和恢复功能">
+      <option name="closed" value="true" />
+      <created>1782642263065</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1782642263065</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -186,7 +217,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>

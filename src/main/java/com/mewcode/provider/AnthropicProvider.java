@@ -41,6 +41,9 @@ public class AnthropicProvider implements LLMProvider {
     private long lastCacheCreationTokens;
     private long lastCacheReadTokens;
 
+    /** Per-request model override — set by streamChat(..., modelOverride), cleared after use. */
+    private String requestModelOverride;
+
     public AnthropicProvider(AppConfig config, ToolRegistry toolRegistry) {
         this.config = config;
         this.toolRegistry = toolRegistry;
@@ -63,6 +66,17 @@ public class AnthropicProvider implements LLMProvider {
     @Override
     public void streamChat(List<Message> messages, StreamCallback callback, List<Tool> toolSubset) {
         streamWithRetry(messages, callback, 0, toolSubset);
+    }
+
+    @Override
+    public void streamChat(List<Message> messages, StreamCallback callback,
+                           List<Tool> toolSubset, String modelOverride) {
+        this.requestModelOverride = modelOverride;
+        try {
+            streamWithRetry(messages, callback, 0, toolSubset);
+        } finally {
+            this.requestModelOverride = null;
+        }
     }
 
     private void streamWithRetry(List<Message> messages, StreamCallback callback, int attempt) {
@@ -119,7 +133,7 @@ public class AnthropicProvider implements LLMProvider {
 
     private String buildRequestBody(List<Message> messages, List<com.mewcode.tool.Tool> toolSubset) throws Exception {
         var root = jsonMapper.createObjectNode();
-        root.put("model", config.getModel());
+        root.put("model", resolveModel(requestModelOverride));
         root.put("max_tokens", 4096);
         root.put("stream", true);
 
@@ -404,5 +418,25 @@ public class AnthropicProvider implements LLMProvider {
     @Override
     public String getProviderName() {
         return "anthropic";
+    }
+
+    /**
+     * Resolve a model name: full IDs pass through, shorthand aliases map to
+     * current-generation model IDs.
+     */
+    private String resolveModel(String modelName) {
+        if (modelName == null || modelName.isBlank()) {
+            return config.getModel();
+        }
+        if (modelName.contains("claude-")) {
+            return modelName; // already a full model ID
+        }
+        return switch (modelName.toLowerCase()) {
+            case "sonnet" -> "claude-sonnet-4-20250514";
+            case "opus"  -> "claude-opus-4-20250514";
+            case "haiku" -> "claude-haiku-4-5-20251001";
+            case "fable" -> "claude-fable-5";
+            default      -> config.getModel();
+        };
     }
 }

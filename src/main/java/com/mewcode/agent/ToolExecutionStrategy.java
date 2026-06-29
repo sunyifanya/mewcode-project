@@ -107,18 +107,9 @@ public class ToolExecutionStrategy {
             return new ToolResult(false, "未知工具: " + toolCall.getName(), "UNKNOWN_TOOL");
         }
 
-        // Safety-net permission check (ALLOW/DENY only; ASK should never reach here)
-        var permissionResult = permissionChecker.check(tool, toolCall.getInput());
-        if (permissionResult.isDeny()) {
-            return new ToolResult(false,
-                    "权限拒绝: " + permissionResult.getReason() + "\n提示: " + permissionResult.getHint(),
-                    "PERMISSION_DENIED");
-        }
-        if (permissionResult.isAsk()) {
-            return new ToolResult(false,
-                    "内部错误: 权限检查返回 ASK 状态，应由 AgentLoop 预处理",
-                    "PERMISSION_DENIED");
-        }
+        // Permission already pre-resolved by AgentLoop.run() — see the
+        // permission pre-check loop and adjustForSubAgentMode there.
+        // Redundant re-checking here would break sub-agent modes like "dontAsk".
 
         try {
             return tool.execute(toolCall.getInput());

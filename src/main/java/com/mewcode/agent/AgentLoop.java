@@ -28,6 +28,7 @@ import com.mewcode.session.SessionManager;
 import com.mewcode.skill.SkillForkHost;
 import com.mewcode.skill.SkillHost;
 import com.mewcode.tool.Tool;
+import com.mewcode.task.TaskManager;
 import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.ToolRegistry;
 import com.mewcode.tool.ToolResult;
@@ -111,6 +112,15 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
     /** Override permission mode for this sub-agent. null = use parent's. */
     private String subAgentPermissionMode;
 
+    /** Per-request model override (shorthand alias or full model ID). null = use config default. */
+    private String modelOverride;
+
+    /** TaskManager for tracking tool usage in sub-agent tasks. null for main agent. */
+    private TaskManager taskManager;
+
+    /** Sub-agent task ID for reporting tool usage back to TaskManager. null for main agent. */
+    private String subAgentTaskId;
+
     /** Supplier of background task completion notifications. */
     private Supplier<List<String>> notificationFn;
 
@@ -150,6 +160,21 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
     public boolean isSubAgent() { return isSubAgent; }
     public String getSubAgentName() { return subAgentName; }
     public String getSubAgentPermissionMode() { return subAgentPermissionMode; }
+
+    /** Set a per-request model override (shorthand alias or full model ID). */
+    public void setModelOverride(String model) {
+        this.modelOverride = model;
+    }
+
+    /** Inject TaskManager for reporting sub-agent tool usage. */
+    public void setTaskManager(TaskManager taskManager) {
+        this.taskManager = taskManager;
+    }
+
+    /** Set the task ID for this sub-agent so tool usage is tracked. */
+    public void setSubAgentTaskId(String taskId) {
+        this.subAgentTaskId = taskId;
+    }
 
     /**
      * Signal the loop to stop at the next check point.
@@ -387,9 +412,9 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 switch (event.getType()) {
                     case TEXT_DELTA -> {
                         if (event.getText() != null) {
-                            // 只收集实际输出文本，排除思考过程
                             var ct = event.getChunkType();
-                            if (ct == null || ct == com.mewcode.provider.ChunkType.TEXT) {
+                            if (ct == null || ct == com.mewcode.provider.ChunkType.TEXT
+                                    || ct == com.mewcode.provider.ChunkType.THINKING) {
                                 output.append(event.getText());
                             }
                         }
@@ -547,6 +572,13 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                     activeTools = toolRegistry.getAllTools();
                 }
 
+                // Apply skill tool filter (Skill tool always passes through)
+                if (skillToolFilter != null) {
+                    activeTools = activeTools.stream()
+                            .filter(t -> "Skill".equals(t.getName()) || skillToolFilter.test(t.getName()))
+                            .toList();
+                }
+
                 // ---- hook: pre_send ----
                 if (hookEngine != null) {
                     hookEngine.runHooks(EventName.PRE_SEND,
@@ -555,7 +587,11 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 
                 // Use cleaned messages from Layer 1 for the API call
                 List<Message> apiMessages = applied.apiConv().getMessages(iter, planMode);
-                provider.streamChat(apiMessages, collector, activeTools);
+                if (modelOverride != null) {
+                    provider.streamChat(apiMessages, collector, activeTools, modelOverride);
+                } else {
+                    provider.streamChat(apiMessages, collector, activeTools);
+                }
 
                 boolean completed = collector.awaitCompletion(streamTimeoutMs);
 
@@ -772,6 +808,11 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                                 HookContext.ofTool(EventName.POST_TOOL_USE, tc.getName(), tc.getInput()));
                     }
 
+                    // Track tool usage for sub-agent tasks
+                    if (taskManager != null && subAgentTaskId != null) {
+                        taskManager.incrementToolCount(subAgentTaskId, tc.getName());
+                    }
+
                     resultBlocks.add(new ToolResultBlock(tc.getId(), result.getContent(), !result.isSuccess()));
                 }
                 conversation.addToolResultsMessage(resultBlocks);
@@ -963,9 +1004,9 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 switch (event.getType()) {
                     case TEXT_DELTA -> {
                         if (event.getText() != null) {
-                            // 只收集实际输出文本，排除思考过程
                             var ct = event.getChunkType();
-                            if (ct == null || ct == com.mewcode.provider.ChunkType.TEXT) {
+                            if (ct == null || ct == com.mewcode.provider.ChunkType.TEXT
+                                    || ct == com.mewcode.provider.ChunkType.THINKING) {
                                 output.append(event.getText());
                             }
                         }

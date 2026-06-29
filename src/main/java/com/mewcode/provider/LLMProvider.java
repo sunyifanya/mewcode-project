@@ -31,6 +31,17 @@ public interface LLMProvider {
     }
 
     /**
+     * Send a streaming chat request with a specific tool subset and an optional model
+     * override. The override may be a shorthand alias (e.g. "sonnet", "opus", "haiku")
+     * or a full model ID. The default implementation ignores it and delegates to
+     * {@link #streamChat(List, StreamCallback, List)}.
+     */
+    default void streamChat(List<Message> messages, StreamCallback callback,
+                            List<Tool> toolSubset, String modelOverride) {
+        streamChat(messages, callback, toolSubset);
+    }
+
+    /**
      * @return short provider identifier (e.g. "anthropic", "openai")
      */
     String getProviderName();
