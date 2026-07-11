@@ -3,16 +3,9 @@ package com.mewcode.permission;
 import com.mewcode.tool.ToolCategory;
 
 /**
- * Global permission mode that defines the default behaviour when no
+ * Global permission mode that defines the default behavior when no
  * explicit rule matches a tool call.
  *
- * <p>Inspired by Claude Code's permission modes:
- * <ul>
- *   <li><b>DEFAULT</b> — auto-allow READ, ask for WRITE and COMMAND.</li>
- *   <li><b>ACCEPT_EDITS</b> — auto-allow READ and WRITE, ask for COMMAND.</li>
- *   <li><b>PLAN</b> — delegates to DEFAULT (plus plan-mode exceptions in PermissionChecker).</li>
- *   <li><b>BYPASS</b> — auto-allow everything ("YOLO mode").</li>
- * </ul>
  */
 public enum PermissionMode {
 

@@ -52,6 +52,9 @@ public class AppConfig {
     @JsonProperty("worktree")
     private WorktreeConfig worktree = new WorktreeConfig();
 
+    @JsonProperty("team")
+    private TeamConfig team = new TeamConfig();
+
     // -- getters --
 
     public String getProtocol() { return protocol; }
@@ -68,6 +71,7 @@ public class AppConfig {
     public int getExtractionInterval() { return extractionInterval; }
     public SubAgentConfig getSubAgent() { return subagent; }
     public WorktreeConfig getWorktree() { return worktree; }
+    public TeamConfig getTeam() { return team; }
 
     // -- setters (used by Jackson) --
 
@@ -85,6 +89,7 @@ public class AppConfig {
     public void setExtractionInterval(int extractionInterval) { this.extractionInterval = extractionInterval; }
     public void setSubAgent(SubAgentConfig subagent) { this.subagent = subagent; }
     public void setWorktree(WorktreeConfig worktree) { this.worktree = worktree; }
+    public void setTeam(TeamConfig team) { this.team = team; }
 
     /**
      * Nested configuration node for {@code permission} section in mewcode.yaml.
@@ -171,6 +176,30 @@ public class AppConfig {
         public int getStaleCutoffHours() { return staleCutoffHours; }
         public void setStaleCutoffHours(int staleCutoffHours) {
             this.staleCutoffHours = staleCutoffHours;
+        }
+    }
+
+    /**
+     * Nested configuration node for {@code team} section in mewcode.yaml.
+     */
+    public static class TeamConfig {
+
+        @JsonProperty("coordinator")
+        private CoordinatorConfig coordinator = new CoordinatorConfig();
+
+        public CoordinatorConfig getCoordinator() { return coordinator; }
+        public void setCoordinator(CoordinatorConfig coordinator) { this.coordinator = coordinator; }
+
+        /**
+         * Nested config for coordinator mode.
+         */
+        public static class CoordinatorConfig {
+
+            @JsonProperty("enabled")
+            private boolean enabled = false;
+
+            public boolean isEnabled() { return enabled; }
+            public void setEnabled(boolean enabled) { this.enabled = enabled; }
         }
     }
 }

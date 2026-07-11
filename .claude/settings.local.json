@@ -78,7 +78,13 @@
       "mcp__codegraph__codegraph_callees",
       "mcp__codegraph__codegraph_callers",
       "Bash(curl *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Read(//d/mewcode-java/java/**)",
+      "Read(//d/mewcode-java/java//**)",
+      "Bash(ls mvnw*)",
+      "Bash(ls gradlew*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
     ]
   },
   "enableAllProjectMcpServers": true,

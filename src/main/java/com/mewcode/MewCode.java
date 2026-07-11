@@ -26,10 +26,17 @@ import com.mewcode.skill.SkillTool;
 import com.mewcode.subagent.AgentCatalog;
 import com.mewcode.subagent.AgentLoader;
 import com.mewcode.subagent.AgentTool;
+import com.mewcode.task.TaskList;
 import com.mewcode.task.TaskManager;
+import com.mewcode.task.TaskTools;
 import com.mewcode.tool.ToolRegistry;
 import com.mewcode.tool.ToolCall;
 import com.mewcode.tool.impl.*;
+import com.mewcode.teams.Coordinator;
+import com.mewcode.teams.AgentNameRegistry;
+import com.mewcode.teams.TeamManager;
+import com.mewcode.teams.TeamTools;
+import com.mewcode.teams.TeammateRunner;
 import com.mewcode.tui.StreamingDisplay;
 import com.mewcode.tui.TerminalUI;
 import com.mewcode.worktree.StaleCleanup;
@@ -80,7 +87,19 @@ public class MewCode {
                 }
             }
 
-            // 1b. Resolve project root and working directory
+            // 1b. Parse CLI flags (non-config args)
+            boolean isTeammateMode = false;
+            String cliTeamName = null;
+            String cliAgentName = null;
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                    case "--teammate" -> isTeammateMode = true;
+                    case "--team-name" -> { if (i + 1 < args.length) cliTeamName = args[++i]; }
+                    case "--agent-name" -> { if (i + 1 < args.length) cliAgentName = args[++i]; }
+                }
+            }
+
+            // 1c. Resolve project root and working directory
             Path projectRoot;
             if (configPath.startsWith("classpath:")) {
                 // When loading from classpath, use current directory as project root
@@ -127,6 +146,15 @@ public class MewCode {
             if (worktreeConfig.isEnabled()) {
                 worktreeManager = new WorktreeManager(workingDirectory,
                         worktreeConfig.getSymlinkDirs(), worktreeConfig.getStaleCutoffHours());
+            }
+
+            // 2c. Create team manager
+            TeamManager teamManager = new TeamManager();
+
+            // 2d. Teammate mode: join existing team and enter polling loop
+            if (isTeammateMode && cliTeamName != null && cliAgentName != null) {
+                runTeammateMode(config, teamManager, cliTeamName, cliAgentName, workingDirectory);
+                return;
             }
 
             // 3. Create provider
@@ -270,11 +298,24 @@ public class MewCode {
                         worktreeConfig.getStaleCutoffHours());
             }
 
-            // Register background task management tools
-            toolRegistry.register(new TaskListTool(taskManager));
-            toolRegistry.register(new TaskGetTool(taskManager));
+            // Wire team manager to AgentTool (for team_name support)
+            agentTool.setTeamManager(teamManager);
+
+            // Register team coordination tools
+            toolRegistry.register(new TeamTools.TeamCreateTool(teamManager));
+            toolRegistry.register(new TeamTools.TeamDeleteTool(teamManager));
+            // SendMessage for the lead — allows communication with teammates
+            toolRegistry.register(new TeamTools.SendMessageTool(teamManager, "lead"));
+
+            // Register shared task tools (deferred, for Lead and teammates)
+            TaskList sharedTaskList = new TaskList("shared", workingDirectory);
+            toolRegistry.register(new TaskTools.TaskCreateTool(sharedTaskList));
+            toolRegistry.register(new TaskTools.TaskGetTool(sharedTaskList));
+            toolRegistry.register(new TaskTools.TaskListTool(sharedTaskList));
+            toolRegistry.register(new TaskTools.TaskUpdateTool(sharedTaskList));
+
+            // Register background sub-agent task management tools (TaskStop has no shared equivalent)
             toolRegistry.register(new TaskStopTool(taskManager));
-            toolRegistry.register(new SendMessageTool(taskManager, () -> currentAgent[0]));
 
             // Wire skill commands into CommandRegistry
             cmdRegistry.setSkillRegistry(skillCatalog, () -> currentAgent[0], () -> currentAgent[0]);
@@ -331,8 +372,18 @@ public class MewCode {
                     for (var n : taskManager.drainNotifications()) {
                         notes.add(n.format());
                     }
+                    // Also drain team mailbox notifications
+                    notes.addAll(TeammateRunner.drainLeadMailbox(teamManager));
                     return notes;
                 });
+
+                // Coordinator mode: two-lock gating
+                boolean coordinatorConfigEnabled = config.getTeam().getCoordinator().isEnabled();
+                boolean coordinatorEnvEnabled = "1".equals(System.getenv("MEWCODE_COORDINATOR"));
+                if (coordinatorConfigEnabled && coordinatorEnvEnabled) {
+                    agent.setToolFilter(Coordinator::isCoordinatorTool);
+                }
+
                 currentAgent[0] = agent;
 
                 // Wire agent loop to TerminalUI for /compact command
@@ -473,6 +524,129 @@ public class MewCode {
         consumer.setDaemon(true);
         consumer.start();
         return consumer;
+    }
+
+    /**
+     * Teammate mode entry point: join an existing team and enter the mailbox polling loop.
+     * Used by the TMUX backend to run teammates in separate terminal windows.
+     */
+    private static void runTeammateMode(AppConfig config, TeamManager teamManager,
+                                        String teamName, String agentName, String workingDirectory) {
+        System.out.println("[Teammate] Joining team '" + teamName + "' as '" + agentName + "'...");
+
+        // Register this teammate in the team's name registry
+        AgentNameRegistry.getInstance().register(agentName, agentName);
+
+        // Build tool registry
+        ToolRegistry toolRegistry = buildToolRegistry(config);
+
+        // Create provider
+        LLMProvider provider = ProviderFactory.create(config, toolRegistry);
+
+        // Create conversation
+        ConversationManager conv = new ConversationManager(toolRegistry);
+
+        // Build agent loop
+        var eventQueue = new LinkedBlockingQueue<AgentEvent>(256);
+        PermissionChecker permissionChecker = new PermissionChecker(
+                PermissionMode.BYPASS,
+                Path.of(workingDirectory)
+        );
+        AgentLoop agent = new AgentLoop(
+                provider, toolRegistry, conv, eventQueue,
+                config.getMaxIterations(), config.getStreamTimeoutSeconds(),
+                permissionChecker
+        );
+        agent.setWorkingDirectory(workingDirectory);
+        agent.configureAsSubAgent(agentName, null, config.getMaxIterations(), "dontAsk");
+
+        // Create or get team (team must already exist from the lead process)
+        // For TMUX mode, we create a team placeholder since the lead's process
+        // already has the real Team object in memory
+        TeamManager.TeamMode mode = TeamManager.TeamMode.TMUX;
+        var team = teamManager.createTeam(teamName, mode);
+
+        // Register this member
+        var member = team.addMember(agentName, agent, conv);
+        member.active = true;
+        member.thread = Thread.currentThread();
+
+        // Register SendMessage tool so the teammate can communicate
+        toolRegistry.register(new TeamTools.SendMessageTool(teamManager, agentName));
+
+        // Enter the teammate polling loop — blocks until shutdown or interrupt
+        // First inject any pending messages, then poll for initial task
+        TeammateRunner.injectPendingMessages(team, agentName, conv);
+
+        // Wait for the first task from the mailbox
+        var messages = team.getMailBox().readUnread(agentName);
+        if (!messages.isEmpty()) {
+            var sb = new StringBuilder("You have new messages from your team:\n\n");
+            for (var msg : messages) {
+                sb.append("From ").append(msg.from()).append(": ").append(msg.text()).append("\n\n");
+            }
+            team.getMailBox().markAllRead(agentName);
+            conv.addUserMessage(sb.toString());
+        } else {
+            // No initial task — just wait
+            conv.addUserMessage("You are teammate '" + agentName + "' in team '" + teamName
+                    + "'. Wait for tasks from your lead. Use SendMessage to communicate.");
+        }
+
+        // Run first turn
+        try {
+            agent.runToCompletion();
+        } catch (Exception e) {
+            System.err.println("[Teammate] Error on first turn: " + e.getMessage());
+        }
+
+        // Send idle notification
+        team.sendMessage(agentName, TeammateRunner.LEAD_NAME,
+                TeammateRunner.createIdleNotification(agentName, "completed initial task"));
+
+        // Enter idle polling loop (same as in-process teammate)
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                Thread.sleep(TeammateRunner.IDLE_POLL_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+
+            messages = team.getMailBox().readUnread(agentName);
+            if (messages.isEmpty()) continue;
+
+            boolean shutdown = false;
+            for (var msg : messages) {
+                if (TeammateRunner.isShutdownRequest(msg.text())) {
+                    shutdown = true;
+                    break;
+                }
+            }
+            if (shutdown) {
+                team.getMailBox().markAllRead(agentName);
+                break;
+            }
+
+            var sb = new StringBuilder("You have new messages from your team:\n\n");
+            for (var msg : messages) {
+                sb.append("From ").append(msg.from()).append(": ").append(msg.text()).append("\n\n");
+            }
+            team.getMailBox().markAllRead(agentName);
+            conv.addUserMessage(sb.toString());
+
+            try {
+                agent.runToCompletion();
+            } catch (Exception e) {
+                System.err.println("[Teammate] Error: " + e.getMessage());
+            }
+
+            team.sendMessage(agentName, TeammateRunner.LEAD_NAME,
+                    TeammateRunner.createIdleNotification(agentName, "completed follow-up"));
+        }
+
+        member.active = false;
+        System.out.println("[Teammate] Shutting down.");
     }
 
     private static ToolRegistry buildToolRegistry(AppConfig config) {

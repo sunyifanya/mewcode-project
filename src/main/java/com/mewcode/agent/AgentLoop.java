@@ -48,12 +48,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  * ReAct-style agent loop: Think → Act → Observe → repeat until done.
  * Runs on its own thread (implements Runnable). Pushes {@link AgentEvent}
  * instances to a {@link BlockingQueue} consumed by the UI thread.
- *
- * <p>Each iteration applies two-layer context compaction:
- * <ol>
- *   <li>Layer 1 — ToolResultBudget replaces large/stale tool results with previews</li>
- *   <li>Layer 2 — ContextCompactor triggers an LLM summary when tokens exceed 80%</li>
- * </ol>
  */
 public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
 

@@ -1,0 +1,523 @@
+     1	package com.mewcode;
+     2	
+     3	import com.mewcode.agent.AgentEvent;
+     4	import com.mewcode.agent.AgentLoop;
+     5	import com.mewcode.command.CommandRegistry;
+     6	import com.mewcode.config.AppConfig;
+     7	import com.mewcode.config.ConfigLoader;
+     8	import com.mewcode.conversation.ConversationManager;
+     9	import com.mewcode.hook.EventName;
+    10	import com.mewcode.hook.HookContext;
+    11	import com.mewcode.hook.HookEngine;
+    12	import com.mewcode.hook.HookErrorLogger;
+    13	import com.mewcode.hook.HookLoader;
+    14	import com.mewcode.instructions.InstructionsLoader;
+    15	import com.mewcode.mcp.McpManager;
+    16	import com.mewcode.memory.MemoryExtractor;
+    17	import com.mewcode.memory.MemoryManager;
+    18	import com.mewcode.permission.PermissionChecker;
+    19	import com.mewcode.permission.PermissionMode;
+    20	import com.mewcode.provider.LLMProvider;
+    21	import com.mewcode.provider.ProviderFactory;
+    22	import com.mewcode.session.SessionCleanup;
+    23	import com.mewcode.session.SessionManager;
+    24	import com.mewcode.skill.SkillCatalog;
+    25	import com.mewcode.skill.SkillTool;
+    26	import com.mewcode.subagent.AgentCatalog;
+    27	import com.mewcode.subagent.AgentLoader;
+    28	import com.mewcode.subagent.AgentTool;
+    29	import com.mewcode.task.TaskManager;
+    30	import com.mewcode.tool.ToolRegistry;
+    31	import com.mewcode.tool.ToolCall;
+    32	import com.mewcode.tool.impl.*;
+    33	import com.mewcode.tui.StreamingDisplay;
+    34	import com.mewcode.tui.TerminalUI;
+    35	import com.mewcode.worktree.StaleCleanup;
+    36	import com.mewcode.worktree.WorktreeManager;
+    37	import com.mewcode.worktree.WorktreeSessionStore;
+    38	
+    39	import java.io.File;
+    40	import java.io.PrintStream;
+    41	import java.io.PrintWriter;
+    42	import java.nio.charset.StandardCharsets;
+    43	import java.nio.file.Path;
+    44	import java.nio.file.Paths;
+    45	import java.util.concurrent.BlockingQueue;
+    46	import java.util.concurrent.Executors;
+    47	import java.util.concurrent.LinkedBlockingQueue;
+    48	import java.util.concurrent.ScheduledExecutorService;
+    49	
+    50	public class MewCode {
+    51	
+    52	    public static void main(String[] args) {
+    53	        // Force UTF-8 output on Windows (default is system code page like GBK)
+    54	        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
+    55	        System.setErr(new PrintStream(System.err, true, StandardCharsets.UTF_8));
+    56	
+    57	        try {
+    58	            // 1. Load configuration
+    59	            // Strategy: 
+    60	            //   - If command line arg provided, use that path
+    61	            //   - Otherwise, try ./mewcode.yaml first (user config)
+    62	            //   - If not found, load mewcode.yaml from classpath (built-in default)
+    63	            String configPath;
+    64	            AppConfig config;
+    65	            
+    66	            if (args.length > 0) {
+    67	                // User specified config path
+    68	                configPath = args[0];
+    69	                config = ConfigLoader.load(configPath);
+    70	            } else {
+    71	                File userConfig = new File("./mewcode.yaml");
+    72	                if (userConfig.exists()) {
+    73	                    // Use user's config file
+    74	                    configPath = "./mewcode.yaml";
+    75	                    config = ConfigLoader.load(configPath);
+    76	                } else {
+    77	                    // Use built-in default from classpath
+    78	                    configPath = "classpath:mewcode.yaml"; // for display purposes
+    79	                    config = ConfigLoader.loadFromClasspath();
+    80	                }
+    81	            }
+    82	
+    83	            // 1b. Resolve project root and working directory
+    84	            Path projectRoot;
+    85	            if (configPath.startsWith("classpath:")) {
+    86	                // When loading from classpath, use current directory as project root
+    87	                projectRoot = Paths.get(".").toAbsolutePath().normalize();
+    88	            } else {
+    89	                Path configFile = Paths.get(configPath).toAbsolutePath();
+    90	                projectRoot = configFile.getParent();
+    91	                if (projectRoot == null) {
+    92	                    projectRoot = Paths.get(".").toAbsolutePath();
+    93	                }
+    94	            }
+    95	            projectRoot = projectRoot.toRealPath();
+    96	            String workingDirectory = projectRoot.toString();
+    97	
+    98	            // 1c. Load project instructions
+    99	            String instructionsContent = InstructionsLoader.load(workingDirectory);
+   100	
+   101	            // 1d. Initialize memory manager
+   102	            MemoryManager memoryManager = new MemoryManager(workingDirectory);
+   103	            MemoryExtractor memoryExtractor = new MemoryExtractor();
+   104	
+   105	            // 1e. Clean up expired sessions
+   106	            int maxSessionAgeDays = config.getMaxSessionAgeDays() > 0 ? config.getMaxSessionAgeDays() : 5;
+   107	            SessionCleanup.cleanIfNeeded(workingDirectory, maxSessionAgeDays);
+   108	
+   109	            // 1f. Generate session ID for this run.
+   110	            // Mutable holder: /resume replaces the value so subsequent messages
+   111	            // append to the resumed session's JSONL file, not a new one.
+   112	            String[] sessionIdHolder = { SessionManager.newId() };
+   113	
+   114	            // 1g. Load sub-agent definitions
+   115	            AgentCatalog agentCatalog = AgentLoader.loadAll(projectRoot);
+   116	
+   117	            // 2. Build tool registry (built-in tools)
+   118	            ToolRegistry toolRegistry = buildToolRegistry(config);
+   119	
+   120	            // 2a. Create task manager for sub-agent background tasks
+   121	            TaskManager taskManager = new TaskManager();
+   122	
+   123	            // 2b. Create worktree manager (if enabled)
+   124	            AppConfig.WorktreeConfig worktreeConfig = config.getWorktree();
+   125	            WorktreeManager worktreeManager = null;
+   126	            ScheduledExecutorService cleanupExecutor = null;
+   127	            if (worktreeConfig.isEnabled()) {
+   128	                worktreeManager = new WorktreeManager(workingDirectory,
+   129	                        worktreeConfig.getSymlinkDirs(), worktreeConfig.getStaleCutoffHours());
+   130	            }
+   131	
+   132	            // 3. Create provider
+   133	            LLMProvider provider = ProviderFactory.create(config, toolRegistry);
+   134	
+   135	            // 4. Terminal UI (create early so MCP can use its writer for UTF-8 output)
+   136	            TerminalUI ui = new TerminalUI();
+   137	            ui.setWorkingDirectory(workingDirectory);
+   138	            ui.setMemoryManager(memoryManager);
+   139	            ui.setModel(config.getModel());
+   140	            // Wire resume callback: update sessionId so subsequent saves
+   141	            // append to the resumed session's JSONL file, not a new one.
+   142	            ui.setResumeCallback(resumedId -> {
+   143	                sessionIdHolder[0] = resumedId;
+   144	                ui.setCurrentSessionId(resumedId);
+   145	            });
+   146	
+   147	            // 2b. Connect MCP servers and register their tools (AFTER UI is created)
+   148	            McpManager mcpManager = initMcp(config, toolRegistry, ui.getWriter());
+   149	
+   150	            // 2c. Load skills (AFTER MCP is connected — so MCP tools are in ToolRegistry)
+   151	            SkillCatalog skillCatalog = SkillCatalog.loadCatalog(workingDirectory);
+   152	
+   153	            // 2d. Initialize slash command registry
+   154	            CommandRegistry cmdRegistry = new CommandRegistry();
+   155	
+   156	            // 5. Build permission checker
+   157	            PermissionMode mode = PermissionMode.fromString(config.getPermission().getMode());
+   158	            PermissionChecker permissionChecker = new PermissionChecker(mode, projectRoot);
+   159	
+   160	            // Wire permission checker to TerminalUI for mode cycling
+   161	            ui.setPermissionChecker(permissionChecker);
+   162	
+   163	            // Wire command registry (after permission checker so mode handler is wired)
+   164	            ui.setCommandRegistry(cmdRegistry);
+   165	            ui.setCurrentSessionId(sessionIdHolder[0]);
+   166	
+   167	            // Wire skill list supplier for /status command
+   168	            ui.setSkillListSupplier(() -> skillCatalog.list().stream()
+   169	                    .map(SkillCatalog.SkillMeta::name).toList());
+   170	
+   171	            // Print startup info
+   172	            ui.getWriter().println("已加载 provider: " + provider.getProviderName());
+   173	            ui.getWriter().println("model: " + config.getModel());
+   174	            ui.getWriter().println("tool: " + toolRegistry.size() + " 个");
+   175	            ui.getWriter().println("skill: " + skillCatalog.list().size() + " 个");
+   176	            ui.getWriter().println("SubAgent角色: " + agentCatalog.listNames().size() + " 个 (" + String.join(", ", agentCatalog.listNames()) + ")");
+   177	            ui.getWriter().println("迭代上限: " + config.getMaxIterations() + " 轮");
+   178	            ui.getWriter().println("权限模式: " + permissionChecker.getMode());
+   179	            if (worktreeManager != null) {
+   180	                ui.getWriter().println("Worktree: 已启用 (清理间隔: " + worktreeConfig.getStaleCleanupIntervalSeconds()
+   181	                        + "s, 过期阈值: " + worktreeConfig.getStaleCutoffHours() + "h)");
+   182	            }
+   183	            if (!instructionsContent.isEmpty()) {
+   184	                ui.getWriter().println("指令: 已加载 ("
+   185	                        + (instructionsContent.length() > 80
+   186	                            ? instructionsContent.substring(0, 80) + "..."
+   187	                            : instructionsContent)
+   188	                        + ")");
+   189	            }
+   190	            String memIndex = memoryManager.getMemoryIndexContent();
+   191	            if (!memIndex.isEmpty()) {
+   192	                int lineCount = (int) memIndex.lines().count();
+   193	                ui.getWriter().println("记忆: 已加载 (" + lineCount + " 条索引)");
+   194	            }
+   195	            ui.getWriter().flush();
+   196	
+   197	            // 6. Conversation manager
+   198	            ConversationManager conversation = new ConversationManager(toolRegistry);
+   199	            ui.setConversation(conversation);
+   200	
+   201	            // Inject long-term context (instructions + memory index + available skills)
+   202	            conversation.injectLongTermContext(instructionsContent,
+   203	                    memoryManager.getAllMemoryTitles());
+   204	
+   205	            // 6a. Load hooks from .mewcode/hooks/
+   206	            Path hooksDir = Paths.get(workingDirectory, ".mewcode", "hooks");
+   207	            HookLoader.LoadedHooks loadedHooks = HookLoader.load(hooksDir);
+   208	            Path hooksErrorLog = Paths.get(workingDirectory, ".mewcode", "hooks-errors.log");
+   209	            HookErrorLogger hookErrorLogger = new HookErrorLogger(hooksErrorLog);
+   210	            HookEngine hookEngine = new HookEngine(hookErrorLogger);
+   211	            hookEngine.loadHooks(loadedHooks.valid());
+   212	            if (!loadedHooks.valid().isEmpty()) {
+   213	                ui.getWriter().println("Hook: 已加载 " + loadedHooks.valid().size() + " 条规则");
+   214	            }
+   215	            for (String warning : loadedHooks.warnings()) {
+   216	                ui.getWriter().println(" ⚠ Hook 警告: " + warning);
+   217	            }
+   218	            ui.getWriter().flush();
+   219	
+   220	            // 6b. Register SkillTool in toolRegistry
+   221	
+   222	            // 6c. Wire skill commands into CommandRegistry (pending — needs agent holder)
+   223	
+   224	            // 7. Streaming display
+   225	            StreamingDisplay display = new StreamingDisplay(ui.getWriter());
+   226	
+   227	            // 8. Event queue: bounded to 1000 for back-pressure
+   228	            BlockingQueue<AgentEvent> eventQueue = new LinkedBlockingQueue<>(1000);
+   229	
+   230	            // 9. Agent loop — created per user input
+   231	            AgentLoop[] currentAgent = { null };
+   232	
+   233	            // Register SkillTool now that currentAgent holder exists
+   234	            SkillTool skillTool = new SkillTool(
+   235	                    skillCatalog,
+   236	                    () -> currentAgent[0],
+   237	                    () -> currentAgent[0]
+   238	            );
+   239	            toolRegistry.register(skillTool);
+   240	
+   241	            // Register Agent tool (sub-agent system)
+   242	            boolean backgroundEnabled = config.getSubAgent().getBackground().isEnabled();
+   243	            int subAgentMaxTurns = config.getSubAgent().getMaxTurns();
+   244	            AgentTool agentTool = new AgentTool(
+   245	                    provider, toolRegistry, agentCatalog, taskManager,
+   246	                    permissionChecker, subAgentMaxTurns,
+   247	                    config.getStreamTimeoutSeconds(), backgroundEnabled,
+   248	                    workingDirectory);
+   249	            toolRegistry.register(agentTool);
+   250	
+   251	            // Wire worktree manager to AgentTool (for isolation: "worktree")
+   252	            if (worktreeManager != null) {
+   253	                agentTool.setWorktreeManager(worktreeManager);
+   254	                // Register worktree session tools
+   255	                toolRegistry.register(new EnterWorktreeTool(worktreeManager, sessionIdHolder[0]));
+   256	                toolRegistry.register(new ExitWorktreeTool(worktreeManager));
+   257	                // Load and restore any saved worktree session
+   258	                var savedSession = WorktreeSessionStore.load(workingDirectory);
+   259	                if (savedSession != null) {
+   260	                    WorktreeSessionStore.restoreSession(savedSession);
+   261	                }
+   262	                // Start stale cleanup loop
+   263	                cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+   264	                    Thread t = new Thread(r, "worktree-cleanup");
+   265	                    t.setDaemon(true);
+   266	                    return t;
+   267	                });
+   268	                StaleCleanup.startCleanupLoop(cleanupExecutor, workingDirectory,
+   269	                        worktreeConfig.getStaleCleanupIntervalSeconds(),
+   270	                        worktreeConfig.getStaleCutoffHours());
+   271	            }
+   272	
+   273	            // Register background task management tools
+   274	            toolRegistry.register(new TaskListTool(taskManager));
+   275	            toolRegistry.register(new TaskGetTool(taskManager));
+   276	            toolRegistry.register(new TaskStopTool(taskManager));
+   277	            toolRegistry.register(new SendMessageTool(taskManager, () -> currentAgent[0]));
+   278	
+   279	            // Wire skill commands into CommandRegistry
+   280	            cmdRegistry.setSkillRegistry(skillCatalog,
+   281	                    () -> currentAgent[0],
+   282	                    () -> currentAgent[0]);
+   283	            cmdRegistry.registerSkillCommands();
+   284	
+   285	            // 10. Start event consumer thread
+   286	            Thread eventConsumer = startEventConsumer(eventQueue, display, ui, permissionChecker);
+   287	
+   288	            // 11. Start interactive input loop
+   289	            ui.start(input -> {
+   290	                // If an agent is waiting for permission, dispatch input there
+   291	                if (currentAgent[0] != null && currentAgent[0].isWaitingForPermission()) {
+   292	                    currentAgent[0].respondToPermission(input.trim());
+   293	                    return;
+   294	                }
+   295	
+   296	                // Cancel any in-flight agent
+   297	                if (currentAgent[0] != null) {
+   298	                    currentAgent[0].cancel();
+   299	                }
+   300	
+   301	                // Add user message to conversation
+   302	                conversation.addUserMessage(input);
+   303	
+   304	                // Save user message to session JSONL
+   305	                SessionManager.saveMessage(workingDirectory, sessionIdHolder[0], "user", input);
+   306	
+   307	                // Create agent loop
+   308	                AgentLoop agent = new AgentLoop(
+   309	                        provider,
+   310	                        toolRegistry,
+   311	                        conversation,
+   312	                        eventQueue,
+   313	                        config.getMaxIterations(),
+   314	                        config.getStreamTimeoutSeconds(),
+   315	                        permissionChecker
+   316	                );
+   317	                agent.setPlanMode(ui.isPlanMode());
+   318	                agent.setWorkingDirectory(workingDirectory);
+   319	                agent.setSessionId(sessionIdHolder[0]);
+   320	                // Wire memory extraction
+   321	                agent.setMemoryExtractor(memoryExtractor);
+   322	                agent.setMemoryManager(memoryManager);
+   323	                agent.setProviderForMemory(provider);
+   324	                agent.setHookEngine(hookEngine);
+   325	
+   326	                // Wire AgentTool: update parent conversation each turn (for Fork support)
+   327	                agentTool.setParentConversation(conversation);
+   328	                agentTool.setParentReplacementState(agent.getReplacementState());
+   329	
+   330	                // Wire TaskManager: drain completed notifications before each turn
+   331	                agent.setNotificationFn(() -> {
+   332	                    var notes = new java.util.ArrayList<String>();
+   333	                    for (var n : taskManager.drainNotifications()) {
+   334	                        notes.add(n.format());
+   335	                    }
+   336	                    return notes;
+   337	                });
+   338	                currentAgent[0] = agent;
+   339	
+   340	                // Wire agent loop to TerminalUI for /compact command
+   341	                ui.setAgentLoop(agent);
+   342	
+   343	                // Run agent on its own thread
+   344	                Thread agentThread = new Thread(agent, "agent-loop");
+   345	                agentThread.start();
+   346	            }, () -> {
+   347	                conversation.clear();
+   348	                // Clear active skills when conversation is cleared
+   349	                if (currentAgent[0] != null) {
+   350	                    currentAgent[0].clearActiveSkills();
+   351	                }
+   352	            });
+   353	
+   354	            // Cleanup
+   355	            if (currentAgent[0] != null) {
+   356	                currentAgent[0].cancel();
+   357	            }
+   358	            eventConsumer.interrupt();
+   359	            memoryExtractor.shutdown();
+   360	            if (cleanupExecutor != null) {
+   361	                cleanupExecutor.shutdownNow();
+   362	            }
+   363	
+   364	            // ---- hook: shutdown ----
+   365	            hookEngine.runHooks(EventName.SHUTDOWN, HookContext.of(EventName.SHUTDOWN));
+   366	
+   367	            // Shutdown MCP connections
+   368	            shutdownMcp(mcpManager);
+   369	
+   370	        } catch (Exception e) {
+   371	            System.err.println("启动失败: " + e.getMessage());
+   372	            System.exit(1);
+   373	        }
+   374	    }
+   375	
+   376	    /**
+   377	     * Start a daemon thread that consumes AgentEvents from the queue and renders
+   378	     * them via StreamingDisplay.
+   379	     */
+   380	    private static Thread startEventConsumer(BlockingQueue<AgentEvent> queue, StreamingDisplay display,
+   381	                                              TerminalUI ui, PermissionChecker permissionChecker) {
+   382	        Thread consumer = new Thread(() -> {
+   383	            PrintWriter writer = ui.getWriter();
+   384	            while (true) {
+   385	                try {
+   386	                    AgentEvent event = queue.take();
+   387	
+   388	                    switch (event.getType()) {
+   389	                        case TEXT_DELTA -> {
+   390	                            if (event.getText() != null && event.getChunkType() != null) {
+   391	                                display.onChunk(event.getText(), event.getChunkType());
+   392	                            }
+   393	                        }
+   394	                        case TOOL_CALL_START -> {
+   395	                            writer.println("\n ⚙ 正在执行工具 " + event.getToolName() + "...");
+   396	                            writer.flush();
+   397	                        }
+   398	                        case TOOL_CALL_RESULT -> {
+   399	                            // Tool results are fed back to the model; no UI display needed
+   400	                        }
+   401	                        case TOKEN_USAGE -> {
+   402	                            long create = event.getCacheCreationTokens();
+   403	                            long read = event.getCacheReadTokens();
+   404	                            if (create > 0 || read > 0) {
+   405	                                writer.print("[cache: " + read + " tokens read, " + create + " created]");
+   406	                                writer.flush();
+   407	                            }
+   408	                            // Update token counts for /status display
+   409	                            ui.setTokenCounts(event.getInputTokens(), event.getOutputTokens());
+   410	                        }
+   411	                        case PROGRESS -> {
+   412	                            // Progress messages are for internal tracking; skip UI noise
+   413	                        }
+   414	                        case COMPACT -> {
+   415	                            if (event.getMessage() != null && !event.getMessage().isEmpty()) {
+   416	                                writer.println(" ⏤ " + event.getMessage());
+   417	                                writer.flush();
+   418	                            }
+   419	                        }
+   420	                        case LOOP_STARTED -> {
+   421	                            // Agent loop begins — nothing to display
+   422	                        }
+   423	                        case LOOP_FINISHED -> {
+   424	                            display.onComplete();
+   425	                            writer.println("✓ 完成");
+   426	                            writer.flush();
+   427	                        }
+   428	                        case ERROR -> {
+   429	                            display.onComplete();
+   430	                            writer.println("✗ " + (event.getMessage() != null ? event.getMessage() : "未知错误"));
+   431	                            writer.flush();
+   432	                        }
+   433	                        case CANCELLED -> {
+   434	                            display.onComplete();
+   435	                            writer.println("⊘ " + (event.getMessage() != null ? event.getMessage() : "已取消"));
+   436	                            writer.flush();
+   437	                        }
+   438	                        case UNKNOWN_TOOL -> {
+   439	                            display.onComplete();
+   440	                            writer.println("✗ " + (event.getMessage() != null ? event.getMessage() : "未知工具"));
+   441	                            writer.flush();
+   442	                        }
+   443	                        case PERMISSION_REQUIRED -> {
+   444	                            // Render the permission confirmation prompt
+   445	                            ToolCall tc = event.getPermissionToolCall();
+   446	                            String toolName = event.getToolName() != null ? event.getToolName() : "?";
+   447	                            String description = event.getMessage() != null ? event.getMessage() : "需要用户确认";
+   448	
+   449	                            writer.println();
+   450	                            writer.println("════════════════════权限确认 ════════════════════");
+   451	                            writer.println(" 工具: " + toolName);
+   452	                            writer.println(" 操作: " + description);
+   453	                            writer.println("════════════════════════════════════════════════");
+   454	                            writer.println(" [Y] 本次放行  [A] 总是放行(本会话)  [N] 拒绝");
+   455	                            writer.println("════════════════════════════════════════════════");
+   456	                            writer.flush();
+   457	                        }
+   458	                        case PERMISSION_RESPONSE -> {
+   459	                            // Handled inside AgentLoop via permissionResponseQueue;
+   460	                            // no rendering needed here.
+   461	                        }
+   462	                        case MEMORY_TICK -> {
+   463	                            // Memory extraction may be triggered asynchronously;
+   464	                            // no rendering needed here.
+   465	                        }
+   466	                    }
+   467	                } catch (InterruptedException e) {
+   468	                    break; // consumer thread shutting down
+   469	                } catch (Exception e) {
+   470	                    writer.println("[事件消费异常] " + e.getMessage());
+   471	                    writer.flush();
+   472	                }
+   473	            }
+   474	        }, "event-consumer");
+   475	        consumer.setDaemon(true);
+   476	        consumer.start();
+   477	        return consumer;
+   478	    }
+   479	
+   480	    private static ToolRegistry buildToolRegistry(AppConfig config) {
+   481	        String wd = config.getTool().getWorkingDirectory();
+   482	        int timeout = config.getTool().getTimeoutSeconds();
+   483	
+   484	        ToolRegistry registry = new ToolRegistry();
+   485	        registry.register(new ToolSearchTool(registry));
+   486	        registry.registerAll(
+   487	                new ReadFileTool(wd),
+   488	                new WriteFileTool(wd),
+   489	                new EditFileTool(wd),
+   490	                new GlobTool(wd),
+   491	                new GrepTool(wd),
+   492	                new ExecuteCommandTool(wd, timeout)
+   493	        );
+   494	        return registry;
+   495	    }
+   496	
+   497	    /**
+   498	     * Initialize MCP connections if configured.
+   499	     *
+   500	     * @param config   the application configuration
+   501	     * @param registry the tool registry to register into
+   502	     * @param writer   the PrintWriter for output (from TerminalUI)
+   503	     * @return the McpManager (non-null even if no servers configured — it's a no-op manager)
+   504	     */
+   505	    private static McpManager initMcp(AppConfig config, ToolRegistry registry, java.io.PrintWriter writer) {
+   506	        AppConfig.McpConfigNode mcpConfig = config.getMcp();
+   507	        if (mcpConfig == null || mcpConfig.getServers() == null || mcpConfig.getServers().isEmpty()) {
+   508	            return null;
+   509	        }
+   510	        McpManager manager = new McpManager(mcpConfig.getServers());
+   511	        manager.registerAllMcpTools(registry, writer);
+   512	        return manager;
+   513	    }
+   514	
+   515	    /**
+   516	     * Gracefully shut down all MCP client connections.
+   517	     */
+   518	    private static void shutdownMcp(McpManager manager) {
+   519	        if (manager != null) {
+   520	            manager.shutdown();
+   521	        }
+   522	    }
+   523	}

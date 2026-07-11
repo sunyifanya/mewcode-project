@@ -1,0 +1,528 @@
+     1	package com.mewcode.subagent;
+     2	
+     3	import com.mewcode.agent.AgentLoop;
+     4	import com.mewcode.conversation.ConversationManager;
+     5	import com.mewcode.permission.PermissionChecker;
+     6	import com.mewcode.provider.LLMProvider;
+     7	import com.mewcode.task.TaskManager;
+     8	import com.mewcode.tool.Tool;
+     9	import com.mewcode.tool.ToolRegistry;
+    10	import com.mewcode.tool.ToolResult;
+    11	import com.mewcode.task.BackgroundTask;
+    12	import com.mewcode.worktree.AgentWorktree;
+    13	import com.mewcode.worktree.WorktreeChanges;
+    14	import com.mewcode.worktree.WorktreeManager;
+    15	import com.mewcode.toolresult.ContentReplacementState;
+    16	
+    17	import java.security.SecureRandom;
+    18	import java.util.*;
+    19	import java.util.function.Predicate;
+    20	import java.util.concurrent.BlockingQueue;
+    21	import java.util.concurrent.LinkedBlockingQueue;
+    22	
+    23	/**
+    24	 * A tool that launches a sub-agent to handle a focused task.
+    25	 */
+    26	public class AgentTool implements Tool {
+    27	
+    28	    private static final long AUTO_BACKGROUND_MS = 120_000; // 120 seconds
+    29	    private static final int BG_TASK_OUTPUT_TRUNCATE = 2000;
+    30	
+    31	    private final LLMProvider provider;
+    32	    private final ToolRegistry toolRegistry;
+    33	    private final AgentCatalog catalog;
+    34	    private final TaskManager taskManager;
+    35	    private final PermissionChecker permissionChecker;
+    36	    private final int globalMaxTurns;
+    37	    private final int streamTimeoutSeconds;
+    38	    private final boolean backgroundEnabled;
+    39	    private final String workingDirectory;
+    40	
+    41	    /** Parent conversation — used for Fork path. */
+    42	    private ConversationManager parentConversation;
+    43	
+    44	    /** Parent's replacement state — cloned for Fork cache stability. */
+    45	    private ContentReplacementState parentReplacementState;
+    46	
+    47	    /** Optional: worktree manager for isolation mode. */
+    48	    private WorktreeManager worktreeManager;
+    49	
+    50	    public AgentTool(LLMProvider provider, ToolRegistry toolRegistry,
+    51	                     AgentCatalog catalog, TaskManager taskManager,
+    52	                     PermissionChecker permissionChecker,
+    53	                     int globalMaxTurns, int streamTimeoutSeconds,
+    54	                     boolean backgroundEnabled, String workingDirectory) {
+    55	        this.provider = provider;
+    56	        this.toolRegistry = toolRegistry;
+    57	        this.catalog = catalog;
+    58	        this.taskManager = taskManager;
+    59	        this.permissionChecker = permissionChecker;
+    60	        this.globalMaxTurns = globalMaxTurns;
+    61	        this.streamTimeoutSeconds = streamTimeoutSeconds;
+    62	        this.backgroundEnabled = backgroundEnabled;
+    63	        this.workingDirectory = workingDirectory;
+    64	    }
+    65	
+    66	    // ── Context setters (called per-turn) ─────────────────────────────────
+    67	
+    68	    public void setParentConversation(ConversationManager parentConversation) {
+    69	        this.parentConversation = parentConversation;
+    70	    }
+    71	
+    72	    public void setParentReplacementState(ContentReplacementState state) {
+    73	        this.parentReplacementState = state;
+    74	    }
+    75	
+    76	    /** Optional: inject WorktreeManager for isolation support. */
+    77	    public void setWorktreeManager(WorktreeManager worktreeManager) {
+    78	        this.worktreeManager = worktreeManager;
+    79	    }
+    80	
+    81	    public TaskManager getTaskManager() {
+    82	        return taskManager;
+    83	    }
+    84	
+    85	    // ── Tool interface ────────────────────────────────────────────────────
+    86	
+    87	    @Override
+    88	    public String getName() {
+    89	        return "Agent";
+    90	    }
+    91	
+    92	    @Override
+    93	    public String getDescription() {
+    94	        var sb = new StringBuilder();
+    95	        sb.append("启动一个子 Agent 处理独立任务。每个子 Agent 拥有独立的上下文和受限的工具集。\n\n");
+    96	        sb.append("适用场景：研究代码、实现组件、代码审查等需要专注独立分析的任务。\n\n");
+    97	        sb.append("可用 Agent 类型：");
+    98	
+    99	        List<String> names = catalog.listNames();
+   100	        if (names.isEmpty()) {
+   101	            sb.append("\n- general-purpose: 全工具访问，适合多步骤任务（默认）");
+   102	            sb.append("\n- explore: 只读搜索 Agent（haiku 模型，低成本快速扫描）");
+   103	            sb.append("\n- plan: 只读架构规划 Agent");
+   104	        } else {
+   105	            for (String name : names) {
+   106	                SubAgentSpec spec = catalog.resolve(name);
+   107	                if (spec != null) {
+   108	                    sb.append("\n- ").append(name).append(": ").append(spec.description());
+   109	                }
+   110	            }
+   111	        }
+   112	
+   113	        sb.append("\n\n不指定 subagent_type 时走 Fork 路径，继承父对话历史（自动后台执行）。");
+   114	        return sb.toString();
+   115	    }
+   116	
+   117	    @Override
+   118	    public Map<String, Object> getParametersSchema() {
+   119	        List<String> agentTypes = catalog.listNames();
+   120	        if (agentTypes.isEmpty()) {
+   121	            agentTypes = List.of("general-purpose", "explore", "plan");
+   122	        }
+   123	
+   124	        Map<String, Object> properties = new LinkedHashMap<>();
+   125	        properties.put("description", Map.of(
+   126	                "type", "string",
+   127	                "description", "3-5 词任务简述，供 UI 进度展示"
+   128	        ));
+   129	        properties.put("prompt", Map.of(
+   130	                "type", "string",
+   131	                "description", "交给子 Agent 的详细任务指令。子 Agent 没有当前对话上下文，需写清楚。"
+   132	        ));
+   133	        properties.put("subagent_type", Map.of(
+   134	                "type", "string",
+   135	                "enum", agentTypes,
+   136	                "description", "预定义角色名。留空走 Fork 路径（继承父对话历史）。"
+   137	        ));
+   138	        properties.put("model", Map.of(
+   139	                "type", "string",
+   140	                "enum", List.of("haiku", "sonnet", "opus", "inherit"),
+   141	                "description", "覆盖模型选择。默认使用 Agent 定义中的 model。"
+   142	        ));
+   143	        properties.put("run_in_background", Map.of(
+   144	                "type", "boolean",
+   145	                "description", "强制后台启动。Fork 路径忽略此字段（无条件后台）。"
+   146	        ));
+   147	        properties.put("name", Map.of(
+   148	                "type", "string",
+   149	                "description", "给本次启动的子 Agent 命名，供后续 SendMessage 使用。"
+   150	        ));
+   151	        properties.put("isolation", Map.of(
+   152	                "type", "string",
+   153	                "enum", List.of("worktree"),
+   154	                "description", "隔离模式。\"worktree\" 为子 Agent 创建独立的 git worktree，"
+   155	                        + "文件操作不会影响主 Agent 的工作目录。"
+   156	        ));
+   157	
+   158	        Map<String, Object> schema = new LinkedHashMap<>();
+   159	        schema.put("type", "object");
+   160	        schema.put("properties", properties);
+   161	        schema.put("required", List.of("description", "prompt"));
+   162	        return schema;
+   163	    }
+   164	
+   165	    @Override
+   166	    public ToolResult execute(Map<String, Object> args) {
+   167	        String description = getString(args, "description");
+   168	        String prompt = getString(args, "prompt");
+   169	        if (description == null || description.isEmpty() || prompt == null || prompt.isEmpty()) {
+   170	            return new ToolResult(false,
+   171	                    "Error: description 和 prompt 参数均为必填", "MISSING_PARAM");
+   172	        }
+   173	
+   174	        String subagentType = getString(args, "subagent_type");
+   175	        String modelOverride = getString(args, "model");
+   176	        String name = getString(args, "name");
+   177	        String isolation = getString(args, "isolation");
+   178	        boolean runInBackground = Boolean.TRUE.equals(args.get("run_in_background"));
+   179	
+   180	        // ── Fork path (no subagent_type) ──────────────────────────────────
+   181	        if (subagentType == null || subagentType.isEmpty()) {
+   182	            return executeFork(description, prompt, modelOverride, name, isolation);
+   183	        }
+   184	
+   185	        // ── Definition-based path ─────────────────────────────────────────
+   186	        SubAgentSpec spec = catalog.resolve(subagentType);
+   187	        if (spec == null) {
+   188	            String available = String.join(", ", catalog.listNames());
+   189	            return new ToolResult(false,
+   190	                    "未知 subagent_type: '" + subagentType + "'。可用类型: " + available,
+   191	                    "UNKNOWN_AGENT_TYPE");
+   192	        }
+   193	
+   194	        // Determine execution mode
+   195	        if (spec.background() || runInBackground) {
+   196	            if (!backgroundEnabled) {
+   197	                return new ToolResult(false,
+   198	                        "后台执行已禁用（配置 subagent.background.enabled: false）",
+   199	                        "BACKGROUND_DISABLED");
+   200	            }
+   201	            return executeBackground(spec, description, prompt, modelOverride, name, isolation);
+   202	        }
+   203	
+   204	        return executeSync(spec, description, prompt, modelOverride, isolation);
+   205	    }
+   206	
+   207	    // ── Fork execution ────────────────────────────────────────────────────
+   208	
+   209	    private ToolResult executeFork(String description, String prompt,
+   210	                                    String modelOverride, String name, String isolation) {
+   211	        if (!backgroundEnabled) {
+   212	            return new ToolResult(false,
+   213	                    "后台执行已禁用。Fork 路径需要后台执行，当前配置 subagent.background.enabled: false",
+   214	                    "BACKGROUND_DISABLED");
+   215	        }
+   216	
+   217	        if (parentConversation == null) {
+   218	            return new ToolResult(false,
+   219	                    "Error: Fork 需要父对话上下文（内部错误：parentConversation 未设置）",
+   220	                    "NO_PARENT_CONV");
+   221	        }
+   222	
+   223	        // Nested fork detection
+   224	        if (ForkBuilder.containsForkBoilerplate(parentConversation)) {
+   225	            return new ToolResult(false,
+   226	                    "Fork 子 Agent 不能再启动 Agent（检测到嵌套 Fork）",
+   227	                    "NESTED_FORK");
+   228	        }
+   229	
+   230	        // Build forked conversation
+   231	        ConversationManager forkedConversationManager = ForkBuilder.buildForkedConversation(parentConversation);
+   232	
+   233	        // Fork uses the FORK spec (no tool restrictions, background, maxTurns=50)
+   234	        SubAgentSpec forkSpec = SubAgentSpec.FORK;
+   235	
+   236	        // Build fork filter: inherits parent tools, only blocks Agent at runtime
+   237	        Predicate<String> forkFilter = ToolFilter.buildForkFilter();
+   238	
+   239	        // Worktree isolation for fork
+   240	        AgentWorktree.Result wtResult = null;
+   241	        if ("worktree".equals(isolation) && worktreeManager != null) {
+   242	            String slug = generateWorktreeSlug();
+   243	            try {
+   244	                wtResult = AgentWorktree.create(slug, worktreeManager.getProjectRoot(),
+   245	                        worktreeManager.getSymlinkDirs());
+   246	            } catch (Exception e) {
+   247	                return new ToolResult(false,
+   248	                        "Error creating agent worktree: " + e.getMessage(), "WORKTREE_FAILED");
+   249	            }
+   250	        }
+   251	
+   252	        // Inject worktree notice into prompt
+   253	        String effectivePrompt = prompt;
+   254	        if (wtResult != null) {
+   255	            String notice = AgentWorktree.buildNotice(System.getProperty("user.dir"),
+   256	                    wtResult.worktreePath());
+   257	            effectivePrompt = notice + "\n\n" + effectivePrompt;
+   258	        }
+   259	        String taskMessage = ForkBuilder.buildTaskMessage(effectivePrompt);
+   260	        forkedConversationManager.addUserMessage(taskMessage);
+   261	
+   262	        // Create sub-agent
+   263	        AgentLoop subAgent = createSubAgent(forkedConversationManager, forkSpec, forkFilter, modelOverride, name,
+   264	                wtResult != null ? wtResult.worktreePath() : workingDirectory);
+   265	
+   266	        if (parentReplacementState != null) {
+   267	            subAgent.setReplacementState(parentReplacementState.copy());
+   268	        }
+   269	
+   270	        // Launch in background with worktree cleanup
+   271	        return launchBackgroundTask(subAgent, forkSpec, description, name, wtResult);
+   272	    }
+   273	
+   274	    // ── Definition-based sync ─────────────────────────────────────────────
+   275	
+   276	    private ToolResult executeSync(SubAgentSpec spec, String description,
+   277	                                    String prompt, String modelOverride, String isolation) {
+   278	        // Worktree isolation via AgentWorktree API
+   279	        AgentWorktree.Result wtResult = null;
+   280	        if ("worktree".equals(isolation) && worktreeManager != null) {
+   281	            String slug = generateWorktreeSlug();
+   282	            try {
+   283	                wtResult = AgentWorktree.create(slug, worktreeManager.getProjectRoot(),
+   284	                        worktreeManager.getSymlinkDirs());
+   285	            } catch (Exception e) {
+   286	                return new ToolResult(false,
+   287	                        "Error creating agent worktree: " + e.getMessage(), "WORKTREE_FAILED");
+   288	            }
+   289	        }
+   290	
+   291	        String effectivePrompt = prompt;
+   292	        if (wtResult != null) {
+   293	            String notice = AgentWorktree.buildNotice(System.getProperty("user.dir"),
+   294	                    wtResult.worktreePath());
+   295	            effectivePrompt = notice + "\n\n" + effectivePrompt;
+   296	        }
+   297	
+   298	        ConversationManager subConv = new ConversationManager();
+   299	
+   300	        // Inject system prompt if specified
+   301	        if (spec.systemPromptOverride() != null && !spec.systemPromptOverride().isEmpty()) {
+   302	            subConv.getMessagesMutable().add(
+   303	                    new com.mewcode.conversation.Message("user",
+   304	                            "<system-reminder>\n" + spec.systemPromptOverride() + "\n</system-reminder>"));
+   305	        }
+   306	
+   307	        // Add task
+   308	        subConv.addUserMessage(effectivePrompt);
+   309	
+   310	        // Build tool filter
+   311	        Predicate<String> toolFilter = ToolFilter.buildFilter(spec, false, false);
+   312	
+   313	        // Create sub-agent
+   314	        String workDir = wtResult != null ? wtResult.worktreePath() : workingDirectory;
+   315	        AgentLoop subAgent = createSubAgent(subConv, spec, toolFilter, modelOverride, null, workDir);
+   316	
+   317	        // Run with auto-background timeout (and worktree cleanup on sync path)
+   318	        return runWithTimeout(subAgent, spec, description, effectivePrompt, null, wtResult);
+   319	    }
+   320	
+   321	    // ── Definition-based background ───────────────────────────────────────
+   322	
+   323	    private ToolResult executeBackground(SubAgentSpec subAgentSpec, String description,
+   324	                                          String prompt, String modelOverride,
+   325	                                          String name, String isolation) {
+   326	        // Worktree isolation via AgentWorktree API
+   327	        AgentWorktree.Result worktreeResult = null;
+   328	        if ("worktree".equals(isolation) && worktreeManager != null) {
+   329	            String slug = generateWorktreeSlug();
+   330	            try {
+   331	                worktreeResult = AgentWorktree.create(slug, worktreeManager.getProjectRoot(),
+   332	                        worktreeManager.getSymlinkDirs());
+   333	            } catch (Exception e) {
+   334	                return new ToolResult(false,
+   335	                        "Error creating agent worktree: " + e.getMessage(), "WORKTREE_FAILED");
+   336	            }
+   337	        }
+   338	
+   339	        String effectivePrompt = prompt;
+   340	        if (worktreeResult != null) {
+   341	            String notice = AgentWorktree.buildNotice(System.getProperty("user.dir"),
+   342	                    worktreeResult.worktreePath());
+   343	            effectivePrompt = notice + "\n\n" + effectivePrompt;
+   344	        }
+   345	
+   346	        ConversationManager subConversationManager = new ConversationManager();
+   347	
+   348	        if (subAgentSpec.systemPromptOverride() != null && !subAgentSpec.systemPromptOverride().isEmpty()) {
+   349	            subConversationManager.getMessagesMutable().add(
+   350	                    new com.mewcode.conversation.Message("user",
+   351	                            "<system-reminder>\n" + subAgentSpec.systemPromptOverride() + "\n</system-reminder>"));
+   352	        }
+   353	
+   354	        subConversationManager.addUserMessage(effectivePrompt);
+   355	
+   356	        // Build tool filter — async definition-based
+   357	        boolean isFork = "_fork".equals(subAgentSpec.name());
+   358	        Predicate<String> toolFilter = ToolFilter.buildFilter(subAgentSpec, true, isFork);
+   359	
+   360	        String workDir = worktreeResult != null ? worktreeResult.worktreePath() : workingDirectory;
+   361	        AgentLoop subAgent = createSubAgent(subConversationManager, subAgentSpec, toolFilter, modelOverride, name, workDir);
+   362	
+   363	        return launchBackgroundTask(subAgent, subAgentSpec, description, name, worktreeResult);
+   364	    }
+   365	
+   366	    // ── Sub-agent factory ─────────────────────────────────────────────────
+   367	
+   368	    private AgentLoop createSubAgent(ConversationManager conv, SubAgentSpec spec,
+   369	                                      Predicate<String> toolFilter,
+   370	                                      String modelOverride, String name,
+   371	                                      String workDir) {
+   372	        // Create event queue
+   373	        BlockingQueue<com.mewcode.agent.AgentEvent> eventQueue = new LinkedBlockingQueue<>(256);
+   374	
+   375	        int effMaxTurns = spec.effectiveMaxTurns(globalMaxTurns);
+   376	        String permMode = spec.effectivePermissionMode();
+   377	
+   378	        AgentLoop agent = new AgentLoop(
+   379	                provider,
+   380	                toolRegistry,
+   381	                conv,
+   382	                eventQueue,
+   383	                effMaxTurns,
+   384	                streamTimeoutSeconds,
+   385	                permissionChecker
+   386	        );
+   387	        agent.setPlanMode("plan".equals(permMode));
+   388	        agent.setWorkingDirectory(workDir != null ? workDir : workingDirectory);
+   389	        agent.setToolFilter(toolFilter);
+   390	
+   391	        // Configure as sub-agent
+   392	        String displayName = name != null ? name : spec.name();
+   393	        agent.configureAsSubAgent(displayName, spec.systemPromptOverride(),
+   394	                effMaxTurns, permMode);
+   395	
+   396	        return agent;
+   397	    }
+   398	
+   399	    // ── Background launch ───
+   400	
+   401	    private ToolResult launchBackgroundTask(AgentLoop subAgent, SubAgentSpec spec, String description, String name,
+   402	                                            AgentWorktree.Result worktreeResult) {
+   403	
+   404	        String taskName = name != null ? name : description;
+   405	        String taskId = taskManager.createTask(taskName);
+   406	
+   407	        Thread thread = Thread.startVirtualThread(() -> {
+   408	            taskManager.setRunning(taskId, Thread.currentThread());
+   409	            try {
+   410	                String result = subAgent.runToCompletion();
+   411	
+   412	                // Worktree cleanup after background completion
+   413	                if (worktreeResult != null) {
+   414	                    result = appendWorktreeInfo(result, worktreeResult);
+   415	                }
+   416	
+   417	                taskManager.setCompleted(taskId, result);
+   418	            } catch (Exception e) {
+   419	                taskManager.setFailed(taskId, "Sub-agent error: " + e.getMessage());
+   420	                // Best-effort cleanup on failure
+   421	                if (worktreeResult != null) {
+   422	                    AgentWorktree.remove(worktreeResult.worktreePath(),
+   423	                            worktreeResult.worktreeBranch(), worktreeResult.gitRoot());
+   424	                }
+   425	            }
+   426	        });
+   427	
+   428	        taskManager.setRunning(taskId, thread);
+   429	
+   430	        return new ToolResult(true,
+   431	                "{\"task_id\": \"" + taskId + "\", \"status\": \"async_launched\", "
+   432	                        + "\"description\": \"" + escapeJson(description) + "\", "
+   433	                        + "\"hint\": \"任务完成后会自动通知你，无需轮询 TaskGet/TaskList\"}");
+   434	    }
+   435	
+   436	    // ── Sync with timeout ─────────────────────────────────────────────────
+   437	
+   438	    private ToolResult runWithTimeout(AgentLoop subAgent, SubAgentSpec spec,
+   439	                                       String description, String prompt, String name,
+   440	                                       AgentWorktree.Result wtResult) {
+   441	        String taskName = name != null ? name : ("sync-" + spec.name());
+   442	        String taskId = taskManager.createTask(taskName);
+   443	
+   444	        Thread agentThread = Thread.startVirtualThread(() -> {
+   445	            taskManager.setRunning(taskId, Thread.currentThread());
+   446	            try {
+   447	                String result = subAgent.runToCompletion();
+   448	                // Worktree cleanup after sync completion
+   449	                if (wtResult != null) {
+   450	                    result = appendWorktreeInfo(result, wtResult);
+   451	                }
+   452	                taskManager.setCompleted(taskId, result);
+   453	            } catch (Exception e) {
+   454	                taskManager.setFailed(taskId, "Sub-agent error: " + e.getMessage());
+   455	                // Best-effort cleanup on failure
+   456	                if (wtResult != null) {
+   457	                    AgentWorktree.remove(wtResult.worktreePath(),
+   458	                            wtResult.worktreeBranch(), wtResult.gitRoot());
+   459	                }
+   460	            }
+   461	        });
+   462	        taskManager.setRunning(taskId, agentThread);
+   463	
+   464	        // Wait with timeout on the main thread
+   465	        try {
+   466	            long startTimeMillis = System.currentTimeMillis();
+   467	            while (true) {
+   468	                long diffTimeMillis = System.currentTimeMillis() - startTimeMillis;
+   469	                if (diffTimeMillis >= AUTO_BACKGROUND_MS) {
+   470	                    // Timed out — continues in background
+   471	                    return new ToolResult(true,
+   472	                            "{\"task_id\": \"" + taskId + "\", \"status\": \"timed_out_to_background\", "
+   473	                                    + "\"description\": \"" + escapeJson(description) + "\", "
+   474	                                    + "\"hint\": \"任务仍在后台运行，完成后会自动通知你\"}");
+   475	                }
+   476	
+   477	                BackgroundTask task = taskManager.getTask(taskId);
+   478	                if (task != null && task.isTerminal()) {
+   479	                    if (task.getStatus() == BackgroundTask.Status.COMPLETED) {
+   480	                        return new ToolResult(true, task.getResult() != null ? task.getResult() : "");
+   481	                    } else {
+   482	                        return new ToolResult(false, task.getError() != null ? task.getError() : "Sub-agent failed",
+   483	                                "SUB_AGENT_FAILED");
+   484	                    }
+   485	                }
+   486	
+   487	                Thread.sleep(200); // poll interval
+   488	            }
+   489	        } catch (InterruptedException e) {
+   490	            Thread.currentThread().interrupt();
+   491	            return new ToolResult(false, "Sub-agent was interrupted", "INTERRUPTED");
+   492	        }
+   493	    }
+   494	
+   495	    // ── Helpers ───────────────────────────────────────────────────────────
+   496	
+   497	    /**
+   498	     * Generate a random worktree slug: "agent-a" + 7 hex digits.
+   499	     */
+   500	    private static String generateWorktreeSlug() {
+   501	        byte[] rndBytes = new byte[4];
+   502	        new SecureRandom().nextBytes(rndBytes);
+   503	        return "agent-a" + HexFormat.of().formatHex(rndBytes).substring(0, 7);
+   504	    }
+   505	
+   506	    /**
+   507	     * After sub-agent completion, check worktree for changes
+   508	     */
+   509	    private static String appendWorktreeInfo(String result, AgentWorktree.Result worktreeResult) {
+   510	        String safeResult = result != null ? result : "";
+   511	        if (WorktreeChanges.hasChanges(worktreeResult.worktreePath(), worktreeResult.headCommit())) {
+   512	            return safeResult + "\n\nWorktree kept at %s (branch %s) — has uncommitted changes or new commits."
+   513	                    .formatted(worktreeResult.worktreePath(), worktreeResult.worktreeBranch());
+   514	        } else {
+   515	            AgentWorktree.remove(worktreeResult.worktreePath(), worktreeResult.worktreeBranch(), worktreeResult.gitRoot());
+   516	            return safeResult;
+   517	        }
+   518	    }
+   519	
+   520	    private static String getString(Map<String, Object> args, String key) {
+   521	        Object v = args.get(key);
+   522	        return v instanceof String s ? s : null;
+   523	    }
+   524	
+   525	    private static String escapeJson(String s) {
+   526	        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+   527	    }
+   528	}
