@@ -650,18 +650,18 @@ public class MewCode {
     }
 
     private static ToolRegistry buildToolRegistry(AppConfig config) {
-        String wd = config.getTool().getWorkingDirectory();
+        String workingDirectory = config.getTool().getWorkingDirectory();
         int timeout = config.getTool().getTimeoutSeconds();
 
         ToolRegistry registry = new ToolRegistry();
         registry.register(new ToolSearchTool(registry));
         registry.registerAll(
-                new ReadFileTool(wd),
-                new WriteFileTool(wd),
-                new EditFileTool(wd),
-                new GlobTool(wd),
-                new GrepTool(wd),
-                new ExecuteCommandTool(wd, timeout)
+                new ReadFileTool(workingDirectory),
+                new WriteFileTool(workingDirectory),
+                new EditFileTool(workingDirectory),
+                new GlobTool(workingDirectory),
+                new GrepTool(workingDirectory),
+                new ExecuteCommandTool(workingDirectory, timeout)
         );
         return registry;
     }

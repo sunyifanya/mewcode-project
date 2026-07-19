@@ -4,60 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/replacement_records.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_3eeuXIqEbYIijlaPL83Y7050" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_JCpzgEkyAa8JCUwmGAkK8460" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_KGW5foemYZWdk9iGZhvA9464" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_PEQkwNob8gECIb2e0UFv9419" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_U7ewrGrULdsSFdWFcpoE7291" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_WisMahMgERpWe9rcrSsl8734" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_X8MK83w0O5yXEdXPrxvO0175" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_Yq6jrnohySZ6Z1zqsdtT4095" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_ZqgGnKn6PuDgekMQULeg2278" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_bS7AiAULDP10bnAJLzxH7268" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_fmX1QHGj8KuLMnBj4Woi1978" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_jgYwjEE7mBfvgx8FoCEo6462" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_sorUxlOTyGnhu9bgWLEB3583" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_yu88wR7VSOYX7z1hxpmS0059" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_zW1Rp5Owdah6Na2ENTwZ8862" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_0ZtknxR3Oynu4t3rTo3c3012" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_0rX2Y0u1zsutSzFSO4p99127" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_CGwqfLFFs1pH3DwJX1Xr3675" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_XxWovL4HfQmLkwRlUaDi1167" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_zof1Q5S8Gk0R5s2H2MSp9677" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-151629-3139/replacement_records.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-151629-3139/tool_results/call_00_AV9fkXPpWD2wwUFOwYGX1385" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-142542-dbcb.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-150355-dd0f.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-151500-9c11.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-151629-3139.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-152709-f886.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-154242-a355.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-155159-9b5b.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reference/checklist/15-team-lead-checklist.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reference/spec/15-team-lead-spec.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/reference/tasks/15-team-lead-tasks.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/task/TaskList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/task/TaskTools.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/AgentNameRegistry.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/Coordinator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/FileMailBox.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/SharedTaskStore.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/SpawnDispatcher.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamTools.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeammateRunner.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TmuxBackend.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/witness.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.codegraph/daemon.pid" beforeDir="false" afterPath="$PROJECT_DIR$/.codegraph/daemon.pid" afterDir="false" />
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/config/AppConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/AppConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionMode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/PermissionMode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -144,6 +93,9 @@
       <workItem from="1782714236925" duration="16394000" />
       <workItem from="1782741231129" duration="4989000" />
       <workItem from="1782905876119" duration="4222000" />
+      <workItem from="1783737566405" duration="1981000" />
+      <workItem from="1784427564786" duration="141000" />
+      <workItem from="1784427753396" duration="1098000" />
     </task>
     <task id="LOCAL-00001" summary="新建工程">
       <option name="closed" value="true" />
@@ -241,7 +193,15 @@
       <option name="project" value="LOCAL" />
       <updated>1782720299267</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射">
+      <option name="closed" value="true" />
+      <created>1783737615475</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1783737615475</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -283,6 +243,8 @@
     <MESSAGE value="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理" />
     <MESSAGE value="feat(hook): 添加钩子系统支持&#10;&#10;- 新增 ActionType 枚举定义四种钩子动作类型：命令、提示、HTTP、子代理&#10;- 在 AgentLoop 中集成 HookEngine，添加九个生命周期事件钩子点&#10;- 实现 CommandExecutor 支持命令执行，支持模板渲染和环境变量注入&#10;- 添加 ConditionEvaluator 支持条件判断，包括相等、正则、通配符匹配&#10;- 创建 EventName 枚举定义九个生命周期事件&#10;- 实现 HookAction、HookCondition 等配置数据结构&#10;- 添加 HookEngine 核心引擎类管理钩子注册和执行&#10;- 集成 HookLoader 从 .mewcode/hooks/ 目录加载 YAML 配置文件&#10;- 实现 HttpExecutor 支持 HTTP 请求动作&#10;- 在 MewCode 主类中初始化钩子系统并添加关闭事件处理&#10;- 支持单钩子和多钩子 YAML 格式，实现自动检测和解析&#10;- 修复 AutoCompactTrackingState 中的条件判断错误&#10;- 优化 ExecuteCommandTool 的进程输出处理和字符编码&#10;- 增强会话管理中工具调用元数据的持久化和恢复功能" />
     <MESSAGE value="feat(worktree): 添加工作树隔离功能实现完整的隔离工作区管理&#10;&#10;- 实现 SlugValidator 提供目录名校验和转换功能&#10;- 实现 WorktreeChanges 检测工作树变更状态&#10;- 实现 WorktreeSession 会话管理和持久化存储&#10;- 实现 WorktreeManager 管理工作树完整生命周期&#10;- 实现 AgentWorktree 为子代理提供轻量隔离API&#10;- 实现 PostCreationSetup 自动环境初始化配置&#10;- 实现 StaleCleanup 后台定期清理过期工作树&#10;- 实现 EnterWorktreeTool 和 ExitWorktreeTool 工具&#10;- 集成 AgentTool 支持 isolation: worktree 参数&#10;- 添加配置选项控制工作树功能开关和参数&#10;- 实现 fail-closed 安全策略和三层清理过滤机制" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(worktree): 添加工作树隔离功能实现完整的隔离工作区管理&#10;&#10;- 实现 SlugValidator 提供目录名校验和转换功能&#10;- 实现 WorktreeChanges 检测工作树变更状态&#10;- 实现 WorktreeSession 会话管理和持久化存储&#10;- 实现 WorktreeManager 管理工作树完整生命周期&#10;- 实现 AgentWorktree 为子代理提供轻量隔离API&#10;- 实现 PostCreationSetup 自动环境初始化配置&#10;- 实现 StaleCleanup 后台定期清理过期工作树&#10;- 实现 EnterWorktreeTool 和 ExitWorktreeTool 工具&#10;- 集成 AgentTool 支持 isolation: worktree 参数&#10;- 添加配置选项控制工作树功能开关和参数&#10;- 实现 fail-closed 安全策略和三层清理过滤机制" />
+    <MESSAGE value="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期" />
+    <MESSAGE value="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射" />
   </component>
 </project>
