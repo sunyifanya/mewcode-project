@@ -61,22 +61,22 @@ public final class TeammateRunner {
      * Drains lead's mailbox across all teams, returning formatted notification strings.
      * Called by the Lead's notificationFn each iteration.
      */
-    public static List<String> drainLeadMailbox(TeamManager teamMgr) {
-        if (teamMgr == null) return List.of();
+    public static List<String> drainLeadMailbox(TeamManager teamManager) {
+        if (teamManager == null) return List.of();
         var result = new java.util.ArrayList<String>();
-        for (String teamName : teamMgr.listTeams()) {
-            var team = teamMgr.getTeam(teamName);
+        for (String teamName : teamManager.listTeams()) {
+            var team = teamManager.getTeam(teamName);
             if (team == null) continue;
             var messages = team.getMailBox().readUnread(LEAD_NAME);
             if (messages.isEmpty()) continue;
 
-            var sb = new StringBuilder();
-            sb.append("<team-notification team=\"").append(teamName).append("\">\n");
-            for (var msg : messages) {
-                sb.append("from=").append(msg.from()).append(": ").append(msg.text()).append("\n");
+            var stringBuilder = new StringBuilder();
+            stringBuilder.append("<team-notification team=\"").append(teamName).append("\">\n");
+            for (var message : messages) {
+                stringBuilder.append("from=").append(message.from()).append(": ").append(message.text()).append("\n");
             }
-            sb.append("</team-notification>");
-            result.add(sb.toString());
+            stringBuilder.append("</team-notification>");
+            result.add(stringBuilder.toString());
 
             team.getMailBox().markAllRead(LEAD_NAME);
         }

@@ -36,25 +36,25 @@ public final class AgentLoader {
      * @return a catalog with all loaded definitions
      */
     public static AgentCatalog loadAll(Path projectRoot) {
-        AgentCatalog catalog = new AgentCatalog();
+        AgentCatalog agentCatalog = new AgentCatalog();
 
         // Layer 1: Built-in (classpath)
-        loadBuiltins(catalog);
+        loadBuiltins(agentCatalog);
 
         // Layer 2: User-level (~/.mewcode/agents/)
         String home = System.getProperty("user.home");
         if (home != null && !home.isEmpty()) {
-            loadDir(catalog, Path.of(home, ".mewcode", "agents"), "user");
+            loadDir(agentCatalog, Path.of(home, ".mewcode", "agents"), "user");
         }
 
         // Layer 3: Project-level (<root>/.mewcode/agents/)
         if (projectRoot != null) {
-            loadDir(catalog, projectRoot.resolve(".mewcode").resolve("agents"), "project");
+            loadDir(agentCatalog, projectRoot.resolve(".mewcode").resolve("agents"), "project");
         }
 
         // Layer 4: Plugin-level — reserved, always empty in this release
 
-        return catalog;
+        return agentCatalog;
     }
 
     // ── Built-in loading ──────────────────────────────────────────────────
@@ -79,15 +79,15 @@ public final class AgentLoader {
         }
     }
 
-    private static void loadBuiltinsFromClasspath(AgentCatalog catalog) {
+    private static void loadBuiltinsFromClasspath(AgentCatalog agentCatalog) {
         // Load the three known built-in agents by name
         for (String name : List.of("general-purpose", "explore", "plan")) {
             String resourcePath = "/subagent/builtin/" + name + ".md";
             try (InputStream in = AgentLoader.class.getResourceAsStream(resourcePath)) {
                 if (in != null) {
                     String content = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                    SubAgentSpec spec = parseContent(content, resourcePath);
-                    catalog.register(spec);
+                    SubAgentSpec subAgentSpec = parseContent(content, resourcePath);
+                    agentCatalog.register(subAgentSpec);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(

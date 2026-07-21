@@ -8,10 +8,6 @@ import java.util.Optional;
 
 /**
  * Matches tool calls against user-configured and session-temporary rules.
- *
- * <p>Priority: loop rules &gt; session rules &gt; config rules.
- * Within each tier, rules are checked in <b>reverse insertion order</b>
- * (last matching rule wins, mirroring the reference's behaviour).
  */
 public class RuleEngine {
 

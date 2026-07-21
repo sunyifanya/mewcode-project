@@ -2,6 +2,7 @@ package com.mewcode.hook;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,39 +10,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
 /**
  * Loads hook YAML files from {@code .mewcode/hooks/} with centralised validation.
- *
- * <p>Supports two YAML formats:
- * <ol>
- *   <li><b>Single-hook</b> — one file = one hook (legacy):
- *     <pre>{@code
- *     id: my-hook
- *     event: post_tool_use
- *     action:
- *       type: command
- *       command: "echo hello"
- *     }</pre></li>
- *   <li><b>Multi-hook</b> — one file can contain several hooks:
- *     <pre>{@code
- *     hooks:
- *       - id: hook-1
- *         event: turn_start
- *         action:
- *           type: prompt
- *           message: "reminder"
- *       - id: hook-2
- *         event: post_tool_use
- *         action:
- *           type: command
- *           command: "echo done"
- *     }</pre></li>
- * </ol>
- *
- * <p>Auto-detection: tries the multi-hook {@code hooks: [...]} wrapper first;
- * if absent, falls back to single-hook parsing. Malformed files are skipped
- * with warnings.
  */
 public final class HookLoader {
 
@@ -85,13 +55,13 @@ public final class HookLoader {
 
         for (Path file : yamlFiles) {
             try {
-                // Try multi-hook format first: { hooks: [...] }
-                HookFile multi = YAML_MAPPER.readValue(file.toFile(), HookFile.class);
-                if (multi.hooks != null && !multi.hooks.isEmpty()) {
-                    for (HookConfig config : multi.hooks) {
-                        List<String> issues = validate(config, file);
+                // Try hookFile-hook format first: { hooks: [...] }
+                HookFile hookFile = YAML_MAPPER.readValue(file.toFile(), HookFile.class);
+                if (hookFile.hooks != null && !hookFile.hooks.isEmpty()) {
+                    for (HookConfig hookConfig : hookFile.hooks) {
+                        List<String> issues = validate(hookConfig, file);
                         if (issues.isEmpty()) {
-                            valid.add(config);
+                            valid.add(hookConfig);
                         } else {
                             warnings.addAll(issues);
                         }
@@ -123,7 +93,7 @@ public final class HookLoader {
      * {@link HookConfig} (single-hook fallback).
      */
     private static class HookFile {
-        @com.fasterxml.jackson.annotation.JsonProperty("hooks")
+        @JsonProperty("hooks")
         List<HookConfig> hooks;
     }
 

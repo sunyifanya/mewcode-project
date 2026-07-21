@@ -17,26 +17,22 @@ public final class TemplateEngine {
     /**
      * Render a template by replacing all {@code ${var}} placeholders
      * with their resolved values from the context.
-     *
-     * @param template the template string (may be null)
-     * @param ctx      the hook context for variable resolution
-     * @return the rendered string with placeholders replaced; null → ""
      */
-    public static String render(String template, HookContext ctx) {
+    public static String render(String template, HookContext hookContext) {
         if (template == null || template.isEmpty()) {
             return "";
         }
 
-        Matcher m = PLACEHOLDER.matcher(template);
-        StringBuilder sb = new StringBuilder();
+        Matcher matcher = PLACEHOLDER.matcher(template);
+        StringBuilder stringBuilder = new StringBuilder();
 
-        while (m.find()) {
-            String varName = m.group(1);
-            String value = ConditionEvaluator.resolveVar(varName, ctx);
-            m.appendReplacement(sb, Matcher.quoteReplacement(value != null ? value : ""));
+        while (matcher.find()) {
+            String varName = matcher.group(1);
+            String value = ConditionEvaluator.resolveVar(varName, hookContext);
+            matcher.appendReplacement(stringBuilder, Matcher.quoteReplacement(value != null ? value : ""));
         }
-        m.appendTail(sb);
+        matcher.appendTail(stringBuilder);
 
-        return sb.toString();
+        return stringBuilder.toString();
     }
 }

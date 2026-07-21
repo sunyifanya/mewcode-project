@@ -45,44 +45,44 @@ public class HookEngine {
     // ---- Execution ----
 
     /**
-     * Run all hooks that match the given event and context.
+     * Run all hooks that match the given eventName and context.
      *
-     * @param event the triggering event
-     * @param ctx   the runtime context
+     * @param eventName the triggering eventName
+     * @param hookContext   the runtime context
      * @return results for every hook that was executed
      */
-    public List<HookResult> runHooks(EventName event, HookContext ctx) {
+    public List<HookResult> runHooks(EventName eventName, HookContext hookContext) {
         java.util.List<HookResult> results = new java.util.ArrayList<>();
 
-        for (HookConfig hook : hooks) {
-            if (hook.event() != event) continue;
+        for (HookConfig hookConfig : hooks) {
+            if (hookConfig.event() != eventName) continue;
 
             // runOnce dedup
-            if (hook.runOnce() && executedOnceIds.contains(hook.id())) {
+            if (hookConfig.runOnce() && executedOnceIds.contains(hookConfig.id())) {
                 continue;
             }
 
             // Condition check
-            if (hook.conditionGroup() != null && !hook.conditionGroup().conditions().isEmpty()) {
-                boolean allMode = hook.conditionGroup().isAllMode();
-                if (ConditionEvaluator.evaluate(hook.conditionGroup().conditions(), allMode, ctx)) {
+            if (hookConfig.conditionGroup() != null && !hookConfig.conditionGroup().conditions().isEmpty()) {
+                boolean allMode = hookConfig.conditionGroup().isAllMode();
+                if (ConditionEvaluator.evaluate(hookConfig.conditionGroup().conditions(), allMode, hookContext)) {
                     continue;
                 }
             }
 
             // Mark runOnce as executed
-            if (hook.runOnce()) {
-                executedOnceIds.add(hook.id());
+            if (hookConfig.runOnce()) {
+                executedOnceIds.add(hookConfig.id());
             }
 
             // Execute
             try {
-                HookResult result = executeAction(hook, ctx);
+                HookResult result = executeAction(hookConfig, hookContext);
                 results.add(result);
             } catch (Exception e) {
-                errorLogger.log(hook.id(), "Hook execution failed: " + e.getMessage());
-                results.add(new HookResult(hook.id(),
-                        "Hook error: " + e.getMessage(), false, hook.reject()));
+                errorLogger.log(hookConfig.id(), "Hook execution failed: " + e.getMessage());
+                results.add(new HookResult(hookConfig.id(),
+                        "Hook error: " + e.getMessage(), false, hookConfig.reject()));
             }
         }
 
@@ -140,13 +140,13 @@ public class HookEngine {
 
     // ---- Action dispatch ----
 
-    private HookResult executeAction(HookConfig hook, HookContext ctx) {
-        return switch (hook.action().type()) {
-            case COMMAND   -> CommandExecutor.execute(hook, ctx);
-            case PROMPT    -> PromptExecutor.execute(hook, ctx);
-            case HTTP      -> HttpExecutor.execute(hook, ctx);
-            case SUB_AGENT -> new HookResult(hook.id(),
-                    "sub_agent action not yet implemented", false, hook.reject());
+    private HookResult executeAction(HookConfig hookConfig, HookContext hookContext) {
+        return switch (hookConfig.action().type()) {
+            case COMMAND   -> CommandExecutor.execute(hookConfig, hookContext);
+            case PROMPT    -> PromptExecutor.execute(hookConfig, hookContext);
+            case HTTP      -> HttpExecutor.execute(hookConfig, hookContext);
+            case SUB_AGENT -> new HookResult(hookConfig.id(),
+                    "sub_agent action not yet implemented", false, hookConfig.reject());
         };
     }
 }

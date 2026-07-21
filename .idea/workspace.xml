@@ -5,8 +5,53 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射">
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/0069a672-4b2d-4dd4-ad17-123e109384bc.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/hooks/echo-test.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.mewcode/hooks/echo-test.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/replacement_records.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_3eeuXIqEbYIijlaPL83Y7050" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_JCpzgEkyAa8JCUwmGAkK8460" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_KGW5foemYZWdk9iGZhvA9464" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_PEQkwNob8gECIb2e0UFv9419" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_U7ewrGrULdsSFdWFcpoE7291" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_WisMahMgERpWe9rcrSsl8734" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_X8MK83w0O5yXEdXPrxvO0175" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_Yq6jrnohySZ6Z1zqsdtT4095" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_ZqgGnKn6PuDgekMQULeg2278" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_bS7AiAULDP10bnAJLzxH7268" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_fmX1QHGj8KuLMnBj4Woi1978" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_jgYwjEE7mBfvgx8FoCEo6462" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_sorUxlOTyGnhu9bgWLEB3583" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_yu88wR7VSOYX7z1hxpmS0059" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_00_zW1Rp5Owdah6Na2ENTwZ8862" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_0ZtknxR3Oynu4t3rTo3c3012" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_0rX2Y0u1zsutSzFSO4p99127" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_CGwqfLFFs1pH3DwJX1Xr3675" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_XxWovL4HfQmLkwRlUaDi1167" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-142542-dbcb/tool_results/call_01_zof1Q5S8Gk0R5s2H2MSp9677" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-151629-3139/replacement_records.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_save_content/20260629-151629-3139/tool_results/call_00_AV9fkXPpWD2wwUFOwYGX1385" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-142542-dbcb.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-150355-dd0f.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-151500-9c11.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-151629-3139.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-152709-f886.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-154242-a355.jsonl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mewcode/session_transcripts/20260629-155159-9b5b.jsonl" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/CommandExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/CommandExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/TemplateEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/TemplateEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/mcp/McpManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/mcp/McpManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/RuleEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/permission/RuleEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/skill/SkillTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/skill/SkillTool.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentCatalog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentCatalog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeammateRunner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeammateRunner.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,31 +80,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.MewCode.executor&quot;: &quot;Debug&quot;,
-    &quot;Maven.mewcode [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.mewcode [deploy].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.mewcode [package].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;git.auto.fetch.suggestion.counter&quot;: &quot;1&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;D:/code/mewcode/mewcode/src/main/java/org/example/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.MewCode.executor": "Run",
+    "Maven.mewcode [clean].executor": "Run",
+    "Maven.mewcode [deploy].executor": "Run",
+    "Maven.mewcode [package].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "master",
+    "git.auto.fetch.suggestion.counter": "1",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "D:/code/mewcode/mewcode/src/main/java/org/example/Main.java",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="" />

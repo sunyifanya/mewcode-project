@@ -88,24 +88,24 @@ public class McpManager {
     }
 
     /**
-     * Connect all servers, register discovered tools into the registry,
+     * Connect all servers, register discovered tools into the toolRegistry,
      * and print connection status.
      *
-     * @param registry the tool registry to register into
+     * @param toolRegistry the tool toolRegistry to register into
      * @param writer   the writer to use for output (e.g. from TerminalUI)
      */
-    public void registerAllMcpTools(ToolRegistry registry, java.io.PrintWriter writer) {
-        var result = connectAll();
-        for (var t : result.tools()) {
-            registry.register(t);
+    public void registerAllMcpTools(ToolRegistry toolRegistry, java.io.PrintWriter writer) {
+        var connectResult = connectAll();
+        for (var tool : connectResult.tools()) {
+            toolRegistry.register(tool);
         }
 
-        if (!result.serverNames().isEmpty()) {
-            writer.println("MCP: " + result.serverNames().size() + " 个 Server 已连接，"
-                    + result.tools().size() + " 个工具已注册");
+        if (!connectResult.serverNames().isEmpty()) {
+            writer.println("MCP: " + connectResult.serverNames().size() + " 个 Server 已连接，"
+                    + connectResult.tools().size() + " 个工具已注册");
             writer.flush();
         }
-        for (var err : result.errors()) {
+        for (var err : connectResult.errors()) {
             writer.println("警告: " + err);
             writer.flush();
         }
@@ -130,30 +130,30 @@ public class McpManager {
 
     // ── transport factory ──────────────────────────────────────────────
 
-    private McpSyncClient createClient(McpServerConfig cfg) {
+    private McpSyncClient createClient(McpServerConfig mcpServerConfig) {
         McpClientTransport transport;
 
-        if (cfg.getCommand() != null && !cfg.getCommand().isBlank()) {
+        if (mcpServerConfig.getCommand() != null && !mcpServerConfig.getCommand().isBlank()) {
             // stdio transport
-            var paramsBuilder = ServerParameters.builder(windowsSafe(cfg.getCommand()));
-            if (cfg.getArgs() != null) {
-                paramsBuilder.args(cfg.getArgs());
+            var paramsBuilder = ServerParameters.builder(windowsSafe(mcpServerConfig.getCommand()));
+            if (mcpServerConfig.getArgs() != null) {
+                paramsBuilder.args(mcpServerConfig.getArgs());
             }
-            if (cfg.getEnv() != null) {
+            if (mcpServerConfig.getEnv() != null) {
                 var resolvedEnv = new HashMap<String, String>();
-                for (var e : cfg.getEnv().entrySet()) {
+                for (var e : mcpServerConfig.getEnv().entrySet()) {
                     resolvedEnv.put(e.getKey(), resolveEnvVars(e.getValue()));
                 }
                 paramsBuilder.env(resolvedEnv);
             }
             transport = new StdioClientTransport(paramsBuilder.build(), McpJsonDefaults.getMapper());
 
-        } else if (cfg.getUrl() != null && !cfg.getUrl().isBlank()) {
+        } else if (mcpServerConfig.getUrl() != null && !mcpServerConfig.getUrl().isBlank()) {
             // Streamable HTTP transport
-            var httpBuilder = HttpClientStreamableHttpTransport.builder(cfg.getUrl());
-            if (cfg.getHeaders() != null && !cfg.getHeaders().isEmpty()) {
+            var httpBuilder = HttpClientStreamableHttpTransport.builder(mcpServerConfig.getUrl());
+            if (mcpServerConfig.getHeaders() != null && !mcpServerConfig.getHeaders().isEmpty()) {
                 httpBuilder.httpRequestCustomizer((rb, method, uri, protocol, ctx) -> {
-                    for (var e : cfg.getHeaders().entrySet()) {
+                    for (var e : mcpServerConfig.getHeaders().entrySet()) {
                         rb.header(e.getKey(), resolveEnvVars(e.getValue()));
                     }
                 });
@@ -200,9 +200,9 @@ public class McpManager {
      */
     static String resolveEnvVars(String value) {
         if (value == null) return null;
-        return ENV_VAR.matcher(value).replaceAll(m -> {
-            String env = System.getenv(m.group(1));
-            return env != null ? env : m.group(0);
+        return ENV_VAR.matcher(value).replaceAll(matchResult -> {
+            String env = System.getenv(matchResult.group(1));
+            return env != null ? env : matchResult.group(0);
         });
     }
 }

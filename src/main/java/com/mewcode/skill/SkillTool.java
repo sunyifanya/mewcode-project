@@ -47,19 +47,19 @@ public class SkillTool implements Tool {
 
     @Override
     public String getDescription() {
-        var sb = new StringBuilder();
-        sb.append("Activate a skill to get specialized instructions and optionally restricted tools. ");
-        sb.append("Use this when a task matches an available skill's description — ");
-        sb.append("the skill's SOP (standard operating procedure) will be loaded and pinned to your context.\n\n");
-        sb.append("Available skills:\n");
+        var stringBuilder = new StringBuilder();
+        stringBuilder.append("Activate a skill to get specialized instructions and optionally restricted tools. ");
+        stringBuilder.append("Use this when a task matches an available skill's description — ");
+        stringBuilder.append("the skill's SOP (standard operating procedure) will be loaded and pinned to your context.\n\n");
+        stringBuilder.append("Available skills:\n");
         for (var meta : catalog.list()) {
-            sb.append("- ").append(meta.name()).append(": ").append(meta.description());
+            stringBuilder.append("- ").append(meta.name()).append(": ").append(meta.description());
             if (!meta.allowedTools().isEmpty()) {
-                sb.append(" (tools: ").append(String.join(", ", meta.allowedTools())).append(")");
+                stringBuilder.append(" (tools: ").append(String.join(", ", meta.allowedTools())).append(")");
             }
-            sb.append("\n");
+            stringBuilder.append("\n");
         }
-        return sb.toString();
+        return stringBuilder.toString();
     }
 
     @Override

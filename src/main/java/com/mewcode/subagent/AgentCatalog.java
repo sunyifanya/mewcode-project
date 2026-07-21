@@ -4,10 +4,6 @@ import java.util.*;
 
 /**
  * In-memory catalog of sub-agent definitions, with priority-based resolution.
- *
- * <p>Definitions are registered in priority order: project-level definitions
- * overwrite user-level, which overwrite built-in. {@link #resolve} returns
- * the highest-priority version for a given name.</p>
  */
 public class AgentCatalog {
 

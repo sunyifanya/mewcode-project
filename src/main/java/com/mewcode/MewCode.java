@@ -49,10 +49,12 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.ArrayList;
 
 public class MewCode {
 
@@ -179,7 +181,7 @@ public class MewCode {
             SkillCatalog skillCatalog = SkillCatalog.loadCatalog(workingDirectory);
 
             // 2d. Initialize slash command registry
-            CommandRegistry cmdRegistry = new CommandRegistry();
+            CommandRegistry commandRegistry = new CommandRegistry();
 
             // 5. Build permission checker
             PermissionMode mode = PermissionMode.fromString(config.getPermission().getMode());
@@ -189,7 +191,7 @@ public class MewCode {
             ui.setPermissionChecker(permissionChecker);
 
             // Wire command registry (after permission checker so mode handler is wired)
-            ui.setCommandRegistry(cmdRegistry);
+            ui.setCommandRegistry(commandRegistry);
             ui.setCurrentSessionId(sessionIdHolder[0]);
 
             // Wire skill list supplier for /status command
@@ -318,8 +320,8 @@ public class MewCode {
             toolRegistry.register(new TaskStopTool(taskManager));
 
             // Wire skill commands into CommandRegistry
-            cmdRegistry.setSkillRegistry(skillCatalog, () -> currentAgent[0], () -> currentAgent[0]);
-            cmdRegistry.registerSkillCommands();
+            commandRegistry.setSkillRegistry(skillCatalog, () -> currentAgent[0], () -> currentAgent[0]);
+            commandRegistry.registerSkillCommands();
 
             // 10. Start event consumer thread
             Thread eventConsumer = startEventConsumer(eventQueue, display, ui, permissionChecker);
@@ -368,9 +370,9 @@ public class MewCode {
 
                 // Wire TaskManager: drain completed notifications before each turn
                 agent.setNotificationFn(() -> {
-                    var notes = new java.util.ArrayList<String>();
-                    for (var n : taskManager.drainNotifications()) {
-                        notes.add(n.format());
+                    List<String> notes = new ArrayList<>();
+                    for (var taskNotification : taskManager.drainNotifications()) {
+                        notes.add(taskNotification.format());
                     }
                     // Also drain team mailbox notifications
                     notes.addAll(TeammateRunner.drainLeadMailbox(teamManager));
