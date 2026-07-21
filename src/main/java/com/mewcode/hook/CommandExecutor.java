@@ -22,23 +22,23 @@ public final class CommandExecutor {
      * Execute a command hook action.
      *
      * @param config the hook configuration
-     * @param ctx    the runtime context (for template rendering and env vars)
+     * @param hookContext    the runtime context (for template rendering and env vars)
      * @return the result of execution
      */
-    public static HookResult execute(HookConfig config, HookContext ctx) {
-        HookAction action = config.action();
+    public static HookResult execute(HookConfig config, HookContext hookContext) {
+        HookAction hookAction = config.action();
 
         // Render template variables in the command string
-        String renderedCommand = TemplateEngine.render(action.command(), ctx);
+        String renderedCommand = TemplateEngine.render(hookAction.command(), hookContext);
 
-        int timeout = action.timeout() > 0 ? action.timeout() : 30;
+        int timeout = hookAction.timeout() > 0 ? hookAction.timeout() : 30;
 
-        if (action.background()) {
-            runInBackground(config.id(), renderedCommand, ctx);
+        if (hookAction.background()) {
+            runInBackground(config.id(), renderedCommand, hookContext);
             return new HookResult(config.id(), "", true, config.reject());
         }
 
-        return runForeground(config.id(), renderedCommand, ctx, timeout, config.reject());
+        return runForeground(config.id(), renderedCommand, hookContext, timeout, config.reject());
     }
 
     private static HookResult runForeground(String hookId, String command, HookContext ctx,

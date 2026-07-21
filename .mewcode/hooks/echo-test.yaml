@@ -3,18 +3,28 @@ hooks:
     event: post_tool_use
     action:
       type: command
-      command: "echo \"[Hook fired] tool=${tool} event=${event}\" >> /tmp/mewcode-hook-test.log"
+      command: "mkdir -p .mewcode/tmp && echo \"[Hook fired] tool=${tool} event=${event}\" >> .mewcode/tmp/mewcode-hook-test.log"
       timeout: 5
       background: false
 
   - id: block-json-write
     event: pre_tool_use
+    if:
+      mode: all
+      conditions:
+        - variable: tool
+          operator: "=="
+          value: write_file
+        - variable: args.file_path
+          operator: "=~"
+          value: ".*\\.json$"
+    reject: true
     action:
       type: command
       command: |
-        if [ "$tool" = "write_file" ] && echo "$args_file_path" | grep -q '\.json$'; then
-          echo "[Hook] JSON file write blocked. Use dedicated JSON tool instead." >> /tmp/mewcode-hook-test.log
-          exit 1
-        fi
+        mkdir -p .mewcode/tmp
+        msg="[Hook] JSON file write blocked. Use dedicated JSON tool instead."
+        echo "$msg" >> .mewcode/tmp/mewcode-hook-test.log
+        echo "$msg"
       timeout: 5
       background: false
