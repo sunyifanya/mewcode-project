@@ -12,16 +12,6 @@ import java.util.Set;
 
 /**
  * Manages persistent memory across sessions.
- *
- * <p>Memories are stored as individual Markdown files with YAML frontmatter
- * in two directories:
- * <ul>
- *   <li>{@code ~/.mewcode/memory/} — user-scoped (user, feedback types)</li>
- *   <li>{@code {project}/.mewcode/memory/} — project-scoped (project, reference types)</li>
- * </ul>
- *
- * <p>An index file {@code MEMORY.md} in each directory provides
- * a quick overview that is injected into the conversation context.
  */
 public class MemoryManager {
 
