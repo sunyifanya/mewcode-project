@@ -190,19 +190,19 @@ public class AnthropicProvider implements LLMProvider {
      * Serialize message content: plain string for normal messages,
      * content array for tool_use and tool_result messages.
      */
-    private void serializeContent(Message msg, ObjectNode msgNode) {
-        List<ToolCall> toolCalls = msg.getToolCalls();
-        List<ToolResultBlock> toolResults = msg.getToolResults();
+    private void serializeContent(Message message, ObjectNode msgNode) {
+        List<ToolCall> toolCalls = message.getToolCalls();
+        List<ToolResultBlock> toolResults = message.getToolResults();
 
         if (toolCalls != null && !toolCalls.isEmpty()) {
             // Assistant message with tool_use blocks
             var contentArray = jsonMapper.createArrayNode();
 
             // Text block first (if non-empty)
-            if (msg.getContent() != null && !msg.getContent().isBlank()) {
+            if (message.getContent() != null && !message.getContent().isBlank()) {
                 var textBlock = jsonMapper.createObjectNode();
                 textBlock.put("type", "text");
-                textBlock.put("text", msg.getContent());
+                textBlock.put("text", message.getContent());
                 contentArray.add(textBlock);
             }
 
@@ -233,7 +233,7 @@ public class AnthropicProvider implements LLMProvider {
             msgNode.set("content", contentArray);
         } else {
             // Plain text message — content is a string
-            msgNode.put("content", msg.getContent());
+            msgNode.put("content", message.getContent());
         }
     }
 
@@ -360,6 +360,9 @@ public class AnthropicProvider implements LLMProvider {
                             lastStopReason = delta.get("stop_reason").asText();
                         }
                         JsonNode usage = delta.get("usage");
+                        if (usage == null) {
+                            usage = root.get("usage");
+                        }
                         if (usage != null && usage.has("output_tokens")) {
                             lastOutputTokens = usage.get("output_tokens").asInt();
                         }

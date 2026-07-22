@@ -87,17 +87,17 @@ public final class TeammateRunner {
      * Builds the system reminder addendum for a teammate.
      */
     public static String buildTeammateAddendum(String teamName, String memberName, List<String> otherMembers) {
-        var sb = new StringBuilder();
-        sb.append("You are a member of team \"").append(teamName).append("\". ");
-        sb.append("Your name is \"").append(memberName).append("\".\n\n");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("You are a member of team \"").append(teamName).append("\". ");
+        stringBuilder.append("Your name is \"").append(memberName).append("\".\n\n");
         if (otherMembers != null && !otherMembers.isEmpty()) {
-            sb.append("Other team members: ").append(String.join(", ", otherMembers)).append("\n\n");
+            stringBuilder.append("Other team members: ").append(String.join(", ", otherMembers)).append("\n\n");
         }
-        sb.append("You can communicate with teammates using the SendMessage tool.\n");
-        sb.append("Messages from teammates arrive as system reminders at the start of each turn.\n");
-        sb.append("When you finish your current task, simply stop calling tools — ");
-        sb.append("an idle notification will be sent to the lead automatically.");
-        return sb.toString();
+        stringBuilder.append("You can communicate with teammates using the SendMessage tool.\n");
+        stringBuilder.append("Messages from teammates arrive as system reminders at the start of each turn.\n");
+        stringBuilder.append("When you finish your current task, simply stop calling tools — ");
+        stringBuilder.append("an idle notification will be sent to the lead automatically.");
+        return stringBuilder.toString();
     }
 
     /**

@@ -52,10 +52,10 @@ public class FileMailBox {
      * Send a message to a recipient's inbox.
      */
     public void send(String recipient, MailMessage msg) {
-        withLock(recipient, messages -> {
-            var m = new MailMessage(msg.from(), msg.text(), msg.timestamp(), false, msg.color(), msg.summary());
-            messages.add(m);
-            return messages;
+        withLock(recipient, mailMessages -> {
+            MailMessage mailMessage = new MailMessage(msg.from(), msg.text(), msg.timestamp(), false, msg.color(), msg.summary());
+            mailMessages.add(mailMessage);
+            return mailMessages;
         });
     }
 

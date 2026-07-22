@@ -556,8 +556,8 @@ public class AgentTool implements Tool {
 
     // ── Teammate spawn ──────────────────────────────────────────────────
 
-    private ToolResult runAsTeammate(SubAgentSpec spec, String teamName,
-                                     String description, String prompt, String modelOverride, String isolation) {
+    private ToolResult runAsTeammate(SubAgentSpec spec, String teamName, String description, String prompt,
+                                     String modelOverride, String isolation) {
         var team = teamManager.getTeam(teamName);
         if (team == null) {
             return new ToolResult(false,
@@ -590,8 +590,7 @@ public class AgentTool implements Tool {
         var otherMembers = team.memberNames();
 
         // Build addendum
-        String addendum = TeammateRunner.buildTeammateAddendum(
-                teamName, memberName, otherMembers);
+        String addendum = TeammateRunner.buildTeammateAddendum(teamName, memberName, otherMembers);
 
         // Optional worktree isolation
         String workdir = null;
@@ -600,8 +599,7 @@ public class AgentTool implements Tool {
                 byte[] rndBytes = new byte[4];
                 new SecureRandom().nextBytes(rndBytes);
                 String slug = "agent-a" + HexFormat.of().formatHex(rndBytes).substring(0, 7);
-                var wtResult = AgentWorktree.create(
-                        slug, worktreeManager.getProjectRoot(), worktreeManager.getSymlinkDirs());
+                var wtResult = AgentWorktree.create(slug, worktreeManager.getProjectRoot(), worktreeManager.getSymlinkDirs());
                 workdir = wtResult.worktreePath();
                 String notice = AgentWorktree.buildNotice(
                         System.getProperty("user.dir"), wtResult.worktreePath());

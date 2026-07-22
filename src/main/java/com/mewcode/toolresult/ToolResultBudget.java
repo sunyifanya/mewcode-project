@@ -48,11 +48,9 @@ public final class ToolResultBudget {
 
     private ToolResultBudget() {}
 
-    public static ApplyResult apply(
-            ConversationManager conversationManager,
-            Path sessionDir,
-            ContentReplacementState contentReplacementState
-    ) {
+    public static ApplyResult apply(ConversationManager conversationManager, Path sessionDir,
+            ContentReplacementState contentReplacementState) {
+
         List<Message> messages = conversationManager.getMessages();
         if (messages.isEmpty()) {
             return new ApplyResult(conversationManager, List.of());

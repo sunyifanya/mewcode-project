@@ -453,14 +453,14 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
         if (activeSkills.isEmpty()) {
             return "";
         }
-        var sb = new StringBuilder();
-        sb.append("## Active Skills\n\n");
-        var sorted = activeSkills.keySet().stream().sorted().toList();
-        for (var name : sorted) {
-            sb.append("### ").append(name).append("\n");
-            sb.append(activeSkills.get(name)).append("\n\n");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("## Active Skills\n\n");
+        List<String> sorted = activeSkills.keySet().stream().sorted().toList();
+        for (String name : sorted) {
+            stringBuilder.append("### ").append(name).append("\n");
+            stringBuilder.append(activeSkills.get(name)).append("\n\n");
         }
-        return sb.toString();
+        return stringBuilder.toString();
     }
 
     /** Clear all activated skills (called by /clear). */
@@ -524,27 +524,26 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 List<Map<String, Object>> toolSchemas = buildToolSchemas();
 
                 // Layer 2: Auto-compact check (runs FIRST — may replace conversation in-place)
-                String compactMsg = ContextCompactor.manage(
-                        conversation, provider, contextWindow, workingDirectory,
+                String compactMessage = ContextCompactor.manage(conversation, provider, contextWindow, workingDirectory,
                         compactTracking, recoveryState, toolSchemas);
-                if (!compactMsg.isEmpty()) {
-                    offerEvent(AgentEvent.compactEvent(compactMsg));
+                if (!compactMessage.isEmpty()) {
+                    offerEvent(AgentEvent.compactEvent(compactMessage));
                 }
 
                 // Layer 1: Apply tool-result budget (runs AFTER Layer 2 — reads from
                 // the possibly-compacted conversation, returns a fresh apiConv)
                 Path sessionDir = Paths.get(workingDirectory, ".mewcode", "session_save_content",
                         sessionId != null ? sessionId : "_unknown");
-                ApplyResult applied = ToolResultBudget.apply(conversation, sessionDir, replacementState);
-                if (!applied.newRecords().isEmpty()) {
+                ApplyResult applyResult = ToolResultBudget.apply(conversation, sessionDir, replacementState);
+                if (!applyResult.newRecords().isEmpty()) {
                     try {
-                        ReplacementRecordsIO.append(sessionDir, applied.newRecords());
+                        ReplacementRecordsIO.append(sessionDir, applyResult.newRecords());
                     } catch (Exception ignored) {
                         // Best-effort transcript persistence
                     }
                     // Log Layer 1 activity
                     int spilled = 0, snipped = 0;
-                    for (var r : applied.newRecords()) {
+                    for (var r : applyResult.newRecords()) {
                         if (r.replacement().startsWith("[Result of ")) spilled++;
                         else if (r.replacement().startsWith("[Stale output snipped:")) snipped++;
                     }
@@ -580,7 +579,7 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 }
 
                 // Use cleaned messages from Layer 1 for the API call
-                List<Message> apiMessages = applied.apiConv().getMessages(iter, planMode);
+                List<Message> apiMessages = applyResult.apiConv().getMessages(iter, planMode);
                 if (modelOverride != null) {
                     provider.streamChat(apiMessages, collector, activeTools, modelOverride);
                 } else {
@@ -664,12 +663,12 @@ public class AgentLoop implements Runnable, SkillHost, SkillForkHost {
                 }
 
                 // Check for unknown tools
-                for (ToolCall tc : toolCalls) {
-                    if (toolRegistry.get(tc.getName()) == null) {
+                for (ToolCall toolCall : toolCalls) {
+                    if (toolRegistry.get(toolCall.getName()) == null) {
                         offerEvent(AgentEvent.of(AgentEventType.UNKNOWN_TOOL)
-                                .toolName(tc.getName())
-                                .callId(tc.getId())
-                                .message("未知工具: " + tc.getName()).build());
+                                .toolName(toolCall.getName())
+                                .callId(toolCall.getId())
+                                .message("未知工具: " + toolCall.getName()).build());
                         return;
                     }
                 }

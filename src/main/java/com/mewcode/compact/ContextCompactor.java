@@ -78,16 +78,14 @@ public final class ContextCompactor {
      *
      * @return compact log message (empty string if no compaction happened)
      */
-    public static String manage(ConversationManager conv, LLMProvider client,
-                                int contextWindow, String workDir,
-                                AutoCompactTrackingState tracking,
-                                RecoveryState recovery,
-                                List<Map<String, Object>> toolSchemas) {
-        int tokens = estimateTokens(conv.getMessages());
+    public static String manage(ConversationManager conversationManager, LLMProvider client, int contextWindow, String workDir,
+                                AutoCompactTrackingState tracking, RecoveryState recovery, List<Map<String, Object>> toolSchemas) {
+
+        int tokens = estimateTokens(conversationManager.getMessages());
         double ratio = (double) tokens / contextWindow;
         if (ratio > AUTOCOMPACT_THRESHOLD && (tracking == null || !tracking.isTripped())) {
             try {
-                String result = autoCompact(conv, client, contextWindow, recovery, toolSchemas);
+                String result = autoCompact(conversationManager, client, contextWindow, recovery, toolSchemas);
                 if (tracking != null) tracking.reset();
                 return result;
             } catch (Exception e) {
@@ -138,13 +136,13 @@ public final class ContextCompactor {
 
     // ── Layer 2: Auto-compact ──────────────────────────────────────────
 
-    private static String autoCompact(ConversationManager conv, LLMProvider client, int contextWindow,
+    private static String autoCompact(ConversationManager conversationManager, LLMProvider llmProvider, int contextWindow,
                                       RecoveryState recovery, List<Map<String, Object>> toolSchemas) {
-        List<Message> messages = conv.getMessages();
+        List<Message> messages = conversationManager.getMessages();
         int beforeTokens = estimateTokens(messages);
 
         String serialized = serializeForSummary(messages, 500);
-        String summaryRaw = requestSummary(client,
+        String summaryRaw = requestSummary(llmProvider,
                 SUMMARY_SYSTEM_PROMPT + "\n\n" + serialized);
         String summaryText = formatCompactSummary(summaryRaw);
 
@@ -158,9 +156,9 @@ public final class ContextCompactor {
         compacted.addUserMessage(content);
         compacted.addAssistantMessage("明白，我会基于以上上下文继续工作。");
 
-        replaceConversation(conv, compacted);
+        replaceConversation(conversationManager, compacted);
 
-        int afterTokens = estimateTokens(conv.getMessages());
+        int afterTokens = estimateTokens(conversationManager.getMessages());
         return String.format("已压缩: %d → %d 估算 token", beforeTokens, afterTokens);
     }
 
@@ -280,7 +278,7 @@ public final class ContextCompactor {
             }
         }, List.of()); // empty tools list — no tool calls allowed
 
-        var summary = new StringBuilder();
+        StringBuilder summary = new StringBuilder();
 
         try {
             while (!done.get()) {
@@ -304,26 +302,26 @@ public final class ContextCompactor {
     }
 
     private static String serializeForSummary(List<Message> messages, int toolResultCap) {
-        var sb = new StringBuilder();
-        for (Message m : messages) {
-            sb.append(String.format("[%s]: %s\n", m.getRole(), nullSafe(m.getContent())));
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Message message : messages) {
+            stringBuilder.append(String.format("[%s]: %s\n", message.getRole(), nullSafe(message.getContent())));
 
-            if (m.getToolUses() != null) {
-                for (ToolUseBlock tu : m.getToolUses()) {
-                    sb.append(String.format("[tool_use %s]: %s\n", tu.toolName(), tu.toolUseId()));
+            if (message.getToolUses() != null) {
+                for (ToolUseBlock toolUseBlock : message.getToolUses()) {
+                    stringBuilder.append(String.format("[tool_use %s]: %s\n", toolUseBlock.toolName(), toolUseBlock.toolUseId()));
                 }
             }
-            if (m.getToolResults() != null) {
-                for (ToolResultBlock tr : m.getToolResults()) {
-                    String content = nullSafe(tr.content());
+            if (message.getToolResults() != null) {
+                for (ToolResultBlock toolResultBlock : message.getToolResults()) {
+                    String content = nullSafe(toolResultBlock.content());
                     if (content.length() > toolResultCap) {
                         content = content.substring(0, toolResultCap) + "...";
                     }
-                    sb.append(String.format("[tool_result]: %s\n", content));
+                    stringBuilder.append(String.format("[tool_result]: %s\n", content));
                 }
             }
         }
-        return sb.toString();
+        return stringBuilder.toString();
     }
 
     private static void replaceConversation(ConversationManager target, ConversationManager source) {

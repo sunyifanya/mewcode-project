@@ -6,16 +6,6 @@ import java.util.List;
 
 /**
  * The "if" block in a hook YAML — a list of conditions with a combination mode.
- *
- * <p>YAML shape:
- * <pre>{@code
- * if:
- *   mode: all          # "all" (AND) or "any" (OR), default "all"
- *   conditions:
- *     - variable: tool
- *       operator: "=="
- *       value: Bash
- * }</pre>
  */
 public record HookConditionGroup(
         @JsonProperty("mode") String mode,

@@ -7,14 +7,6 @@ import java.util.Map;
 
 /**
  * The action to execute when a hook triggers.
- *
- * <p>Exactly one type-specific payload is required:
- * <ul>
- *   <li>{@code command} — {@code command}, {@code timeout} (default 30), {@code background} (default false)</li>
- *   <li>{@code prompt}  — {@code message}</li>
- *   <li>{@code http}    — {@code url}, {@code method} (default GET), {@code headers}, {@code body}</li>
- *   <li>{@code sub_agent} — placeholder (not yet implemented)</li>
- * </ul>
  */
 public record HookAction(
         @JsonProperty("type") ActionType type,
