@@ -4,19 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamWorktreeMerge.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamWorktreeSummary.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.codegraph/daemon.pid" beforeDir="false" afterPath="$PROJECT_DIR$/.codegraph/daemon.pid" afterDir="false" />
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStopMemberTool 和 TeamMergeTool 工具类&#10;- 更新 .claude 设置添加 Java 相关命令支持，修改 IDEA 运行配置">
+      <change beforePath="$PROJECT_DIR$/.codegraph/daemon.pid" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/Coordinator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/Coordinator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/SpawnDispatcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/SpawnDispatcher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamTools.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamTools.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeammateRunner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeammateRunner.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -239,7 +229,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784725873519</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStopMemberTool 和 TeamMergeTool 工具类&#10;- 更新 .claude 设置添加 Java 相关命令支持，修改 IDEA 运行配置">
+      <option name="closed" value="true" />
+      <created>1784864398731</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1784864398731</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -286,6 +284,7 @@
     <MESSAGE value="chore(ide): 添加IDE配置文件到gitignore&#10;&#10;- 添加.shelf/目录到忽略列表&#10;- 添加workspace.xml文件到忽略列表  &#10;- 添加/httpRequests/目录到忽略列表&#10;- 移除旧的session_transcripts记录文件" />
     <MESSAGE value="refactor(hook): 更新命令执行器参数命名并改进钩子配置&#10;&#10;- 将execute方法中的ctx参数重命名为hookContext以提高可读性&#10;- 将action变量重命名为hookAction以保持命名一致性&#10;- 更新所有方法调用中的参数传递&#10;- 修改echo-test.yaml钩子将日志输出到.mewcode/tmp目录&#10;- 为JSON文件写入阻止钩子添加条件判断配置&#10;- 更新阻止单独的JSON写入钩子为条件触发模式" />
     <MESSAGE value="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行" />
+    <MESSAGE value="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStopMemberTool 和 TeamMergeTool 工具类&#10;- 更新 .claude 设置添加 Java 相关命令支持，修改 IDEA 运行配置" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStopMemberTool 和 TeamMergeTool 工具类&#10;- 更新 .claude 设置添加 Java 相关命令支持，修改 IDEA 运行配置" />
   </component>
 </project>
