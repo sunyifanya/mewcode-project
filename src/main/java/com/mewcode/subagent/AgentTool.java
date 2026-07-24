@@ -17,6 +17,7 @@ import com.mewcode.teams.TeamManager;
 import com.mewcode.teams.SpawnDispatcher;
 import com.mewcode.teams.TeammateRunner;
 import com.mewcode.teams.TeamTools;
+import com.mewcode.teams.TeamWorktreeSummary;
 
 import java.security.SecureRandom;
 import java.util.*;
@@ -158,7 +159,7 @@ public class AgentTool implements Tool {
         ));
         properties.put("name", Map.of(
                 "type", "string",
-                "description", "给本次启动的子 Agent 命名，供后续 SendMessage 使用。"
+                "description", "给本次启动的子 Agent 命名；创建 teammate 时作为稳定通信名，供 SendMessage/TeamStopMember/TeamMerge 使用。"
         ));
         properties.put("isolation", Map.of(
                 "type", "string",
@@ -202,7 +203,7 @@ public class AgentTool implements Tool {
             SubAgentSpec spec = (subagentType != null && !subagentType.isEmpty())
                     ? catalog.resolve(subagentType) : catalog.resolve("general-purpose");
             if (spec == null) spec = SubAgentSpec.GENERAL_PURPOSE;
-            return runAsTeammate(spec, teamName, description, prompt, modelOverride, isolation);
+            return runAsTeammate(spec, teamName, name, description, prompt, modelOverride, isolation);
         }
 
         // ── Fork path (no subagent_type) ──────────────────────────────────
@@ -556,22 +557,16 @@ public class AgentTool implements Tool {
 
     // ── Teammate spawn ──────────────────────────────────────────────────
 
-    private ToolResult runAsTeammate(SubAgentSpec spec, String teamName, String description, String prompt,
-                                     String modelOverride, String isolation) {
+    private ToolResult runAsTeammate(SubAgentSpec spec, String teamName, String requestedName,
+                                     String description, String prompt, String modelOverride, String isolation) {
         var team = teamManager.getTeam(teamName);
         if (team == null) {
             return new ToolResult(false,
                     "Error: team '%s' not found. Create it first with TeamCreate.".formatted(teamName));
         }
 
-        // Deduplicate member name
-        String memberName = description.replaceAll("\\s+", "-").toLowerCase();
-        if (memberName.length() > 30) memberName = memberName.substring(0, 30);
-        int suffix = 2;
-        String base = memberName;
-        while (team.hasMember(memberName)) {
-            memberName = base + "-" + suffix++;
-        }
+        String memberName = uniqueMemberName(team, requestedName != null && !requestedName.isBlank()
+                ? requestedName : description);
 
         // Build tool filter for the teammate
         var toolFilter = ToolFilter.buildFilter(spec, false, false);
@@ -586,96 +581,74 @@ public class AgentTool implements Tool {
         // Add coordination tools for teammates (NOT visible to regular sub-agents)
         subRegistry.register(new TeamTools.SendMessageTool(teamManager, memberName));
 
-        // Gather peer names for addendum
         var otherMembers = team.memberNames();
-
-        // Build addendum
         String addendum = TeammateRunner.buildTeammateAddendum(teamName, memberName, otherMembers);
 
-        // Optional worktree isolation
-        String workdir = null;
+        AgentWorktree.Result wtResult = null;
+        String effectiveWorkDir = workingDirectory;
         if ("worktree".equals(isolation) && worktreeManager != null) {
             try {
-                byte[] rndBytes = new byte[4];
-                new SecureRandom().nextBytes(rndBytes);
-                String slug = "agent-a" + HexFormat.of().formatHex(rndBytes).substring(0, 7);
-                var wtResult = AgentWorktree.create(slug, worktreeManager.getProjectRoot(), worktreeManager.getSymlinkDirs());
-                workdir = wtResult.worktreePath();
-                String notice = AgentWorktree.buildNotice(
-                        System.getProperty("user.dir"), wtResult.worktreePath());
+                String slug = generateWorktreeSlug();
+                wtResult = AgentWorktree.create(slug, worktreeManager.getProjectRoot(), worktreeManager.getSymlinkDirs());
+                effectiveWorkDir = wtResult.worktreePath();
+                String notice = AgentWorktree.buildNotice(System.getProperty("user.dir"), wtResult.worktreePath());
                 prompt = notice + "\n\n" + prompt;
             } catch (Exception e) {
                 return new ToolResult(false, "Error creating teammate worktree: " + e.getMessage());
             }
         }
 
-        // ── Run teammate's first turn synchronously ──
-        // Create conversation and member
-        ConversationManager conv = new ConversationManager();
-        var eventQueue = new LinkedBlockingQueue<com.mewcode.agent.AgentEvent>(256);
-
-        String effectiveWorkDir = workdir != null ? workdir : workingDirectory;
         int effMaxTurns = spec.effectiveMaxTurns(globalMaxTurns);
-
-        AgentLoop turnAgent = new AgentLoop(
-                provider, subRegistry, conv, eventQueue,
-                effMaxTurns, streamTimeoutSeconds, permissionChecker);
-        turnAgent.setWorkingDirectory(effectiveWorkDir);
-        turnAgent.configureAsSubAgent(memberName, null, effMaxTurns, "dontAsk");
-
-        var member = team.addMember(memberName, turnAgent, conv);
-        member.provider = provider;
-        member.toolRegistry = subRegistry;
-        member.protocol = provider.getProviderName();
-        member.maxTurns = effMaxTurns;
-        member.streamTimeoutSeconds = streamTimeoutSeconds;
-        member.permissionChecker = permissionChecker;
-        member.workDir = effectiveWorkDir;
-        member.active = true;
-
-        // Inject addendum and pending messages
-        if (!addendum.isEmpty()) {
-            conv.addSystemReminder(addendum);
-        }
-
-        // Send initial task to the member's own mailbox so the inbox file
-        // (alice.json) is created on disk. For TMUX teammates this is also
-        // how the independent process picks up its first task.
-        // Mark as read immediately since we inject the prompt directly below.
-        team.sendMessage(TeammateRunner.LEAD_NAME, memberName, prompt);
-        team.getMailBox().markAllRead(memberName);
-
-        TeammateRunner.injectPendingMessages(team, memberName, conv);
-        conv.addUserMessage(prompt);
-
-        // Run first turn synchronously
-        String result;
         try {
-            result = turnAgent.runToCompletion();
+            SpawnDispatcher.SpawnResult spawnResult = SpawnDispatcher.spawnTeammate(new SpawnDispatcher.SpawnConfig(
+                    team,
+                    memberName,
+                    prompt,
+                    addendum,
+                    provider,
+                    subRegistry,
+                    provider.getProviderName(),
+                    effectiveWorkDir,
+                    effMaxTurns,
+                    streamTimeoutSeconds,
+                    permissionChecker,
+                    wtResult
+            ));
+            StringBuilder sb = new StringBuilder();
+            sb.append("Teammate \"").append(memberName).append("\" spawned in team \"")
+                    .append(teamName).append("\" (mode: ").append(spawnResult.mode()).append(").");
+            if (spawnResult.paneId() != null) {
+                sb.append("\nTmux pane: ").append(spawnResult.paneId());
+            }
+            if (wtResult != null) {
+                sb.append("\n").append(TeamWorktreeSummary.fromWorktree(wtResult).formatShort());
+            }
+            return new ToolResult(true, sb.toString());
         } catch (Exception e) {
-            member.active = false;
-            return new ToolResult(false,
-                    "Teammate \"%s\" failed: %s".formatted(memberName, e.getMessage()));
+            return new ToolResult(false, "Teammate \"%s\" failed to spawn: %s".formatted(memberName, e.getMessage()));
         }
-
-        // Send idle notification with the actual result
-        String idleMsg = TeammateRunner.createIdleNotification(memberName, "completed initial task");
-        team.sendMessage(memberName, TeammateRunner.LEAD_NAME,
-                idleMsg + "\nResult: " + (result != null && !result.isEmpty() ? result : "(no output)"));
-
-        // Transition to background idle polling
-        member.thread = Thread.startVirtualThread(() -> {
-            TeammateRunner.runIdleLoop(team, member);
-        });
-
-        String modeLabel = team.getMode().name();
-        return new ToolResult(true,
-                "Teammate \"%s\" spawned in team \"%s\" (mode: %s).\n\nOutput:\n%s"
-                        .formatted(memberName, teamName, modeLabel,
-                                result != null && !result.isEmpty() ? result : "(no output)"));
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
+
+    private static String uniqueMemberName(TeamManager.Team team, String rawName) {
+        String base = sanitizeMemberName(rawName);
+        String memberName = base;
+        int suffix = 2;
+        while (team.hasMember(memberName)) {
+            memberName = base + "-" + suffix++;
+        }
+        return memberName;
+    }
+
+    private static String sanitizeMemberName(String rawName) {
+        String name = rawName != null ? rawName.strip().toLowerCase(Locale.ROOT) : "teammate";
+        name = name.replaceAll("\\s+", "-").replaceAll("[^a-z0-9._-]", "-");
+        name = name.replaceAll("-+", "-").replaceAll("^-|-$", "");
+        if (name.isEmpty()) name = "teammate";
+        if (name.length() > 30) name = name.substring(0, 30);
+        return name;
+    }
 
     /**
      * Generate a random worktree slug: "agent-a" + 7 hex digits.

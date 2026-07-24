@@ -4,8 +4,7 @@ import com.mewcode.agent.AgentLoop;
 import com.mewcode.conversation.ConversationManager;
 import com.mewcode.provider.LLMProvider;
 import com.mewcode.tool.ToolRegistry;
-
-import java.nio.file.Path;
+import com.mewcode.worktree.AgentWorktree;
 
 /**
  * Unified dispatcher for teammate spawning across all backends.
@@ -23,7 +22,8 @@ public final class SpawnDispatcher {
             String workdir,
             int maxTurns,
             int streamTimeoutSeconds,
-            com.mewcode.permission.PermissionChecker permissionChecker
+            com.mewcode.permission.PermissionChecker permissionChecker,
+            AgentWorktree.Result worktreeResult
     ) {}
 
     public record SpawnResult(
@@ -69,6 +69,7 @@ public final class SpawnDispatcher {
                 member.streamTimeoutSeconds = config.streamTimeoutSeconds();
                 member.permissionChecker = config.permissionChecker();
                 member.workDir = config.workdir();
+                member.worktreeResult = config.worktreeResult();
                 member.active = true;
                 member.thread = Thread.startVirtualThread(() ->
                         TeammateRunner.runInProcessTeammate(team, member, config.task(), config.addendum()));
@@ -81,7 +82,7 @@ public final class SpawnDispatcher {
                 }
                 String cliCommand = buildTeammateCLI(team.getName(), config.memberName(), config.workdir());
                 String paneId = TmuxBackend.spawnTmuxTeammate(team.getName(), config.memberName(), cliCommand);
-                recordExternalMember(team, config.memberName(), paneId);
+                recordExternalMember(team, config, paneId);
                 return new SpawnResult(mode, paneId);
             }
             default -> throw new IllegalStateException("Unsupported team mode: " + mode);
@@ -105,12 +106,21 @@ public final class SpawnDispatcher {
         return "'" + s.replace("'", "'\\''") + "'";
     }
 
-    private static void recordExternalMember(TeamManager.Team team, String name, String paneId) {
+    private static void recordExternalMember(TeamManager.Team team, SpawnConfig config, String paneId) {
         // For external backends, create a placeholder member
-        var member = new TeamManager.Member(name, null, null);
+        var member = new TeamManager.Member(config.memberName(), null, new ConversationManager());
+        member.provider = config.provider();
+        member.toolRegistry = config.registry();
+        member.protocol = config.protocol();
+        member.maxTurns = config.maxTurns();
+        member.streamTimeoutSeconds = config.streamTimeoutSeconds();
+        member.permissionChecker = config.permissionChecker();
+        member.workDir = config.workdir();
+        member.worktreeResult = config.worktreeResult();
+        member.tmuxPaneId = paneId;
         member.active = true;
         synchronized (team) {
-            team.members.put(name, member);
+            team.members.put(config.memberName(), member);
         }
     }
 }

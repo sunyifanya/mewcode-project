@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Team coordination tools: SendMessage, TeamCreate, TeamDelete.
+ * Team coordination tools: SendMessage, TeamCreate, TeamDelete, TeamStopMember, TeamMerge.
  */
 public final class TeamTools {
 
@@ -209,6 +209,113 @@ public final class TeamTools {
             return new ToolResult(true,
                     "Team \"%s\" deleted. Stopped %d member(s): %s"
                             .formatted(name, memberNames.size(), String.join(", ", memberNames)));
+        }
+    }
+
+    // ── TeamStopMember ─────────────────────────────────────────────────
+
+    public static class TeamStopMemberTool implements Tool {
+        private final TeamManager teamManager;
+
+        public TeamStopMemberTool(TeamManager teamManager) {
+            this.teamManager = teamManager;
+        }
+
+        @Override public String getName() { return "TeamStopMember"; }
+        @Override public ToolCategory category() { return ToolCategory.COMMAND; }
+
+        @Override
+        public String getDescription() {
+            return "停止指定 team 中的单个 teammate。会发送 [shutdown] 消息并中断本进程线程；tmux 成员会额外 best-effort 停止 pane。";
+        }
+
+        @Override
+        public Map<String, Object> getParametersSchema() {
+            var props = new LinkedHashMap<String, Object>();
+            props.put("team_name", Map.of("type", "string", "description", "Team name"));
+            props.put("member_name", Map.of("type", "string", "description", "Member name to stop"));
+            return Map.of("type", "object", "properties", props,
+                    "required", List.of("team_name", "member_name"));
+        }
+
+        @Override
+        public ToolResult execute(Map<String, Object> args) {
+            String teamName = (String) args.get("team_name");
+            String memberName = (String) args.get("member_name");
+            if (teamName == null || teamName.isEmpty() || memberName == null || memberName.isEmpty()) {
+                return new ToolResult(false, "Error: team_name and member_name are required");
+            }
+            TeamManager.Team team = teamManager.getTeam(teamName);
+            if (team == null) {
+                return new ToolResult(false, "Error: team '%s' not found".formatted(teamName));
+            }
+            TeamManager.Member member = team.getMember(memberName);
+            if (member == null) {
+                return new ToolResult(false, "Error: member '%s' not found in team '%s'".formatted(memberName, teamName));
+            }
+            team.sendMessage(TeammateRunner.LEAD_NAME, memberName, TeammateRunner.SHUTDOWN_PREFIX);
+            team.stopMember(memberName);
+            boolean stoppedPane = false;
+            if (member.tmuxPaneId != null && !member.tmuxPaneId.isBlank()) {
+                TmuxBackend.stopTmuxTeammate(member.tmuxPaneId);
+                stoppedPane = true;
+            }
+            return new ToolResult(true,
+                    "Stopped member '%s' in team '%s' (thread=%s, tmuxPane=%s)."
+                            .formatted(memberName, teamName, member.thread != null, stoppedPane));
+        }
+    }
+
+    // ── TeamMerge ──────────────────────────────────────────────────────
+
+    public static class TeamMergeTool implements Tool {
+        private final TeamManager teamManager;
+        private final String workingDirectory;
+
+        public TeamMergeTool(TeamManager teamManager, String workingDirectory) {
+            this.teamManager = teamManager;
+            this.workingDirectory = workingDirectory;
+        }
+
+        @Override public String getName() { return "TeamMerge"; }
+        @Override public ToolCategory category() { return ToolCategory.COMMAND; }
+
+        @Override
+        public String getDescription() {
+            return "预览或确认合并 teammate 的 worktree 变更。默认只预览；只有 confirm=true 时才尝试合入主工作区。";
+        }
+
+        @Override
+        public Map<String, Object> getParametersSchema() {
+            var props = new LinkedHashMap<String, Object>();
+            props.put("team_name", Map.of("type", "string", "description", "Team name"));
+            props.put("member_name", Map.of("type", "string", "description", "Member whose worktree should be merged"));
+            props.put("mode", Map.of("type", "string", "description", "preview or merge; defaults to preview"));
+            props.put("confirm", Map.of("type", "boolean", "description", "Must be true to modify the main worktree"));
+            return Map.of("type", "object", "properties", props,
+                    "required", List.of("team_name", "member_name"));
+        }
+
+        @Override
+        public ToolResult execute(Map<String, Object> args) {
+            String teamName = (String) args.get("team_name");
+            String memberName = (String) args.get("member_name");
+            if (teamName == null || teamName.isEmpty() || memberName == null || memberName.isEmpty()) {
+                return new ToolResult(false, "Error: team_name and member_name are required");
+            }
+            TeamManager.Team team = teamManager.getTeam(teamName);
+            if (team == null) {
+                return new ToolResult(false, "Error: team '%s' not found".formatted(teamName));
+            }
+            TeamManager.Member member = team.getMember(memberName);
+            if (member == null) {
+                return new ToolResult(false, "Error: member '%s' not found in team '%s'".formatted(memberName, teamName));
+            }
+            boolean confirm = Boolean.TRUE.equals(args.get("confirm"));
+            TeamWorktreeMerge.MergeResult result = confirm
+                    ? TeamWorktreeMerge.merge(member, workingDirectory)
+                    : TeamWorktreeMerge.preview(member);
+            return new ToolResult(result.success(), "[" + result.status() + "] " + result.message());
         }
     }
 }

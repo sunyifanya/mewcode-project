@@ -4,21 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射">
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamWorktreeMerge.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamWorktreeSummary.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.codegraph/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.codegraph/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.codegraph/daemon.pid" beforeDir="false" afterPath="$PROJECT_DIR$/.codegraph/daemon.pid" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/agent/AgentLoop.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/compact/ContextCompactor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/compact/ContextCompactor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookAction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookAction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookConditionGroup.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/hook/HookConditionGroup.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/AnthropicProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/provider/AnthropicProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/MewCode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/subagent/AgentTool.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/FileMailBox.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/FileMailBox.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/Coordinator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/Coordinator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/SpawnDispatcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/SpawnDispatcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamTools.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeamTools.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeammateRunner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/teams/TeammateRunner.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ToolResultBudget.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/toolresult/ToolResultBudget.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +47,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.MewCode.executor": "Debug",
+    "Application.MewCode.executor": "Run",
     "Maven.mewcode [clean].executor": "Run",
     "Maven.mewcode [deploy].executor": "Run",
     "Maven.mewcode [package].executor": "Run",
@@ -233,7 +231,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784642398185</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行">
+      <option name="closed" value="true" />
+      <created>1784725873519</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1784725873519</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -279,6 +285,7 @@
     <MESSAGE value="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射" />
     <MESSAGE value="chore(ide): 添加IDE配置文件到gitignore&#10;&#10;- 添加.shelf/目录到忽略列表&#10;- 添加workspace.xml文件到忽略列表  &#10;- 添加/httpRequests/目录到忽略列表&#10;- 移除旧的session_transcripts记录文件" />
     <MESSAGE value="refactor(hook): 更新命令执行器参数命名并改进钩子配置&#10;&#10;- 将execute方法中的ctx参数重命名为hookContext以提高可读性&#10;- 将action变量重命名为hookAction以保持命名一致性&#10;- 更新所有方法调用中的参数传递&#10;- 修改echo-test.yaml钩子将日志输出到.mewcode/tmp目录&#10;- 为JSON文件写入阻止钩子添加条件判断配置&#10;- 更新阻止单独的JSON写入钩子为条件触发模式" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor(hook): 更新命令执行器参数命名并改进钩子配置&#10;&#10;- 将execute方法中的ctx参数重命名为hookContext以提高可读性&#10;- 将action变量重命名为hookAction以保持命名一致性&#10;- 更新所有方法调用中的参数传递&#10;- 修改echo-test.yaml钩子将日志输出到.mewcode/tmp目录&#10;- 为JSON文件写入阻止钩子添加条件判断配置&#10;- 更新阻止单独的JSON写入钩子为条件触发模式" />
+    <MESSAGE value="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行" />
   </component>
 </project>

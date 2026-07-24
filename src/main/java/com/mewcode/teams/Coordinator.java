@@ -29,6 +29,8 @@ public final class Coordinator {
             "TaskUpdate",
             "TeamCreate",
             "TeamDelete",
+            "TeamStopMember",
+            "TeamMerge",
             "read_file",
             "glob",
             "grep",

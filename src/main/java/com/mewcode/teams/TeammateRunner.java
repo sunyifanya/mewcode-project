@@ -47,11 +47,11 @@ public final class TeammateRunner {
 
         // First turn: use initial prompt
         member.conv.addUserMessage(initialPrompt);
-        runAgentTurn(member);
+        String result = runAgentTurn(member);
 
         // Send idle notification
         team.sendMessage(member.getName(), LEAD_NAME,
-                createIdleNotification(member.getName(), "completed initial task"));
+                createCompletionNotification(member, "completed initial task", result));
 
         // Subsequent turns: wait for mailbox messages
         runIdleLoop(team, member);
@@ -127,6 +127,23 @@ public final class TeammateRunner {
                 java.time.Instant.now().toString());
     }
 
+    public static String createCompletionNotification(TeamManager.Member member, String reason, String result) {
+        String idle = createIdleNotification(member.getName(), reason);
+        member.lastCompletionReason = reason;
+        member.lastRunResult = result;
+        TeamWorktreeSummary.Summary summary = TeamWorktreeSummary.fromMember(member);
+        member.lastWorktreeSummary = summary.formatShort();
+
+        StringBuilder sb = new StringBuilder(idle);
+        if (result != null && !result.isBlank()) {
+            sb.append("\nResult: ").append(result);
+        }
+        if (summary.state() != TeamWorktreeSummary.State.NONE) {
+            sb.append("\n").append(summary.formatShort());
+        }
+        return sb.toString();
+    }
+
     /**
      * Runs purely the idle polling loop (after first turn was done synchronously).
      * Waits for mailbox messages and runs follow-up agent turns.
@@ -137,10 +154,10 @@ public final class TeammateRunner {
             if (result.shutdown || result.prompt == null) break;
 
             member.conv.addUserMessage(result.prompt);
-            runAgentTurn(member);
+            String turnResult = runAgentTurn(member);
 
             team.sendMessage(member.getName(), LEAD_NAME,
-                    createIdleNotification(member.getName(), "completed follow-up"));
+                    createCompletionNotification(member, "completed follow-up", turnResult));
         }
         member.active = false;
     }
@@ -181,7 +198,7 @@ public final class TeammateRunner {
      * Runs one turn of the member's agent loop, creating a fresh AgentLoop instance.
      * The ConversationManager persists across turns, carrying the full history.
      */
-    private static void runAgentTurn(TeamManager.Member member) {
+    private static String runAgentTurn(TeamManager.Member member) {
         try {
             var eventQueue = new LinkedBlockingQueue<com.mewcode.agent.AgentEvent>(256);
             AgentLoop turnAgent = new AgentLoop(
@@ -196,10 +213,11 @@ public final class TeammateRunner {
             turnAgent.setWorkingDirectory(member.workDir != null ? member.workDir
                     : System.getProperty("user.dir"));
             turnAgent.configureAsSubAgent(member.name, null, member.maxTurns, "dontAsk");
+            member.agent = turnAgent;
 
-            turnAgent.runToCompletion();
+            return turnAgent.runToCompletion();
         } catch (Exception e) {
-            // Agent error — conversation is at whatever state it reached
+            return "[teammate error] " + e.getMessage();
         }
     }
 }

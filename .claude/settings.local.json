@@ -87,7 +87,10 @@
       "mcp__context7__query-docs",
       "Bash(command -v cygpath)",
       "Bash(cygpath -w /tmp/mewcode-hook-test.log)",
-      "Skill(claude-api)"
+      "Skill(claude-api)",
+      "PowerShell(mvn test *)",
+      "PowerShell(java *)",
+      "PowerShell($candidates = @\\('D:\\\\Java','C:\\\\Program Files\\\\Java','C:\\\\Program Files\\\\Eclipse Adoptium','C:\\\\Program Files\\\\Microsoft'\\); foreach \\($d in $candidates\\) { if \\(Test-Path $d\\) { ls $d | Select-Object FullName } })"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -306,6 +306,8 @@ public class MewCode {
             // Register team coordination tools
             toolRegistry.register(new TeamTools.TeamCreateTool(teamManager));
             toolRegistry.register(new TeamTools.TeamDeleteTool(teamManager));
+            toolRegistry.register(new TeamTools.TeamStopMemberTool(teamManager));
+            toolRegistry.register(new TeamTools.TeamMergeTool(teamManager, workingDirectory));
             // SendMessage for the lead — allows communication with teammates
             toolRegistry.register(new TeamTools.SendMessageTool(teamManager, "lead"));
 

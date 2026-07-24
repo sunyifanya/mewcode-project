@@ -2,6 +2,7 @@ package com.mewcode.teams;
 
 import com.mewcode.agent.AgentLoop;
 import com.mewcode.conversation.ConversationManager;
+import com.mewcode.worktree.AgentWorktree;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -109,6 +110,10 @@ public class TeamManager {
             return members.get(name);
         }
 
+        public synchronized List<Member> memberSnapshots() {
+            return new ArrayList<>(members.values());
+        }
+
         public synchronized boolean hasMember(String name) {
             return members.containsKey(name);
         }
@@ -136,6 +141,11 @@ public class TeamManager {
         public int streamTimeoutSeconds;
         public com.mewcode.permission.PermissionChecker permissionChecker;
         public String workDir;
+        public AgentWorktree.Result worktreeResult;
+        public String tmuxPaneId;
+        public String lastCompletionReason;
+        public String lastWorktreeSummary;
+        public String lastRunResult;
 
         public Member(String name, AgentLoop agent, ConversationManager conv) {
             this.name = name;
