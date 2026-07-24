@@ -95,7 +95,10 @@
       "PowerShell($process = [Environment]::GetEnvironmentVariable\\('DEEPSEEK_API_KEY','Process'\\); $user = [Environment]::GetEnvironmentVariable\\('DEEPSEEK_API_KEY','User'\\); $machine = [Environment]::GetEnvironmentVariable\\('DEEPSEEK_API_KEY','Machine'\\); if \\([string]::IsNullOrEmpty\\($process\\)\\) { $p = '<empty>' } else { $p = '<set>' }; if \\([string]::IsNullOrEmpty\\($user\\)\\) { $u = '<empty>' } else { $u = '<set>' }; if \\([string]::IsNullOrEmpty\\($machine\\)\\) { $m = '<empty>' } else { $m = '<set>' }; \"Process: $p\"; \"User: $u\"; \"Machine: $m\")",
       "PowerShell($names = @\\('DEEPSEEK_API_KEY'\\); foreach \\($name in $names\\) { foreach \\($scope in @\\('Process','User','Machine'\\)\\) { $value = [Environment]::GetEnvironmentVariable\\($name, $scope\\); if \\($null -eq $value\\) { \"${scope}: ${name}=<not set>\" } elseif \\($value.Length -eq 0\\) { \"${scope}: ${name}=<empty>\" } else { \"${scope}: ${name}=<set, length=$\\($value.Length\\)>\" } } }; \"--- variables containing API_KEY or DEEPSEEK ---\"; foreach \\($scope in @\\('Process','User','Machine'\\)\\) { $vars = [Environment]::GetEnvironmentVariables\\($scope\\).GetEnumerator\\(\\) | Where-Object { $_.Key -match 'API_KEY|DEEPSEEK' } | Sort-Object Name; if \\($vars.Count -eq 0\\) { \"${scope}: <none>\" } else { foreach \\($v in $vars\\) { if \\($null -eq $v.Value\\) { \"${scope}: $\\($v.Key\\)=<not set>\" } elseif \\([string]$v.Value -eq ''\\) { \"${scope}: $\\($v.Key\\)=<empty>\" } else { \"${scope}: $\\($v.Key\\)=<set, length=$\\(\\([string]$v.Value\\).Length\\)>\" } } } })",
       "PowerShell(./gradlew test)",
-      "PowerShell(javac *)"
+      "PowerShell(javac *)",
+      "Bash(mvn test *)",
+      "Bash(cmd.exe *)",
+      "Bash(powershell.exe *)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(team): 添加团队成员管理与worktree合并功能&#10;&#10;- 实现TeamStopMember工具支持停止单个团队成员&#10;- 实现TeamMerge工具支持worktree变更预览与确认式合并&#10;- 扩展TeamManager.Member记录worktree路径、分支和tmux面板信息&#10;- 统一SpawnDispatcher派生入口处理in-process与tmux后端一致性&#10;- 修正teammate命名规则优先使用显式name参数&#10;- teammate完成通知附带worktree变更摘要信息&#10;- 强化合并安全性检查防止主工作区意外修改&#10;- 支持跨后端一致的成员停止和worktree汇报机制">
+    <list default="true" id="cf0996db-c464-41dd-80ff-c3371a321f9d" name="Changes" comment="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射">
       <change beforePath="$PROJECT_DIR$/.claude/settings.local.json" beforeDir="false" afterPath="$PROJECT_DIR$/.claude/settings.local.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/CLAUDE.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/mewcode/config/ConfigLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/mewcode/config/ConfigLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mewcode.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mewcode.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,42 +38,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.MewCode.executor&quot;: &quot;Run&quot;,
-    &quot;Maven.mewcode [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.mewcode [deploy].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.mewcode [package].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;git.auto.fetch.suggestion.counter&quot;: &quot;1&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;D:/code/mewcode/mewcode/src/main/java/org/example/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.MewCode.executor": "Run",
+    "Maven.mewcode [clean].executor": "Run",
+    "Maven.mewcode [deploy].executor": "Run",
+    "Maven.mewcode [package].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "master",
+    "git.auto.fetch.suggestion.counter": "1",
+    "kotlin-language-version-configured": "true",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "D:/code/mewcode/mewcode/src/main/java/org/example/Main.java",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.28238.7" />
-        <option value="bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-IU-252.28238.7" />
-      </set>
-    </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -111,7 +103,6 @@
       <workItem from="1783737566405" duration="1981000" />
       <workItem from="1784427564786" duration="141000" />
       <workItem from="1784427753396" duration="1098000" />
-      <workItem from="1784899650034" duration="298000" />
     </task>
     <task id="LOCAL-00001" summary="新建工程">
       <option name="closed" value="true" />
@@ -233,39 +224,7 @@
       <option name="project" value="LOCAL" />
       <updated>1784642398185</updated>
     </task>
-    <task id="LOCAL-00016" summary="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行">
-      <option name="closed" value="true" />
-      <created>1784725873519</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1784725873519</updated>
-    </task>
-    <task id="LOCAL-00017" summary="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStopMemberTool 和 TeamMergeTool 工具类&#10;- 更新 .claude 设置添加 Java 相关命令支持，修改 IDEA 运行配置">
-      <option name="closed" value="true" />
-      <created>1784864398731</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1784864398731</updated>
-    </task>
-    <task id="LOCAL-00018" summary="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStopMemberTool 和 TeamMergeTool 工具类&#10;- 更新 .claude 设置添加 Java 相关命令支持，修改 IDEA 运行配置">
-      <option name="closed" value="true" />
-      <created>1784871021158</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1784871021158</updated>
-    </task>
-    <task id="LOCAL-00019" summary="feat(team): 添加团队成员管理与worktree合并功能&#10;&#10;- 实现TeamStopMember工具支持停止单个团队成员&#10;- 实现TeamMerge工具支持worktree变更预览与确认式合并&#10;- 扩展TeamManager.Member记录worktree路径、分支和tmux面板信息&#10;- 统一SpawnDispatcher派生入口处理in-process与tmux后端一致性&#10;- 修正teammate命名规则优先使用显式name参数&#10;- teammate完成通知附带worktree变更摘要信息&#10;- 强化合并安全性检查防止主工作区意外修改&#10;- 支持跨后端一致的成员停止和worktree汇报机制">
-      <option name="closed" value="true" />
-      <created>1784871122680</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1784871122680</updated>
-    </task>
-    <option name="localTasksCounter" value="20" />
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -311,10 +270,6 @@
     <MESSAGE value="feat(teams): 实现团队协作功能包括共享任务清单和点对点通信&#10;&#10;- 添加 TaskList 和 TaskTools 实现任务 CRUD 操作&#10;- 实现 FileMailBox 提供基于 JSON 文件的邮箱通信&#10;- 添加 SharedTaskStore 支持团队共享任务清单&#10;- 创建 TeamManager 管理团队生命周期&#10;- 实现 TeammateRunner 支持队员长期运行&#10;- 添加 TeamTools 提供 SendMessage 和团队管理工具&#10;- 扩展 AgentTool 支持 team_name 参数进行队员派生&#10;- 实现 SpawnDispatcher 统一管理多后端派生&#10;- 添加 Coordinator 模式限制工具访问权限&#10;- 集成 CLI 参数和配置选项支持团队功能&#10;- 实现 TmuxBackend 支持独立进程队员运行&#10;- 添加 AgentNameRegistry 管理全局代理名称映射" />
     <MESSAGE value="chore(ide): 添加IDE配置文件到gitignore&#10;&#10;- 添加.shelf/目录到忽略列表&#10;- 添加workspace.xml文件到忽略列表  &#10;- 添加/httpRequests/目录到忽略列表&#10;- 移除旧的session_transcripts记录文件" />
     <MESSAGE value="refactor(hook): 更新命令执行器参数命名并改进钩子配置&#10;&#10;- 将execute方法中的ctx参数重命名为hookContext以提高可读性&#10;- 将action变量重命名为hookAction以保持命名一致性&#10;- 更新所有方法调用中的参数传递&#10;- 修改echo-test.yaml钩子将日志输出到.mewcode/tmp目录&#10;- 为JSON文件写入阻止钩子添加条件判断配置&#10;- 更新阻止单独的JSON写入钩子为条件触发模式" />
-    <MESSAGE value="refactor(java): 优化代码风格和变量命名一致性&#10;&#10;- 统一StringBuilder变量命名从sb改为stringBuilder或stringBuilder&#10;- 重命名局部变量提高代码可读性如compactMsg为compactMessage&#10;- 优化ToolCall循环中的变量命名从tc改为toolCall&#10;- 统一方法参数命名如conv改为conversationManager&#10;- 优化Lambda表达式中的参数命名一致性&#10;- 重构StringBuilder创建语法使用var替代显式类型声明&#10;- 更新JSON序列化参数命名从msg改为message提高清晰度&#10;- 优化MailMessage相关变量命名从messages改为mailMessages&#10;- 统一ApplyResult变量命名从applied改为applyResult&#10;- 优化代码格式化和参数传递方式减少换行" />
-    <MESSAGE value="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStopMemberTool 和 TeamMergeTool 工具类&#10;- 更新 .claude 设置添加 Java 相关命令支持，修改 IDEA 运行配置" />
-    <MESSAGE value="feat(teams): 添加队友工作区管理和团队协调工具&#10;&#10;- 添加 TeamWorktreeSummary 和 TeamWorktreeMerge 实现队友工作区状态摘要和合并功能&#10;- 在 AgentTool 中扩展 runAsTeammate 方法，增加工作区隔离和成员命名逻辑&#10;- 注册 TeamStopMember 和 TeamMerge 工具到协调器和主应用中&#10;- 重构 SpawnDispatcher 中的外部成员记录逻辑，完善成员信息存储&#10;- 更新 TeamManager.Member 类添加工作区结果和最后运行状态字段&#10;- 修改 TeammateRunner 中的通知机制，增加完成状态和结果信息&#10;- 在 TeamTools 中实现 TeamStop" />
-    <MESSAGE value="feat(team): 添加团队成员管理与worktree合并功能&#10;&#10;- 实现TeamStopMember工具支持停止单个团队成员&#10;- 实现TeamMerge工具支持worktree变更预览与确认式合并&#10;- 扩展TeamManager.Member记录worktree路径、分支和tmux面板信息&#10;- 统一SpawnDispatcher派生入口处理in-process与tmux后端一致性&#10;- 修正teammate命名规则优先使用显式name参数&#10;- teammate完成通知附带worktree变更摘要信息&#10;- 强化合并安全性检查防止主工作区意外修改&#10;- 支持跨后端一致的成员停止和worktree汇报机制" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(team): 添加团队成员管理与worktree合并功能&#10;&#10;- 实现TeamStopMember工具支持停止单个团队成员&#10;- 实现TeamMerge工具支持worktree变更预览与确认式合并&#10;- 扩展TeamManager.Member记录worktree路径、分支和tmux面板信息&#10;- 统一SpawnDispatcher派生入口处理in-process与tmux后端一致性&#10;- 修正teammate命名规则优先使用显式name参数&#10;- teammate完成通知附带worktree变更摘要信息&#10;- 强化合并安全性检查防止主工作区意外修改&#10;- 支持跨后端一致的成员停止和worktree汇报机制" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor(hook): 更新命令执行器参数命名并改进钩子配置&#10;&#10;- 将execute方法中的ctx参数重命名为hookContext以提高可读性&#10;- 将action变量重命名为hookAction以保持命名一致性&#10;- 更新所有方法调用中的参数传递&#10;- 修改echo-test.yaml钩子将日志输出到.mewcode/tmp目录&#10;- 为JSON文件写入阻止钩子添加条件判断配置&#10;- 更新阻止单独的JSON写入钩子为条件触发模式" />
   </component>
 </project>

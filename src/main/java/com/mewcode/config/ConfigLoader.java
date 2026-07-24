@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -223,7 +224,7 @@ public class ConfigLoader {
         if (value == null) return null;
         return ENV_VAR.matcher(value).replaceAll(matchResult -> {
             String env = System.getenv(matchResult.group(1));
-            return env != null ? env : matchResult.group(0);
+            return Matcher.quoteReplacement(env != null ? env : matchResult.group(0));
         });
     }
 
