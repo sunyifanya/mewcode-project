@@ -93,7 +93,7 @@ target/mewcode-1.0-SNAPSHOT.jar
 protocol: anthropic             # anthropic 或 openai
 model: your-model-name
 base_url: https://api.example.com/anthropic
-api_key: ${YOUR_API_KEY}
+api_key: ${DEEPSEEK_API_KEY}
 thinking_budget: 16000
 max_iterations: 25
 stream_timeout_seconds: 300

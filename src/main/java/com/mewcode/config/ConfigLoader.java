@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Loads and validates mewcode.yaml configuration.
@@ -21,6 +22,7 @@ public class ConfigLoader {
 
     private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
     private static final String CLASSPATH_CONFIG = "/mewcode.yaml";
+    private static final Pattern ENV_VAR = Pattern.compile("\\$\\{([^}]+)}");
 
     public static AppConfig load(String filePath) {
         File file = new File(filePath);
@@ -51,6 +53,7 @@ public class ConfigLoader {
         }
 
         // Validate required fields
+        resolveEnvVars(config);
         validate(config, filePath);
 
         // Normalize protocol to lowercase
@@ -97,6 +100,7 @@ public class ConfigLoader {
         }
 
         // Validate required fields (use "classpath:mewcode.yaml" as path for error messages)
+        resolveEnvVars(config);
         validate(config, "classpath:mewcode.yaml");
 
         // Normalize protocol to lowercase
@@ -126,6 +130,11 @@ public class ConfigLoader {
         }
         if (isBlank(config.getApiKey())) {
             System.err.println("错误: 配置文件缺少必填字段 'api_key'");
+            System.exit(1);
+        }
+        String missingApiKeyEnv = firstUnresolvedEnvVar(config.getApiKey());
+        if (missingApiKeyEnv != null) {
+            System.err.println("错误: api_key 引用了未设置的环境变量 '" + missingApiKeyEnv + "'");
             System.exit(1);
         }
         if (config.getThinkingBudget() < 0) {
@@ -197,6 +206,31 @@ public class ConfigLoader {
 
     private static boolean isBlank(String s) {
         return s == null || s.isBlank();
+    }
+
+    /**
+     * Resolve ${VAR} placeholders in top-level string configuration values.
+     * Unresolved variables are left intact so validation can report a clear error.
+     */
+    private static void resolveEnvVars(AppConfig config) {
+        config.setProtocol(resolveEnvVars(config.getProtocol()));
+        config.setModel(resolveEnvVars(config.getModel()));
+        config.setBaseUrl(resolveEnvVars(config.getBaseUrl()));
+        config.setApiKey(resolveEnvVars(config.getApiKey()));
+    }
+
+    private static String resolveEnvVars(String value) {
+        if (value == null) return null;
+        return ENV_VAR.matcher(value).replaceAll(matchResult -> {
+            String env = System.getenv(matchResult.group(1));
+            return env != null ? env : matchResult.group(0);
+        });
+    }
+
+    private static String firstUnresolvedEnvVar(String value) {
+        if (value == null) return null;
+        var matcher = ENV_VAR.matcher(value);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     /**
